@@ -1,4 +1,4 @@
-import { Gymnast, Choreography } from '@/types';
+import { Gymnast, Choreography, ChoreographyType } from '@/types';
 
 /**
  * API service for communicating with the backend
@@ -194,6 +194,7 @@ export class APIService {
       id: backend.id,
       name: backend.name,
       category: backend.category as 'YOUTH' | 'JUNIOR' | 'SENIOR',
+      type: backend.type as ChoreographyType,
       countryCode: backend.country,
       selectedGymnasts: backend.gymnasts.map((fig: any) => this.transformFigToGymnast(fig)),
       gymnastCount: backend.gymnastCount,
@@ -216,7 +217,7 @@ export class APIService {
       name: choreography.name,
       country: choreography.countryCode,
       category: choreography.category,
-      type: this.determineChoreographyType(choreography.gymnastCount),
+      type: choreography.type, // Use the type determined by the frontend
       gymnastCount: choreography.gymnastCount,
       oldestGymnastAge: this.getOldestGymnastAge(choreography.selectedGymnasts),
       gymnastFigIds: choreography.selectedGymnasts.map((g: Gymnast) => g.id),
@@ -233,10 +234,8 @@ export class APIService {
     if (updates.name) dto.name = updates.name;
     if (updates.countryCode) dto.country = updates.countryCode;
     if (updates.category) dto.category = updates.category;
-    if (updates.gymnastCount) {
-      dto.gymnastCount = updates.gymnastCount;
-      dto.type = this.determineChoreographyType(updates.gymnastCount);
-    }
+    if (updates.type) dto.type = updates.type;
+    if (updates.gymnastCount) dto.gymnastCount = updates.gymnastCount;
     if (updates.selectedGymnasts) {
       dto.gymnastFigIds = updates.selectedGymnasts.map((g: Gymnast) => g.id);
       dto.oldestGymnastAge = this.getOldestGymnastAge(updates.selectedGymnasts);
@@ -266,14 +265,25 @@ export class APIService {
     return 'SENIOR';
   }
 
-  private static determineChoreographyType(gymnastCount: number): string {
+  /**
+   * Determine choreography type based on gymnast count and gender composition
+   */
+  private static determineChoreographyType(gymnastCount: number, gymnasts: Gymnast[]): ChoreographyType {
     switch (gymnastCount) {
-      case 1: return 'Individual';
-      case 2: return 'Mixed Pair';
-      case 3: return 'Trio';
-      case 5: return 'Group';
-      case 8: return 'Platform';
-      default: throw new Error(`Invalid gymnast count: ${gymnastCount}`);
+      case 1:
+        // For individual, check gender
+        const gymnast = gymnasts[0];
+        return gymnast.gender === 'MALE' ? 'MIND' : 'WIND';
+      case 2:
+        return 'MXP';
+      case 3:
+        return 'TRIO';
+      case 5:
+        return 'GRP';
+      case 8:
+        return 'DNCE';
+      default:
+        throw new Error(`Invalid gymnast count: ${gymnastCount}`);
     }
   }
 

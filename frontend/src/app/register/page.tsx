@@ -5,15 +5,19 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { GymnastSelector } from '@/components/forms/gymnast-selector';
 import { APIService } from '@/lib/api';
-import { generateChoreographyName, getCountryFlag } from '@/lib/utils';
-import type { Gymnast, Choreography } from '@/types';
+import { 
+  generateChoreographyName, 
+  getCountryFlag, 
+  determineChoreographyType, 
+  getChoreographyTypeDisplayName,
+  getChoreographyTypeColor
+} from '@/lib/utils';
+import type { Gymnast, Choreography, ChoreographyType } from '@/types';
 import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 // Sample countries with AER gymnasts
@@ -36,13 +40,11 @@ const SAMPLE_COUNTRIES = [
 ];
 
 const GYMNAST_COUNTS = [1, 2, 3, 5, 8] as const;
-const CATEGORIES = ['YOUTH', 'JUNIOR', 'SENIOR'] as const;
 
 export default function RegisterPage() {
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedGymnasts, setSelectedGymnasts] = useState<Gymnast[]>([]);
   const [gymnastCount, setGymnastCount] = useState<1 | 2 | 3 | 5 | 8>(1);
-  const [selectedCategory, setSelectedCategory] = useState<'YOUTH' | 'JUNIOR' | 'SENIOR'>('SENIOR');
   const [routineDescription, setRoutineDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{
@@ -62,14 +64,25 @@ export default function RegisterPage() {
   // Determine category from oldest gymnast
   const determinedCategory = oldestAge <= 15 ? 'YOUTH' : oldestAge <= 17 ? 'JUNIOR' : 'SENIOR';
 
+  // Determine choreography type from gymnast count and gender composition
+  let determinedType: ChoreographyType | null = null;
+  if (selectedGymnasts.length === gymnastCount && selectedGymnasts.length > 0) {
+    try {
+      determinedType = determineChoreographyType(gymnastCount, selectedGymnasts);
+    } catch (error) {
+      console.error('Error determining choreography type:', error);
+    }
+  }
+
   // Check if form is valid
   const isFormValid = selectedCountry && 
     selectedGymnasts.length === gymnastCount && 
-    selectedGymnasts.length > 0;
+    selectedGymnasts.length > 0 &&
+    determinedType !== null;
 
   // Handle registration submission
   const handleSubmit = async () => {
-    if (!isFormValid) return;
+    if (!isFormValid || !determinedType) return;
 
     setSubmitting(true);
     setRegistrationResult(null);
@@ -78,6 +91,7 @@ export default function RegisterPage() {
       const choreographyData: Omit<Choreography, 'id' | 'registrationDate' | 'lastModified'> = {
         name: choreographyName,
         category: determinedCategory,
+        type: determinedType,
         countryCode: selectedCountry,
         selectedGymnasts,
         gymnastCount,
@@ -98,11 +112,12 @@ export default function RegisterPage() {
       setSelectedGymnasts([]);
       setRoutineDescription('');
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to register choreography. Please try again.';
       setRegistrationResult({
         success: false,
-        message: error.message || 'Failed to register choreography. Please try again.',
+        message: errorMessage,
       });
     } finally {
       setSubmitting(false);
@@ -190,7 +205,7 @@ export default function RegisterPage() {
                           {count === 2 && ' (Mixed Pair)'}
                           {count === 3 && ' (Trio)'}
                           {count === 5 && ' (Group)'}
-                          {count === 8 && ' (Platform)'}
+                          {count === 8 && ' (Dance)'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -206,6 +221,34 @@ export default function RegisterPage() {
                     {selectedGymnasts.length > 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Based on oldest gymnast age: {oldestAge}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="type">Type (Auto-determined)</Label>
+                  <div className="mt-2">
+                    {determinedType ? (
+                      <Badge 
+                        variant="outline" 
+                        className={`text-sm ${getChoreographyTypeColor(determinedType)}`}
+                      >
+                        {getChoreographyTypeDisplayName(determinedType)}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-sm">
+                        {selectedGymnasts.length === 0 
+                          ? 'Select gymnasts first'
+                          : selectedGymnasts.length !== gymnastCount
+                          ? `Select ${gymnastCount} gymnast${gymnastCount > 1 ? 's' : ''}`
+                          : 'Determining type...'}
+                      </Badge>
+                    )}
+                    {determinedType && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Based on {gymnastCount} gymnast{gymnastCount > 1 ? 's' : ''} 
+                        {gymnastCount === 1 && selectedGymnasts.length > 0 && ` (${selectedGymnasts[0].gender.toLowerCase()})`}
                       </p>
                     )}
                   </div>

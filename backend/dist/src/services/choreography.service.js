@@ -19,24 +19,35 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const choreography_entity_1 = require("../entities/choreography.entity");
 const gymnast_entity_1 = require("../entities/gymnast.entity");
+const tournament_entity_1 = require("../entities/tournament.entity");
 const fig_api_service_1 = require("./fig-api.service");
+const business_rules_factory_1 = require("../utils/business-rules/business-rules-factory");
 let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
-    constructor(choreographyRepository, gymnastRepository, figApiService) {
+    constructor(choreographyRepository, gymnastRepository, tournamentRepository, figApiService, businessRulesFactory) {
         this.choreographyRepository = choreographyRepository;
         this.gymnastRepository = gymnastRepository;
+        this.tournamentRepository = tournamentRepository;
         this.figApiService = figApiService;
+        this.businessRulesFactory = businessRulesFactory;
         this.logger = new common_1.Logger(ChoreographyService_1.name);
     }
     async create(createChoreographyDto) {
-        await this.validateBusinessRules(createChoreographyDto);
+        const tournament = await this.tournamentRepository.findOne({
+            where: { id: createChoreographyDto.tournamentId }
+        });
+        if (!tournament) {
+            throw new common_1.NotFoundException(`Tournament with ID ${createChoreographyDto.tournamentId} not found`);
+        }
+        await this.validateBusinessRules(createChoreographyDto, tournament);
         const gymnasts = await this.fetchAndValidateGymnasts(createChoreographyDto.gymnastFigIds);
         const savedGymnasts = await this.upsertGymnasts(gymnasts);
         const choreography = this.choreographyRepository.create({
             ...createChoreographyDto,
+            tournament,
             gymnasts: savedGymnasts,
         });
         const result = await this.choreographyRepository.save(choreography);
-        this.logger.log(`Created choreography: ${result.name} for country: ${result.country}`);
+        this.logger.log(`Created choreography: ${result.name} for country: ${result.country} in tournament: ${tournament.name}`);
         return result;
     }
     async findAll() {
@@ -65,10 +76,12 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
     async update(id, updateChoreographyDto) {
         const choreography = await this.findOne(id);
         if (updateChoreographyDto.gymnastFigIds) {
+            const tournament = choreography.tournament;
             await this.validateBusinessRules({
                 ...choreography,
                 ...updateChoreographyDto,
-            });
+                tournamentId: tournament.id,
+            }, tournament);
             const gymnasts = await this.fetchAndValidateGymnasts(updateChoreographyDto.gymnastFigIds);
             const savedGymnasts = await this.upsertGymnasts(gymnasts);
             choreography.gymnasts = savedGymnasts;
@@ -83,25 +96,34 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         await this.choreographyRepository.remove(choreography);
         this.logger.log(`Deleted choreography: ${choreography.name}`);
     }
-    async validateBusinessRules(dto) {
+    async validateBusinessRules(dto, tournament) {
+        const strategy = this.businessRulesFactory.getStrategy(tournament.type);
         const existingCount = await this.choreographyRepository.count({
             where: {
                 country: dto.country.toUpperCase(),
                 category: dto.category,
+                tournament: { id: tournament.id },
             },
         });
-        if (existingCount >= 4) {
-            throw new common_1.BadRequestException(`Maximum 4 choreographies allowed per country per category. ${dto.country} already has ${existingCount} in ${dto.category} category.`);
-        }
+        const request = {
+            country: dto.country,
+            category: dto.category,
+            type: dto.type,
+            gymnastCount: dto.gymnastCount,
+            gymnastFigIds: dto.gymnastFigIds,
+            tournamentId: dto.tournamentId,
+        };
+        await strategy.validateChoreographyCreation(request, existingCount);
         this.validateChoreographyType(dto.gymnastCount, dto.type);
     }
     validateChoreographyType(gymnastCount, type) {
         const validCombinations = {
-            [choreography_entity_1.ChoreographyType.INDIVIDUAL]: [1],
-            [choreography_entity_1.ChoreographyType.MIXED_PAIR]: [2],
+            [choreography_entity_1.ChoreographyType.MIND]: [1],
+            [choreography_entity_1.ChoreographyType.WIND]: [1],
+            [choreography_entity_1.ChoreographyType.MXP]: [2],
             [choreography_entity_1.ChoreographyType.TRIO]: [3],
-            [choreography_entity_1.ChoreographyType.GROUP]: [5],
-            [choreography_entity_1.ChoreographyType.PLATFORM]: [8],
+            [choreography_entity_1.ChoreographyType.GRP]: [5],
+            [choreography_entity_1.ChoreographyType.DNCE]: [8],
         };
         if (!validCombinations[type].includes(gymnastCount)) {
             throw new common_1.BadRequestException(`Invalid gymnast count ${gymnastCount} for choreography type ${type}`);
@@ -160,8 +182,11 @@ exports.ChoreographyService = ChoreographyService = ChoreographyService_1 = __de
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(choreography_entity_1.Choreography)),
     __param(1, (0, typeorm_1.InjectRepository)(gymnast_entity_1.Gymnast)),
+    __param(2, (0, typeorm_1.InjectRepository)(tournament_entity_1.Tournament)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
-        fig_api_service_1.FigApiService])
+        typeorm_2.Repository,
+        fig_api_service_1.FigApiService,
+        business_rules_factory_1.BusinessRulesFactory])
 ], ChoreographyService);
 //# sourceMappingURL=choreography.service.js.map

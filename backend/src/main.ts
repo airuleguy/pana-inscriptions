@@ -3,6 +3,8 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { seedTournaments } from './utils/seed-tournaments';
+import { DataSource } from 'typeorm';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -46,6 +48,14 @@ async function bootstrap() {
     customSiteTitle: 'Tournament Registration API',
     customCss: '.swagger-ui .topbar { display: none }',
   });
+
+  // Seed tournaments on startup
+  try {
+    const dataSource = app.get(DataSource);
+    await seedTournaments(dataSource);
+  } catch (error) {
+    console.error('Failed to seed tournaments:', error);
+  }
 
   // Start server
   const port = configService.get<number>('PORT') || 3001;

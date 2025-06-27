@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Gymnast, GYMNAST_COUNTS } from "@/types"
+import { Gymnast, GYMNAST_COUNTS, ChoreographyType } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -142,6 +142,75 @@ export function getCategoryColor(category: 'YOUTH' | 'JUNIOR' | 'SENIOR'): strin
       return 'bg-purple-100 text-purple-800 border-purple-200';
     default:
       return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+}
+
+/**
+ * Get choreography type color for UI
+ */
+export function getChoreographyTypeColor(type: ChoreographyType): string {
+  switch (type) {
+    case 'MIND':
+      return 'bg-blue-100 text-blue-800 border-blue-200';
+    case 'WIND':
+      return 'bg-pink-100 text-pink-800 border-pink-200';
+    case 'MXP':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    case 'TRIO':
+      return 'bg-green-100 text-green-800 border-green-200';
+    case 'GRP':
+      return 'bg-orange-100 text-orange-800 border-orange-200';
+    case 'DNCE':
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+}
+
+/**
+ * Get choreography type display name
+ */
+export function getChoreographyTypeDisplayName(type: ChoreographyType): string {
+  switch (type) {
+    case 'MIND':
+      return "Men's Individual";
+    case 'WIND':
+      return "Women's Individual";
+    case 'MXP':
+      return "Mixed Pair";
+    case 'TRIO':
+      return "Trio 3";
+    case 'GRP':
+      return "Group 5";
+    case 'DNCE':
+      return "Dance 8";
+    default:
+      return type;
+  }
+}
+
+/**
+ * Determine choreography type from gymnast count and gender composition
+ */
+export function determineChoreographyType(
+  gymnastCount: number,
+  gymnasts: Array<{ gender: 'MALE' | 'FEMALE' }>
+): ChoreographyType {
+  switch (gymnastCount) {
+    case 1:
+      // For individual, check gender
+      const gymnast = gymnasts[0];
+      return gymnast.gender === 'MALE' ? 'MIND' : 'WIND';
+    case 2:
+      return 'MXP';
+    case 3:
+      return 'TRIO';
+    case 5:
+      return 'GRP';
+    case 8:
+      return 'DNCE';
+    default:
+      throw new Error(`Invalid gymnast count: ${gymnastCount}`);
   }
 }
 

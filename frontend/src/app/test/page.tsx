@@ -10,8 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { GymnastSelector } from '@/components/forms/gymnast-selector';
 import { APIService } from '@/lib/api';
-import { generateChoreographyName, getCountryFlag } from '@/lib/utils';
-import type { Gymnast } from '@/types';
+import { 
+  generateChoreographyName, 
+  getCountryFlag, 
+  determineChoreographyType, 
+  getChoreographyTypeDisplayName,
+  getChoreographyTypeColor
+} from '@/lib/utils';
+import type { Gymnast, ChoreographyType } from '@/types';
 import { Database, Users, Trophy, RefreshCw } from 'lucide-react';
 
 // Sample countries with AER gymnasts (from the FIG data)
@@ -76,6 +82,24 @@ export default function TestPage() {
 
   // Generate choreography name
   const choreographyName = generateChoreographyName(selectedGymnasts);
+
+  // Determine choreography type from gymnast count and gender composition
+  let determinedType: ChoreographyType | null = null;
+  if (selectedGymnasts.length === gymnastCount && selectedGymnasts.length > 0) {
+    try {
+      determinedType = determineChoreographyType(gymnastCount, selectedGymnasts);
+    } catch (error) {
+      console.error('Error determining choreography type:', error);
+    }
+  }
+
+  // Get oldest gymnast age for category
+  const oldestAge = selectedGymnasts.length > 0 
+    ? Math.max(...selectedGymnasts.map(g => g.age))
+    : 0;
+
+  // Determine category from oldest gymnast
+  const determinedCategory = oldestAge <= 15 ? 'YOUTH' : oldestAge <= 17 ? 'JUNIOR' : 'SENIOR';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -163,7 +187,12 @@ export default function TestPage() {
                     <SelectContent>
                       {GYMNAST_COUNTS.map(count => (
                         <SelectItem key={count} value={count.toString()}>
-                          {count} gymnast{count > 1 ? 's' : ''}
+                          {count} gymnast{count > 1 ? 's' : ''} 
+                          {count === 1 && ' (Individual)'} 
+                          {count === 2 && ' (Mixed Pair)'} 
+                          {count === 3 && ' (Trio)'} 
+                          {count === 5 && ' (Group)'} 
+                          {count === 8 && ' (Dance)'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -213,6 +242,44 @@ export default function TestPage() {
                     )}
                   </div>
 
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium">Auto-determined Category:</span>
+                    <Badge variant="outline" className="text-sm">
+                      {selectedGymnasts.length > 0 ? determinedCategory : 'Select gymnasts first'}
+                    </Badge>
+                    {selectedGymnasts.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Based on oldest gymnast age: {oldestAge}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className="text-sm font-medium">Auto-determined Type:</span>
+                    {determinedType ? (
+                      <Badge 
+                        variant="outline" 
+                        className={`text-sm ${getChoreographyTypeColor(determinedType)}`}
+                      >
+                        {getChoreographyTypeDisplayName(determinedType)}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-sm">
+                        {selectedGymnasts.length === 0 
+                          ? 'Select gymnasts first'
+                          : selectedGymnasts.length !== gymnastCount
+                          ? `Select ${gymnastCount} gymnast${gymnastCount > 1 ? 's' : ''}`
+                          : 'Determining type...'}
+                      </Badge>
+                    )}
+                    {determinedType && (
+                      <p className="text-xs text-muted-foreground">
+                        Based on {gymnastCount} gymnast{gymnastCount > 1 ? 's' : ''} 
+                        {gymnastCount === 1 && selectedGymnasts.length > 0 && ` (${selectedGymnasts[0].gender.toLowerCase()})`}
+                      </p>
+                    )}
+                  </div>
+
                   <Separator />
 
                   <div className="space-y-2">
@@ -220,9 +287,14 @@ export default function TestPage() {
                     {selectedGymnasts.map((gymnast, index) => (
                       <div key={gymnast.id} className="flex items-center justify-between text-sm">
                         <span>{index + 1}. {gymnast.fullName}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {gymnast.category}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {gymnast.gender}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {gymnast.category}
+                          </Badge>
+                        </div>
                       </div>
                     ))}
                   </div>

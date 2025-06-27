@@ -5,6 +5,8 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const seed_tournaments_1 = require("./utils/seed-tournaments");
+const typeorm_1 = require("typeorm");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const logger = new common_1.Logger('Bootstrap');
@@ -38,6 +40,13 @@ async function bootstrap() {
         customSiteTitle: 'Tournament Registration API',
         customCss: '.swagger-ui .topbar { display: none }',
     });
+    try {
+        const dataSource = app.get(typeorm_1.DataSource);
+        await (0, seed_tournaments_1.seedTournaments)(dataSource);
+    }
+    catch (error) {
+        console.error('Failed to seed tournaments:', error);
+    }
     const port = configService.get('PORT') || 3001;
     await app.listen(port);
     logger.log(`🚀 Application running on: http://localhost:${port}`);

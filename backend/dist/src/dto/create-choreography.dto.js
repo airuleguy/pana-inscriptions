@@ -96,4 +96,12 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateChoreographyDto.prototype, "notes", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Tournament ID for the choreography',
+        example: '123e4567-e89b-12d3-a456-426614174000'
+    }),
+    (0, class_validator_1.IsUUID)(),
+    __metadata("design:type", String)
+], CreateChoreographyDto.prototype, "tournamentId", void 0);
 //# sourceMappingURL=create-choreography.dto.js.map

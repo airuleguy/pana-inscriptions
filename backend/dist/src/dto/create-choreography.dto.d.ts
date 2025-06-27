@@ -8,4 +8,5 @@ export declare class CreateChoreographyDto {
     oldestGymnastAge: number;
     gymnastFigIds: string[];
     notes?: string;
+    tournamentId: string;
 }

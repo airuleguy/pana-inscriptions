@@ -43,11 +43,31 @@ export interface Representative {
   organization?: string;
 }
 
+export type ChoreographyType = 'MIND' | 'WIND' | 'MXP' | 'TRIO' | 'GRP' | 'DNCE';
+export type TournamentType = 'CAMPEONATO_PANAMERICANO' | 'COPA_PANAMERICANA';
+
+export interface Tournament {
+  id: string;
+  name: string;
+  shortName: string;
+  type: TournamentType;
+  description?: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  isActive: boolean;
+  choreographies?: Choreography[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Choreography {
   id: string;
   name: string; // Auto-generated from gymnast surnames
   category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  type: ChoreographyType; // Auto-determined from gymnast count and gender
   countryCode: string;
+  tournament: Tournament;
   selectedGymnasts: Gymnast[];
   gymnastCount: 1 | 2 | 3 | 5 | 8;
   musicFile?: File;
@@ -62,7 +82,9 @@ export interface Choreography {
 
 export interface ChoreographyFormData {
   category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  type: ChoreographyType;
   gymnastCount: 1 | 2 | 3 | 5 | 8;
+  tournamentId: string;
   selectedGymnasts: Gymnast[];
   musicFile?: File;
   routineDescription?: string;
@@ -112,16 +134,49 @@ export interface AuthUser {
 export const GYMNAST_COUNTS = [1, 2, 3, 5, 8] as const;
 export const CATEGORIES = ['YOUTH', 'JUNIOR', 'SENIOR'] as const;
 export const CHOREOGRAPHY_STATUS = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;
+export const TOURNAMENT_TYPES = ['CAMPEONATO_PANAMERICANO', 'COPA_PANAMERICANA'] as const;
 
 // Age limits for categories (based on FIG rules)
 export const AGE_LIMITS = {
   YOUTH: { min: 0, max: 14 },
   JUNIOR: { min: 15, max: 17 },
-  SENIOR: { min: 18, max: 100 }
+  SENIOR: { min: 18, max: 100   }
 } as const;
 
-// Maximum choreographies per country per category
-export const MAX_CHOREOGRAPHIES_PER_CATEGORY = 4;
+// Tournament type information
+export const TOURNAMENT_TYPE_INFO = {
+  CAMPEONATO_PANAMERICANO: { 
+    name: "Campeonato Panamericano de Gimnasia Aeróbica",
+    shortName: "Campeonato Panamericano",
+    maxChoreographiesPerCategory: 2,
+    description: "Premier Pan-American championship with strict eligibility"
+  },
+  COPA_PANAMERICANA: { 
+    name: "Copa Panamericana de Gimnasia Aeróbica",
+    shortName: "Copa Panamericana", 
+    maxChoreographiesPerCategory: 4,
+    description: "Developmental competition open to Pan-American and guest countries"
+  }
+} as const;
+
+// Maximum choreographies per country per category (varies by tournament)
+export const MAX_CHOREOGRAPHIES_PER_CATEGORY = {
+  CAMPEONATO_PANAMERICANO: 2,
+  COPA_PANAMERICANA: 4,
+} as const;
+
+// Choreography types - updated to match backend enum
+export const CHOREOGRAPHY_TYPES = ['MIND', 'WIND', 'MXP', 'TRIO', 'GRP', 'DNCE'] as const;
+
+// Choreography type information - updated to match backend
+export const CHOREOGRAPHY_TYPE_INFO = {
+  MIND: { name: "Men's Individual", count: 1 },
+  WIND: { name: "Women's Individual", count: 1 },
+  MXP: { name: "Mixed Pair", count: 2 },
+  TRIO: { name: "Trio 3", count: 3 },
+  GRP: { name: "Group 5", count: 5 },
+  DNCE: { name: "Dance 8", count: 8 }
+} as const;
 
 // Cache configuration
 export const CACHE_CONFIG = {

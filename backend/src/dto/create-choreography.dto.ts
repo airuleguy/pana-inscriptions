@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsArray, IsOptional, IsInt, Min, Max, ArrayMinSize, ArrayMaxSize } from 'class-validator';
+import { IsString, IsEnum, IsArray, IsOptional, IsInt, Min, Max, ArrayMinSize, ArrayMaxSize, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ChoreographyCategory, ChoreographyType } from '../entities/choreography.entity';
 
@@ -74,4 +74,11 @@ export class CreateChoreographyDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiProperty({ 
+    description: 'Tournament ID for the choreography',
+    example: '123e4567-e89b-12d3-a456-426614174000'
+  })
+  @IsUUID()
+  tournamentId: string;
 } 

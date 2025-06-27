@@ -3,9 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Choreography, ChoreographyCategory, ChoreographyType } from '../entities/choreography.entity';
 import { Gymnast } from '../entities/gymnast.entity';
+import { Tournament } from '../entities/tournament.entity';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
+import { BusinessRulesFactory } from '../utils/business-rules/business-rules-factory';
+import { CreateChoreographyRequest } from '../utils/business-rules/base-business-rules.interface';
 
 @Injectable()
 export class ChoreographyService {
@@ -16,12 +19,24 @@ export class ChoreographyService {
     private choreographyRepository: Repository<Choreography>,
     @InjectRepository(Gymnast)
     private gymnastRepository: Repository<Gymnast>,
+    @InjectRepository(Tournament)
+    private tournamentRepository: Repository<Tournament>,
     private figApiService: FigApiService,
+    private businessRulesFactory: BusinessRulesFactory,
   ) {}
 
   async create(createChoreographyDto: CreateChoreographyDto): Promise<Choreography> {
-    // Validate business rules
-    await this.validateBusinessRules(createChoreographyDto);
+    // Get and validate tournament
+    const tournament = await this.tournamentRepository.findOne({
+      where: { id: createChoreographyDto.tournamentId }
+    });
+
+    if (!tournament) {
+      throw new NotFoundException(`Tournament with ID ${createChoreographyDto.tournamentId} not found`);
+    }
+
+    // Validate business rules using strategy pattern
+    await this.validateBusinessRules(createChoreographyDto, tournament);
 
     // Fetch and validate gymnasts from FIG API
     const gymnasts = await this.fetchAndValidateGymnasts(createChoreographyDto.gymnastFigIds);
@@ -32,11 +47,12 @@ export class ChoreographyService {
     // Create choreography
     const choreography = this.choreographyRepository.create({
       ...createChoreographyDto,
+      tournament,
       gymnasts: savedGymnasts,
     });
 
     const result = await this.choreographyRepository.save(choreography);
-    this.logger.log(`Created choreography: ${result.name} for country: ${result.country}`);
+    this.logger.log(`Created choreography: ${result.name} for country: ${result.country} in tournament: ${tournament.name}`);
     
     return result;
   }
@@ -74,10 +90,12 @@ export class ChoreographyService {
 
     // If gymnasts are being updated, validate them
     if (updateChoreographyDto.gymnastFigIds) {
+      const tournament = choreography.tournament;
       await this.validateBusinessRules({
         ...choreography,
         ...updateChoreographyDto,
-      } as CreateChoreographyDto);
+        tournamentId: tournament.id,
+      } as CreateChoreographyDto, tournament);
 
       const gymnasts = await this.fetchAndValidateGymnasts(updateChoreographyDto.gymnastFigIds);
       const savedGymnasts = await this.upsertGymnasts(gymnasts);
@@ -99,20 +117,31 @@ export class ChoreographyService {
     this.logger.log(`Deleted choreography: ${choreography.name}`);
   }
 
-  private async validateBusinessRules(dto: CreateChoreographyDto): Promise<void> {
-    // Check choreography limit per country per category (max 4)
+  private async validateBusinessRules(dto: CreateChoreographyDto, tournament: Tournament): Promise<void> {
+    // Get the appropriate business rules strategy for this tournament
+    const strategy = this.businessRulesFactory.getStrategy(tournament.type);
+
+    // Count existing choreographies for this country, category, and tournament
     const existingCount = await this.choreographyRepository.count({
       where: {
         country: dto.country.toUpperCase(),
         category: dto.category,
+        tournament: { id: tournament.id },
       },
     });
 
-    if (existingCount >= 4) {
-      throw new BadRequestException(
-        `Maximum 4 choreographies allowed per country per category. ${dto.country} already has ${existingCount} in ${dto.category} category.`
-      );
-    }
+    // Create the request object for strategy validation
+    const request: CreateChoreographyRequest = {
+      country: dto.country,
+      category: dto.category,
+      type: dto.type,
+      gymnastCount: dto.gymnastCount,
+      gymnastFigIds: dto.gymnastFigIds,
+      tournamentId: dto.tournamentId,
+    };
+
+    // Apply tournament-specific business rules
+    await strategy.validateChoreographyCreation(request, existingCount);
 
     // Validate gymnast count matches choreography type
     this.validateChoreographyType(dto.gymnastCount, dto.type);
@@ -120,11 +149,12 @@ export class ChoreographyService {
 
   private validateChoreographyType(gymnastCount: number, type: ChoreographyType): void {
     const validCombinations = {
-      [ChoreographyType.INDIVIDUAL]: [1],
-      [ChoreographyType.MIXED_PAIR]: [2],
+      [ChoreographyType.MIND]: [1],
+      [ChoreographyType.WIND]: [1],
+      [ChoreographyType.MXP]: [2],
       [ChoreographyType.TRIO]: [3],
-      [ChoreographyType.GROUP]: [5],
-      [ChoreographyType.PLATFORM]: [8],
+      [ChoreographyType.GRP]: [5],
+      [ChoreographyType.DNCE]: [8],
     };
 
     if (!validCombinations[type].includes(gymnastCount)) {

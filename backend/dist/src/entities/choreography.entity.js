@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Choreography = exports.ChoreographyType = exports.ChoreographyCategory = void 0;
 const typeorm_1 = require("typeorm");
 const gymnast_entity_1 = require("./gymnast.entity");
+const tournament_entity_1 = require("./tournament.entity");
 var ChoreographyCategory;
 (function (ChoreographyCategory) {
     ChoreographyCategory["YOUTH"] = "YOUTH";
@@ -20,11 +21,12 @@ var ChoreographyCategory;
 })(ChoreographyCategory || (exports.ChoreographyCategory = ChoreographyCategory = {}));
 var ChoreographyType;
 (function (ChoreographyType) {
-    ChoreographyType["INDIVIDUAL"] = "Individual";
-    ChoreographyType["MIXED_PAIR"] = "Mixed Pair";
-    ChoreographyType["TRIO"] = "Trio";
-    ChoreographyType["GROUP"] = "Group";
-    ChoreographyType["PLATFORM"] = "Platform";
+    ChoreographyType["MIND"] = "MIND";
+    ChoreographyType["WIND"] = "WIND";
+    ChoreographyType["MXP"] = "MXP";
+    ChoreographyType["TRIO"] = "TRIO";
+    ChoreographyType["GRP"] = "GRP";
+    ChoreographyType["DNCE"] = "DNCE";
 })(ChoreographyType || (exports.ChoreographyType = ChoreographyType = {}));
 let Choreography = class Choreography {
 };
@@ -67,6 +69,14 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Choreography.prototype, "notes", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => tournament_entity_1.Tournament, tournament => tournament.choreographies, {
+        nullable: false,
+        eager: true
+    }),
+    (0, typeorm_1.JoinColumn)({ name: 'tournament_id' }),
+    __metadata("design:type", tournament_entity_1.Tournament)
+], Choreography.prototype, "tournament", void 0);
 __decorate([
     (0, typeorm_1.ManyToMany)(() => gymnast_entity_1.Gymnast, gymnast => gymnast.choreographies, {
         cascade: true,

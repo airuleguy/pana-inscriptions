@@ -1,15 +1,17 @@
 import { Gymnast } from './gymnast.entity';
+import { Tournament } from './tournament.entity';
 export declare enum ChoreographyCategory {
     YOUTH = "YOUTH",
     JUNIOR = "JUNIOR",
     SENIOR = "SENIOR"
 }
 export declare enum ChoreographyType {
-    INDIVIDUAL = "Individual",
-    MIXED_PAIR = "Mixed Pair",
-    TRIO = "Trio",
-    GROUP = "Group",
-    PLATFORM = "Platform"
+    MIND = "MIND",
+    WIND = "WIND",
+    MXP = "MXP",
+    TRIO = "TRIO",
+    GRP = "GRP",
+    DNCE = "DNCE"
 }
 export declare class Choreography {
     id: string;
@@ -20,6 +22,7 @@ export declare class Choreography {
     gymnastCount: number;
     oldestGymnastAge: number;
     notes: string;
+    tournament: Tournament;
     gymnasts: Gymnast[];
     createdAt: Date;
     updatedAt: Date;

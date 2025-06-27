@@ -5,11 +5,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { DatabaseConfig } from './config/database.config';
 import { Gymnast } from './entities/gymnast.entity';
 import { Choreography } from './entities/choreography.entity';
+import { Tournament } from './entities/tournament.entity';
 import { ChoreographyController } from './controllers/choreography.controller';
 import { GymnastController } from './controllers/gymnast.controller';
+import { TournamentController } from './controllers/tournament.controller';
 import { HealthController } from './modules/health/health.controller';
 import { ChoreographyService } from './services/choreography.service';
+import { TournamentService } from './services/tournament.service';
 import { FigApiService } from './services/fig-api.service';
+import { BusinessRulesFactory } from './utils/business-rules/business-rules-factory';
 
 @Module({
   imports: [
@@ -26,7 +30,7 @@ import { FigApiService } from './services/fig-api.service';
     }),
     
     // Entity repositories
-    TypeOrmModule.forFeature([Gymnast, Choreography]),
+    TypeOrmModule.forFeature([Gymnast, Choreography, Tournament]),
     
     // Cache for FIG API
     CacheModule.register({
@@ -38,11 +42,14 @@ import { FigApiService } from './services/fig-api.service';
   controllers: [
     ChoreographyController,
     GymnastController,
+    TournamentController,
     HealthController,
   ],
   providers: [
     ChoreographyService,
+    TournamentService,
     FigApiService,
+    BusinessRulesFactory,
   ],
 })
 export class AppModule {} 
