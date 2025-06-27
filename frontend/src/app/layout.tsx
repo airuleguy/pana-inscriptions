@@ -11,7 +11,11 @@ export const metadata: Metadata = {
   keywords: ["gymnastics", "aerobic", "panamerican", "championship", "registration", "choreography"],
   authors: [{ name: "Tournament Organization" }],
   robots: "noindex, nofollow", // Since this is a private tournament system
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#667eea",
 };
 

@@ -31,7 +31,7 @@ services:
       DATABASE_URL: postgresql://pana-inscriptions-rw:SuperSecretOMG@database:5432/pana-inscriptions-db
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 3001
-      FIG_API_URL: https://www.gymnastics.sport/api/athletes.php
+      FIG_API_URL: https://www.gymnastics.sport/api/athletes.php?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=
     ports:
       - "3001:3001"
     volumes:
@@ -56,7 +56,7 @@ services:
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_FIG_API_URL: https://www.gymnastics.sport/api/athletes.php
+      NEXT_PUBLIC_FIG_API_URL: https://www.gymnastics.sport/api/athletes.php?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=
     ports:
       - "3000:3000"
     volumes:

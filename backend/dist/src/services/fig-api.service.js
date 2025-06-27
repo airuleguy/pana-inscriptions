@@ -25,7 +25,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
         this.logger = new common_1.Logger(FigApiService_1.name);
         this.CACHE_KEY = 'fig-gymnasts';
         this.CACHE_TTL = 3600;
-        this.figApiUrl = this.configService.get('FIG_API_URL') || 'https://www.gymnastics.sport/api/athletes.php';
+        this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
     }
     async getGymnasts() {
         try {
@@ -35,25 +35,22 @@ let FigApiService = FigApiService_1 = class FigApiService {
                 return cachedData;
             }
             this.logger.log('Fetching gymnast data from FIG API');
-            const response = await axios_1.default.get(this.figApiUrl, {
-                params: {
-                    discipline: 'AER',
-                    format: 'json',
-                },
-                timeout: 10000,
+            const apiUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=`;
+            const response = await axios_1.default.get(apiUrl, {
+                timeout: 30000,
             });
-            if (response.data.status !== 'success') {
-                throw new common_1.HttpException('FIG API returned error status', common_1.HttpStatus.BAD_GATEWAY);
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
             }
-            const gymnasts = response.data.data.map(athlete => ({
-                figId: athlete.id,
-                firstName: athlete.first_name,
-                lastName: athlete.last_name,
-                gender: athlete.gender,
+            const gymnasts = response.data.map(athlete => ({
+                figId: athlete.gymnastid,
+                firstName: athlete.preferredfirstname,
+                lastName: athlete.preferredlastname,
+                gender: athlete.gender === 'male' ? 'M' : 'F',
                 country: athlete.country,
-                birthDate: athlete.birth_date,
+                birthDate: athlete.birth,
                 discipline: athlete.discipline,
-                isLicensed: athlete.license_status === 'active',
+                isLicensed: true,
             }));
             await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
             this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API`);
@@ -71,8 +68,47 @@ let FigApiService = FigApiService_1 = class FigApiService {
         }
     }
     async getGymnastsByCountry(country) {
-        const allGymnasts = await this.getGymnasts();
-        return allGymnasts.filter(gymnast => gymnast.country.toLowerCase() === country.toLowerCase() && gymnast.isLicensed);
+        try {
+            const cacheKey = `${this.CACHE_KEY}-${country.toUpperCase()}`;
+            const cachedData = await this.cacheManager.get(cacheKey);
+            if (cachedData) {
+                this.logger.log(`Returning cached FIG gymnast data for country: ${country}`);
+                return cachedData;
+            }
+            this.logger.log(`Fetching gymnast data from FIG API for country: ${country}`);
+            const countrySpecificUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&idlicense=&lastname=`;
+            const response = await axios_1.default.get(countrySpecificUrl, {
+                timeout: 30000,
+            });
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
+            }
+            const gymnasts = response.data.map(athlete => ({
+                figId: athlete.gymnastid,
+                firstName: athlete.preferredfirstname,
+                lastName: athlete.preferredlastname,
+                gender: athlete.gender === 'male' ? 'M' : 'F',
+                country: athlete.country,
+                birthDate: athlete.birth,
+                discipline: athlete.discipline,
+                isLicensed: true,
+            }));
+            await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
+            this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API for country: ${country}`);
+            return gymnasts;
+        }
+        catch (error) {
+            this.logger.error(`Failed to fetch gymnasts from FIG API for country: ${country}`, error);
+            if (error.response?.status === 429) {
+                throw new common_1.HttpException('FIG API rate limit exceeded', common_1.HttpStatus.TOO_MANY_REQUESTS);
+            }
+            if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+                throw new common_1.HttpException('FIG API timeout', common_1.HttpStatus.GATEWAY_TIMEOUT);
+            }
+            this.logger.log(`Falling back to filtering all gymnasts for country: ${country}`);
+            const allGymnasts = await this.getGymnasts();
+            return allGymnasts.filter(gymnast => gymnast.country.toLowerCase() === country.toLowerCase());
+        }
     }
     async getGymnastByFigId(figId) {
         const allGymnasts = await this.getGymnasts();
