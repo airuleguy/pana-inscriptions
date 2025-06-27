@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
-import { databaseConfig } from './config/database.config';
+import { DatabaseConfig } from './config/database.config';
 import { Gymnast } from './entities/gymnast.entity';
 import { Choreography } from './entities/choreography.entity';
 import { ChoreographyController } from './controllers/choreography.controller';
@@ -22,8 +22,7 @@ import { FigApiService } from './services/fig-api.service';
     // Database
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: databaseConfig,
-      inject: [ConfigService],
+      useClass: DatabaseConfig,
     }),
     
     // Entity repositories

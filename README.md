@@ -59,13 +59,26 @@ docker-compose up database -d
 cd backend
 npm install
 
-# Create .env file with database configuration
-cat > .env << EOF
-DATABASE_URL=postgresql://pana-inscriptions-rw:SuperSecretOMG@localhost:5432/pana_inscriptions
+# Create .env.local file with database configuration
+cat > .env.local << EOF
+# Local Development Environment Configuration
 NODE_ENV=development
+
+# Database Configuration (individual variables for AWS Lightsail compatibility)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=pana-inscriptions-rw
+POSTGRES_PASSWORD=SuperSecretOMG
+POSTGRES_DB=pana-inscriptions-db
+
+# Security Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+
+# Server Configuration
 PORT=3001
-FIG_API_URL=https://www.gymnastics.sport/api/athletes.php
-FRONTEND_URL=http://localhost:3000
+
+# External APIs
+FIG_API_URL=https://www.gymnastics.sport/api/athletes.php?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=
 EOF
 
 # Start backend server
@@ -158,6 +171,28 @@ yarn start:dev    # Start development server
 yarn test         # Run tests
 yarn test:cov     # Test coverage
 ```
+
+## 🌐 Environment Variables
+
+The system uses individual environment variables for database configuration, making it compatible with AWS Lightsail and other cloud providers:
+
+### Backend Environment Variables
+- `NODE_ENV`: Application environment (development/production)
+- `PORT`: Backend server port (default: 3001)
+- `POSTGRES_HOST`: PostgreSQL database host
+- `POSTGRES_PORT`: PostgreSQL database port (default: 5432)
+- `POSTGRES_USER`: PostgreSQL database username
+- `POSTGRES_PASSWORD`: PostgreSQL database password
+- `POSTGRES_DB`: PostgreSQL database name
+- `JWT_SECRET`: Secret key for JWT tokens
+- `FIG_API_URL`: URL for the FIG API
+
+### Frontend Environment Variables
+- `NEXT_PUBLIC_API_URL`: Backend API URL
+- `NEXT_PUBLIC_FIG_API_URL`: Frontend FIG API URL
+
+### AWS Lightsail Deployment
+For AWS Lightsail deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 📚 API Documentation
 

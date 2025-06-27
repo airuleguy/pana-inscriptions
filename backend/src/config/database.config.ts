@@ -1,15 +1,35 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Gymnast } from '../entities/gymnast.entity';
 import { Choreography } from '../entities/choreography.entity';
 
-export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => ({
-  type: 'postgres',
-  url: configService.get<string>('DATABASE_URL'),
-  entities: [Gymnast, Choreography],
-  synchronize: configService.get<string>('NODE_ENV') === 'development',
-  logging: configService.get<string>('NODE_ENV') === 'development',
-  ssl: configService.get<string>('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
-  retryAttempts: 3,
-  retryDelay: 3000,
-}); 
+@Injectable()
+export class DatabaseConfig implements TypeOrmOptionsFactory {
+  constructor(private configService: ConfigService) {}
+
+  createTypeOrmOptions(): TypeOrmModuleOptions {
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    
+    return {
+      type: 'postgres',
+      host: this.configService.get<string>('POSTGRES_HOST') || 'localhost',
+      port: this.configService.get<number>('POSTGRES_PORT') || 5432,
+      username: this.configService.get<string>('POSTGRES_USER'),
+      password: this.configService.get<string>('POSTGRES_PASSWORD'),
+      database: this.configService.get<string>('POSTGRES_DB'),
+      entities: [Gymnast, Choreography],
+      synchronize: !isProduction, // Only sync in development
+      logging: !isProduction,
+      ssl: isProduction ? { rejectUnauthorized: false } : false,
+      retryAttempts: 3,
+      retryDelay: 3000,
+    };
+  }
+}
+
+// Legacy function for backward compatibility
+export const databaseConfig = async (configService: ConfigService): Promise<TypeOrmModuleOptions> => {
+  const config = new DatabaseConfig(configService);
+  return config.createTypeOrmOptions();
+}; 

@@ -31,8 +31,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
-                useFactory: database_config_1.databaseConfig,
-                inject: [config_1.ConfigService],
+                useClass: database_config_1.DatabaseConfig,
             }),
             typeorm_1.TypeOrmModule.forFeature([gymnast_entity_1.Gymnast, choreography_entity_1.Choreography]),
             cache_manager_1.CacheModule.register({

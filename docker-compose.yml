@@ -28,7 +28,12 @@ services:
     container_name: pana-inscriptions-backend
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://pana-inscriptions-rw:SuperSecretOMG@database:5432/pana-inscriptions-db
+      # Database Configuration (individual variables for AWS Lightsail compatibility)
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: pana-inscriptions-rw
+      POSTGRES_PASSWORD: SuperSecretOMG
+      POSTGRES_DB: pana-inscriptions-db
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 3001
       FIG_API_URL: https://www.gymnastics.sport/api/athletes.php?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=
