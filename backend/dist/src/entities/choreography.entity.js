@@ -14,9 +14,9 @@ const typeorm_1 = require("typeorm");
 const gymnast_entity_1 = require("./gymnast.entity");
 var ChoreographyCategory;
 (function (ChoreographyCategory) {
-    ChoreographyCategory["YOUTH"] = "Youth";
-    ChoreographyCategory["JUNIOR"] = "Junior";
-    ChoreographyCategory["SENIOR"] = "Senior";
+    ChoreographyCategory["YOUTH"] = "YOUTH";
+    ChoreographyCategory["JUNIOR"] = "JUNIOR";
+    ChoreographyCategory["SENIOR"] = "SENIOR";
 })(ChoreographyCategory || (exports.ChoreographyCategory = ChoreographyCategory = {}));
 var ChoreographyType;
 (function (ChoreographyType) {

@@ -1,8 +1,8 @@
 import { Gymnast } from './gymnast.entity';
 export declare enum ChoreographyCategory {
-    YOUTH = "Youth",
-    JUNIOR = "Junior",
-    SENIOR = "Senior"
+    YOUTH = "YOUTH",
+    JUNIOR = "JUNIOR",
+    SENIOR = "SENIOR"
 }
 export declare enum ChoreographyType {
     INDIVIDUAL = "Individual",

@@ -2,9 +2,9 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Gymnast } from './gymnast.entity';
 
 export enum ChoreographyCategory {
-  YOUTH = 'Youth',
-  JUNIOR = 'Junior',
-  SENIOR = 'Senior'
+  YOUTH = 'YOUTH',
+  JUNIOR = 'JUNIOR',
+  SENIOR = 'SENIOR'
 }
 
 export enum ChoreographyType {

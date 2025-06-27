@@ -193,7 +193,7 @@ export class APIService {
     return {
       id: backend.id,
       name: backend.name,
-      category: backend.category,
+      category: backend.category as 'YOUTH' | 'JUNIOR' | 'SENIOR',
       countryCode: backend.country,
       selectedGymnasts: backend.gymnasts.map((fig: any) => this.transformFigToGymnast(fig)),
       gymnastCount: backend.gymnastCount,
