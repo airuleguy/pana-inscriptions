@@ -1,18 +1,32 @@
-# Frontend Dockerfile for Development
-FROM node:18-alpine
+# Multi-stage build for production optimization
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
 
-# Set working directory
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm install
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy source code
-COPY . .
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Expose port
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
+ENV PORT 3000
 
-# Start development server
-CMD ["npm", "run", "dev"] 
+CMD ["node", "server.js"] 

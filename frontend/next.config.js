@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   experimental: {
+    outputFileTracingRoot: undefined,
     turbo: {
       rules: {
         '*.svg': {
@@ -20,6 +22,10 @@ const nextConfig = {
         destination: 'http://localhost:3001/api/:path*', // Backend API
       },
     ];
+  },
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_FIG_API_URL: process.env.NEXT_PUBLIC_FIG_API_URL,
   },
 };
 

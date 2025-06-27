@@ -202,9 +202,9 @@ export function GymnastSelector({
                   Selected: {selectedGymnasts.length}/{maxSelection}
                 </span>
                 {choreographyName && (
-                  <Badge variant="outline" className="font-mono">
+                  <div className="font-mono text-xs bg-background border border-border px-2 py-1 rounded-md whitespace-normal break-all leading-relaxed max-w-48">
                     {choreographyName}
-                  </Badge>
+                  </div>
                 )}
               </div>
               

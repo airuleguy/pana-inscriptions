@@ -207,9 +207,9 @@ export default function TestPage() {
                       <span className="text-sm font-medium">Choreography Name:</span>
                     </div>
                     {choreographyName && (
-                      <Badge variant="outline" className="font-mono text-lg">
+                      <div className="font-mono text-sm bg-background border border-border px-2 py-1.5 rounded-md whitespace-normal break-all leading-relaxed">
                         {choreographyName}
-                      </Badge>
+                      </div>
                     )}
                   </div>
 

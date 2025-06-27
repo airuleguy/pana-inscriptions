@@ -215,9 +215,9 @@ export default function RegisterPage() {
                   <div>
                     <Label>Generated Name</Label>
                     <div className="mt-2">
-                      <Badge variant="default" className="font-mono text-sm">
+                      <div className="font-mono text-sm bg-primary text-primary-foreground px-2 py-1.5 rounded-md border whitespace-normal break-all leading-relaxed">
                         {choreographyName}
-                      </Badge>
+                      </div>
                     </div>
                   </div>
                 )}
