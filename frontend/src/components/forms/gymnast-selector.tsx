@@ -232,15 +232,17 @@ export function GymnastSelector({
       )}
 
       {/* Gymnast List */}
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
         {filteredGymnasts.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">
-                {searchQuery ? 'No gymnasts found matching your search.' : 'No gymnasts available for this country.'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="col-span-full">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  {searchQuery ? 'No gymnasts found matching your search.' : 'No gymnasts available for this country.'}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           filteredGymnasts.map(gymnast => {
             const isSelected = selectedGymnasts.some(g => g.id === gymnast.id);
@@ -257,37 +259,36 @@ export function GymnastSelector({
                 } ${isDisabled ? 'pointer-events-none' : ''}`}
                 onClick={() => !isDisabled && handleGymnastToggle(gymnast)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
+                <CardContent className="p-3">
+                  <div className="flex items-start space-x-3">
                     {isSelected ? (
-                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     ) : (
-                      <Circle className="h-5 w-5 text-muted-foreground" />
+                      <Circle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                     )}
                     
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarFallback className="text-xs">
                         {getInitials(gymnast.fullName)}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{gymnast.fullName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Age {gymnast.age} • {gymnast.gender} • Born {gymnast.dateOfBirth.getFullYear()}
+                      <div className="font-medium text-sm truncate mb-1">{gymnast.fullName}</div>
+                      <div className="text-xs text-muted-foreground mb-2">
+                        Age {gymnast.age} • {gymnast.gender} • {gymnast.dateOfBirth.getFullYear()}
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline"
-                        className={getCategoryColor(gymnast.category)}
-                      >
-                        {gymnast.category}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {gymnast.country}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge 
+                          variant="outline"
+                          className={`text-xs px-1.5 py-0.5 ${getCategoryColor(gymnast.category)}`}
+                        >
+                          {gymnast.category}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                          {gymnast.country}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -83,6 +84,11 @@ export default function TestPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
+              <Button variant="ghost" size="sm" asChild className="mb-2">
+                <Link href="/">
+                  ← Back to Homepage
+                </Link>
+              </Button>
               <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
                 <Trophy className="w-8 h-8 text-blue-600" />
                 FIG API Integration Test
@@ -134,9 +140,6 @@ export default function TestPage() {
                           <div className="flex items-center gap-2">
                             <span>{getCountryFlag(country.code)}</span>
                             <span>{country.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {country.code}
-                            </Badge>
                           </div>
                         </SelectItem>
                       ))}

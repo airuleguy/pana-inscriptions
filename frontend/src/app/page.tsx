@@ -46,7 +46,7 @@ export default function HomePage() {
             
             <h1 className="text-5xl font-bold text-foreground leading-tight">
               Panamerican Aerobic Gymnastics Championship
-              <span className="block text-3xl text-primary mt-2">2024</span>
+              <span className="block text-3xl text-primary mt-2">2025</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -70,84 +70,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Tournament Features
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Our system provides everything needed for professional championship registration.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Users className="w-8 h-8 text-blue-600 mb-2" />
-                <CardTitle className="text-foreground">Multi-Gymnast Teams</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Register choreographies with 1, 2, 3, 5, or 8 gymnasts per routine
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-muted-foreground space-y-1 leading-relaxed">
-                  <li>• Individual routines (1 gymnast)</li>
-                  <li>• Pair routines (2 gymnasts)</li>
-                  <li>• Trio routines (3 gymnasts)</li>
-                  <li>• Group routines (5 gymnasts)</li>
-                  <li>• Team routines (8 gymnasts)</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Award className="w-8 h-8 text-green-600 mb-2" />
-                <CardTitle className="text-foreground">Three Categories</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Compete in Youth, Junior, or Senior divisions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Youth</span>
-                    <Badge variant="outline">≤14 years</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Junior</span>
-                    <Badge variant="outline">15-17 years</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Senior</span>
-                    <Badge variant="outline">18+ years</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-md hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <Globe className="w-8 h-8 text-purple-600 mb-2" />
-                <CardTitle className="text-foreground">FIG Integration</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Direct access to official FIG athlete database
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-sm text-muted-foreground space-y-1 leading-relaxed">
-                  <li>• Real-time license validation</li>
-                  <li>• Automatic age verification</li>
-                  <li>• Official gymnast records</li>
-                  <li>• Up-to-date eligibility status</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* Tournament Info */}
       <section className="py-16 px-4 bg-secondary/30">

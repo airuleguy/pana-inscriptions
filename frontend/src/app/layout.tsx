@@ -37,16 +37,14 @@ export default function RootLayout({
             <footer className="border-t bg-background">
               <div className="container mx-auto px-4 py-6">
                 <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      © 2024 Panamerican Aerobic Gymnastics Championship
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Powered by FIG Official Database</span>
-                    <span>•</span>
-                    <span>v1.0.0</span>
-                  </div>
+                                  <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    © 2025 Panamerican Aerobic Gymnastics Championship
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>v1.0.0</span>
+                </div>
                 </div>
               </div>
             </footer>
