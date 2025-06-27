@@ -53,7 +53,7 @@ export class APIService {
     const figGymnasts = await this.fetchAPI<any[]>(endpoint);
     
     // Transform FIG backend data to frontend format
-    return figGymnasts.map(this.transformFigToGymnast);
+    return figGymnasts.map(fig => this.transformFigToGymnast(fig));
   }
 
   /**
@@ -195,7 +195,7 @@ export class APIService {
       name: backend.name,
       category: backend.category,
       countryCode: backend.country,
-      selectedGymnasts: backend.gymnasts.map(this.transformFigToGymnast),
+      selectedGymnasts: backend.gymnasts.map((fig: any) => this.transformFigToGymnast(fig)),
       gymnastCount: backend.gymnastCount,
       musicFile: undefined, // Not stored in backend yet
       musicFileName: undefined,

@@ -17,7 +17,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3001/:path*', // Backend API
+        destination: 'http://localhost:3001/api/:path*', // Backend API
       },
     ];
   },
