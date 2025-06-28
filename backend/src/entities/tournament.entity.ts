@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Choreography } from './choreography.entity';
+import { IChoreography } from './types/choreography.interface';
 
 export enum TournamentType {
   CAMPEONATO_PANAMERICANO = 'CAMPEONATO_PANAMERICANO',
@@ -38,8 +38,8 @@ export class Tournament {
   @Column({ default: true })
   isActive: boolean;
 
-  @OneToMany(() => Choreography, choreography => choreography.tournament)
-  choreographies: Choreography[];
+  @OneToMany('Choreography', 'tournament')
+  choreographies: IChoreography[];
 
   @CreateDateColumn()
   createdAt: Date;

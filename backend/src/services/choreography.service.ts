@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Choreography, ChoreographyCategory, ChoreographyType } from '../entities/choreography.entity';
 import { Gymnast } from '../entities/gymnast.entity';
 import { Tournament } from '../entities/tournament.entity';
+import { ITournament } from '../entities/types/tournament.interface';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
@@ -117,7 +118,7 @@ export class ChoreographyService {
     this.logger.log(`Deleted choreography: ${choreography.name}`);
   }
 
-  private async validateBusinessRules(dto: CreateChoreographyDto, tournament: Tournament): Promise<void> {
+  private async validateBusinessRules(dto: CreateChoreographyDto, tournament: ITournament): Promise<void> {
     // Get the appropriate business rules strategy for this tournament
     const strategy = this.businessRulesFactory.getStrategy(tournament.type);
 

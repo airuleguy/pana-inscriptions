@@ -173,9 +173,9 @@ export const CHOREOGRAPHY_TYPE_INFO = {
   MIND: { name: "Men's Individual", count: 1 },
   WIND: { name: "Women's Individual", count: 1 },
   MXP: { name: "Mixed Pair", count: 2 },
-  TRIO: { name: "Trio 3", count: 3 },
-  GRP: { name: "Group 5", count: 5 },
-  DNCE: { name: "Dance 8", count: 8 }
+  TRIO: { name: "Trio", count: 3 },
+  GRP: { name: "Group", count: 5 },
+  DNCE: { name: "Dance", count: 8 }
 } as const;
 
 // Cache configuration

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Tournament = exports.TournamentType = void 0;
 const typeorm_1 = require("typeorm");
-const choreography_entity_1 = require("./choreography.entity");
 var TournamentType;
 (function (TournamentType) {
     TournamentType["CAMPEONATO_PANAMERICANO"] = "CAMPEONATO_PANAMERICANO";
@@ -60,7 +59,7 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Tournament.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.OneToMany)(() => choreography_entity_1.Choreography, choreography => choreography.tournament),
+    (0, typeorm_1.OneToMany)('Choreography', 'tournament'),
     __metadata("design:type", Array)
 ], Tournament.prototype, "choreographies", void 0);
 __decorate([

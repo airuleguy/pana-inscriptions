@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
 import { Gymnast } from './gymnast.entity';
-import { Tournament } from './tournament.entity';
+import { ITournament } from './types/tournament.interface';
 
 export enum ChoreographyCategory {
   YOUTH = 'YOUTH',
@@ -12,9 +12,9 @@ export enum ChoreographyType {
   MIND = 'MIND',     // Men's Individual (1)
   WIND = 'WIND',     // Women's Individual (1)
   MXP = 'MXP',       // Mixed Pair (2)
-  TRIO = 'TRIO',     // Trio 3 (3)
-  GRP = 'GRP',       // Group 5 (5)
-  DNCE = 'DNCE'      // Dance 8 (8)
+  TRIO = 'TRIO',     // Trio (3)
+  GRP = 'GRP',       // Group (5)
+  DNCE = 'DNCE'      // Dance (8)
 }
 
 @Entity('choreographies')
@@ -49,12 +49,12 @@ export class Choreography {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @ManyToOne(() => Tournament, tournament => tournament.choreographies, { 
+  @ManyToOne('Tournament', 'choreographies', { 
     nullable: false,
     eager: true 
   })
   @JoinColumn({ name: 'tournament_id' })
-  tournament: Tournament;
+  tournament: ITournament;
 
   @ManyToMany(() => Gymnast, gymnast => gymnast.choreographies, { 
     cascade: true,

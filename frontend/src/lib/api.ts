@@ -1,4 +1,4 @@
-import { Gymnast, Choreography, ChoreographyType } from '@/types';
+import { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
 
 /**
  * API service for communicating with the backend
@@ -147,6 +147,24 @@ export class APIService {
     return await this.fetchAPI(`/api/v1/choreographies/stats/${encodeURIComponent(country)}`);
   }
 
+  // ==================== TOURNAMENTS ====================
+
+  /**
+   * Get all active tournaments
+   */
+  static async getTournaments(): Promise<Tournament[]> {
+    const backendTournaments = await this.fetchAPI<any[]>('/api/v1/tournaments');
+    return backendTournaments.map(this.transformBackendToTournament);
+  }
+
+  /**
+   * Get tournament by ID
+   */
+  static async getTournament(id: string): Promise<Tournament> {
+    const backendTournament = await this.fetchAPI<any>(`/api/v1/tournaments/${encodeURIComponent(id)}`);
+    return this.transformBackendToTournament(backendTournament);
+  }
+
   // ==================== HEALTH ====================
 
   /**
@@ -196,6 +214,7 @@ export class APIService {
       category: backend.category as 'YOUTH' | 'JUNIOR' | 'SENIOR',
       type: backend.type as ChoreographyType,
       countryCode: backend.country,
+      tournament: this.transformBackendToTournament(backend.tournament),
       selectedGymnasts: backend.gymnasts.map((fig: any) => this.transformFigToGymnast(fig)),
       gymnastCount: backend.gymnastCount,
       musicFile: undefined, // Not stored in backend yet
@@ -206,6 +225,26 @@ export class APIService {
       status: 'SUBMITTED', // Backend doesn't have status yet
       submittedBy: undefined,
       notes: backend.notes,
+    };
+  }
+
+  /**
+   * Transform backend tournament to frontend format
+   */
+  private static transformBackendToTournament(backend: any): Tournament {
+    return {
+      id: backend.id,
+      name: backend.name,
+      shortName: backend.shortName,
+      type: backend.type as 'CAMPEONATO_PANAMERICANO' | 'COPA_PANAMERICANA',
+      description: backend.description,
+      startDate: backend.startDate,
+      endDate: backend.endDate,
+      location: backend.location,
+      isActive: backend.isActive,
+      choreographies: backend.choreographies || [],
+      createdAt: new Date(backend.createdAt),
+      updatedAt: new Date(backend.updatedAt),
     };
   }
 
@@ -222,6 +261,7 @@ export class APIService {
       oldestGymnastAge: this.getOldestGymnastAge(choreography.selectedGymnasts),
       gymnastFigIds: choreography.selectedGymnasts.map((g: Gymnast) => g.id),
       notes: choreography.routineDescription,
+      tournamentId: choreography.tournament.id, // Add the tournament ID
     };
   }
 

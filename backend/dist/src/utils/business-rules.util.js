@@ -74,11 +74,11 @@ function getChoreographyTypeDisplayName(type) {
         case choreography_entity_1.ChoreographyType.MXP:
             return "Mixed Pair";
         case choreography_entity_1.ChoreographyType.TRIO:
-            return "Trio 3";
+            return "Trio";
         case choreography_entity_1.ChoreographyType.GRP:
-            return "Group 5";
+            return "Group";
         case choreography_entity_1.ChoreographyType.DNCE:
-            return "Dance 8";
+            return "Dance";
         default:
             return type;
     }

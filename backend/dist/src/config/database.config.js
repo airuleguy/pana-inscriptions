@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const gymnast_entity_1 = require("../entities/gymnast.entity");
 const choreography_entity_1 = require("../entities/choreography.entity");
+const tournament_entity_1 = require("../entities/tournament.entity");
 let DatabaseConfig = class DatabaseConfig {
     constructor(configService) {
         this.configService = configService;
@@ -27,8 +28,9 @@ let DatabaseConfig = class DatabaseConfig {
             username: this.configService.get('POSTGRES_USER'),
             password: this.configService.get('POSTGRES_PASSWORD'),
             database: this.configService.get('POSTGRES_DB'),
-            entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography],
+            entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament],
             synchronize: !isProduction,
+            dropSchema: !isProduction,
             logging: !isProduction,
             ssl: isProduction ? { rejectUnauthorized: false } : false,
             retryAttempts: 3,

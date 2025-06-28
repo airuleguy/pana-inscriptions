@@ -179,11 +179,11 @@ export function getChoreographyTypeDisplayName(type: ChoreographyType): string {
     case 'MXP':
       return "Mixed Pair";
     case 'TRIO':
-      return "Trio 3";
+      return "Trio";
     case 'GRP':
-      return "Group 5";
+      return "Group";
     case 'DNCE':
-      return "Dance 8";
+      return "Dance";
     default:
       return type;
   }

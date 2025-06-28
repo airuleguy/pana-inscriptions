@@ -7,5 +7,5 @@ CREATE DATABASE "pana-inscriptions-db";
 -- Create UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- The tables will be created automatically by TypeORM synchronization
--- This file ensures the database exists and has the required extensions 
+-- Tables will be created automatically by TypeORM synchronization in development
+-- In production, migrations will be used instead of synchronization 

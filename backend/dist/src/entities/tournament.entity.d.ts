@@ -1,4 +1,4 @@
-import { Choreography } from './choreography.entity';
+import { IChoreography } from './types/choreography.interface';
 export declare enum TournamentType {
     CAMPEONATO_PANAMERICANO = "CAMPEONATO_PANAMERICANO",
     COPA_PANAMERICANA = "COPA_PANAMERICANA"
@@ -13,7 +13,7 @@ export declare class Tournament {
     endDate: string;
     location: string;
     isActive: boolean;
-    choreographies: Choreography[];
+    choreographies: IChoreography[];
     createdAt: Date;
     updatedAt: Date;
 }

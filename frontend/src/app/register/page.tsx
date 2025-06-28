@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,11 @@ import {
   getCountryFlag, 
   determineChoreographyType, 
   getChoreographyTypeDisplayName,
-  getChoreographyTypeColor
+  getChoreographyTypeColor,
+  isValidGymnastCount
 } from '@/lib/utils';
-import type { Gymnast, Choreography, ChoreographyType } from '@/types';
-import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import type { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
+import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 
 // Sample countries with AER gymnasts
 const SAMPLE_COUNTRIES = [
@@ -39,12 +40,12 @@ const SAMPLE_COUNTRIES = [
   { code: 'AUS', name: 'Australia' },
 ];
 
-const GYMNAST_COUNTS = [1, 2, 3, 5, 8] as const;
-
 export default function RegisterPage() {
   const [selectedCountry, setSelectedCountry] = useState<string>('');
+  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [availableTournaments, setAvailableTournaments] = useState<Tournament[]>([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(true);
   const [selectedGymnasts, setSelectedGymnasts] = useState<Gymnast[]>([]);
-  const [gymnastCount, setGymnastCount] = useState<1 | 2 | 3 | 5 | 8>(1);
   const [routineDescription, setRoutineDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{
@@ -52,6 +53,33 @@ export default function RegisterPage() {
     message: string;
     choreography?: Choreography;
   } | null>(null);
+
+  // Load tournaments on component mount
+  useEffect(() => {
+    async function loadTournaments() {
+      try {
+        const tournaments = await APIService.getTournaments();
+        setAvailableTournaments(tournaments);
+        // Auto-select the first active tournament
+        const activeTournament = tournaments.find(t => t.isActive);
+        if (activeTournament) {
+          setSelectedTournament(activeTournament);
+        }
+      } catch (error) {
+        console.error('Failed to load tournaments:', error);
+      } finally {
+        setLoadingTournaments(false);
+      }
+    }
+
+    loadTournaments();
+  }, []);
+
+  // Infer gymnast count from selected gymnasts
+  const gymnastCount = selectedGymnasts.length;
+
+  // Check if gymnast count is valid
+  const isValidCount = isValidGymnastCount(gymnastCount);
 
   // Generate choreography name
   const choreographyName = generateChoreographyName(selectedGymnasts);
@@ -66,23 +94,36 @@ export default function RegisterPage() {
 
   // Determine choreography type from gymnast count and gender composition
   let determinedType: ChoreographyType | null = null;
-  if (selectedGymnasts.length === gymnastCount && selectedGymnasts.length > 0) {
+  if (selectedGymnasts.length > 0 && isValidCount) {
     try {
-      determinedType = determineChoreographyType(gymnastCount, selectedGymnasts);
+      determinedType = determineChoreographyType(gymnastCount as 1 | 2 | 3 | 5 | 8, selectedGymnasts);
     } catch (error) {
       console.error('Error determining choreography type:', error);
     }
   }
 
+  // Generate error message for invalid gymnast count
+  const getInvalidCountMessage = (count: number): string => {
+    if (count === 0) return '';
+    if (count === 4) return 'Invalid number of gymnasts. Choreographies cannot have 4 gymnasts. Valid options: 1 (Individual), 2 (Mixed Pair), 3 (Trio), 5 (Group), or 8 (Dance).';
+    if (count === 6) return 'Invalid number of gymnasts. Choreographies cannot have 6 gymnasts. Valid options: 1 (Individual), 2 (Mixed Pair), 3 (Trio), 5 (Group), or 8 (Dance).';
+    if (count === 7) return 'Invalid number of gymnasts. Choreographies cannot have 7 gymnasts. Valid options: 1 (Individual), 2 (Mixed Pair), 3 (Trio), 5 (Group), or 8 (Dance).';
+    if (count > 8) return 'Too many gymnasts selected. Maximum allowed is 8 gymnasts for Dance choreographies. Valid options: 1 (Individual), 2 (Mixed Pair), 3 (Trio), 5 (Group), or 8 (Dance).';
+    return '';
+  };
+
+  const invalidCountMessage = getInvalidCountMessage(gymnastCount);
+
   // Check if form is valid
   const isFormValid = selectedCountry && 
-    selectedGymnasts.length === gymnastCount && 
+    selectedTournament &&
     selectedGymnasts.length > 0 &&
+    isValidCount &&
     determinedType !== null;
 
   // Handle registration submission
   const handleSubmit = async () => {
-    if (!isFormValid || !determinedType) return;
+    if (!isFormValid || !determinedType || !selectedTournament) return;
 
     setSubmitting(true);
     setRegistrationResult(null);
@@ -93,11 +134,15 @@ export default function RegisterPage() {
         category: determinedCategory,
         type: determinedType,
         countryCode: selectedCountry,
+        tournament: selectedTournament,
         selectedGymnasts,
-        gymnastCount,
+        gymnastCount: gymnastCount as 1 | 2 | 3 | 5 | 8,
         routineDescription,
         status: 'SUBMITTED',
         notes: routineDescription,
+        musicFile: undefined,
+        musicFileName: undefined,
+        submittedBy: undefined,
       };
 
       const registeredChoreography = await APIService.createChoreography(choreographyData);
@@ -152,6 +197,52 @@ export default function RegisterPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Configuration Panel */}
           <div className="space-y-6">
+            {/* Tournament Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Tournament Selection
+                </CardTitle>
+                <CardDescription>Select the tournament for registration</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="tournament">Tournament</Label>
+                  {loadingTournaments ? (
+                    <div className="flex items-center gap-2 mt-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm text-muted-foreground">Loading tournaments...</span>
+                    </div>
+                  ) : (
+                    <Select 
+                      value={selectedTournament?.id || ''} 
+                      onValueChange={(value) => {
+                        const tournament = availableTournaments.find(t => t.id === value);
+                        setSelectedTournament(tournament || null);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tournament" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTournaments.map(tournament => (
+                          <SelectItem key={tournament.id} value={tournament.id}>
+                            <div className="flex flex-col">
+                              <span>{tournament.shortName}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {tournament.location} • {tournament.startDate}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Country Selection */}
             <Card>
               <CardHeader>
@@ -180,40 +271,25 @@ export default function RegisterPage() {
             {/* Choreography Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Choreography Setup</CardTitle>
-                <CardDescription>Configure your routine details</CardDescription>
+                <CardTitle className="text-lg">Choreography Details</CardTitle>
+                <CardDescription>Auto-determined from selected gymnasts</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="gymnastCount">Number of Gymnasts</Label>
-                  <Select value={gymnastCount.toString()} onValueChange={(value) => {
-                    const count = parseInt(value) as 1 | 2 | 3 | 5 | 8;
-                    setGymnastCount(count);
-                    // Reset selection if current selection exceeds new limit
-                    if (selectedGymnasts.length > count) {
-                      setSelectedGymnasts(selectedGymnasts.slice(0, count));
-                    }
-                  }}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {GYMNAST_COUNTS.map(count => (
-                        <SelectItem key={count} value={count.toString()}>
-                          {count} {count === 1 ? 'Gymnast' : 'Gymnasts'} 
-                          {count === 1 && ' (Individual)'}
-                          {count === 2 && ' (Mixed Pair)'}
-                          {count === 3 && ' (Trio)'}
-                          {count === 5 && ' (Group)'}
-                          {count === 8 && ' (Dance)'}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Error message for invalid gymnast count */}
+                {invalidCountMessage && (
+                  <div className="p-3 rounded-md bg-red-50 border border-red-200">   
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-red-800">Invalid Gymnast Count</p>
+                        <p className="text-xs text-red-700 mt-1">{invalidCountMessage}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div>
-                  <Label htmlFor="category">Category (Auto-determined)</Label>
+                  <Label htmlFor="category">Category</Label>
                   <div className="mt-2">
                     <Badge variant="outline" className="text-sm">
                       {selectedGymnasts.length > 0 ? determinedCategory : 'Select gymnasts first'}
@@ -227,7 +303,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="type">Type (Auto-determined)</Label>
+                  <Label htmlFor="type">Type</Label>
                   <div className="mt-2">
                     {determinedType ? (
                       <Badge 
@@ -240,8 +316,8 @@ export default function RegisterPage() {
                       <Badge variant="outline" className="text-sm">
                         {selectedGymnasts.length === 0 
                           ? 'Select gymnasts first'
-                          : selectedGymnasts.length !== gymnastCount
-                          ? `Select ${gymnastCount} gymnast${gymnastCount > 1 ? 's' : ''}`
+                          : !isValidCount
+                          ? 'Invalid gymnast count'
                           : 'Determining type...'}
                       </Badge>
                     )}
@@ -345,7 +421,7 @@ export default function RegisterPage() {
                   Select Gymnasts
                 </CardTitle>
                 <CardDescription>
-                  Choose {gymnastCount} licensed gymnast{gymnastCount > 1 ? 's' : ''} from the FIG database
+                  Choose gymnasts from the FIG database. Valid counts: 1 (Individual), 2 (Mixed Pair), 3 (Trio), 5 (Group), or 8 (Dance)
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -354,7 +430,7 @@ export default function RegisterPage() {
                     countryCode={selectedCountry}
                     selectedGymnasts={selectedGymnasts}
                     onSelectionChange={setSelectedGymnasts}
-                    maxSelection={gymnastCount}
+                    maxSelection={8} // Set to 8 as maximum possible, but validation will handle invalid counts
                   />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">

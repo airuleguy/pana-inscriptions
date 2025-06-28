@@ -1,5 +1,5 @@
 import { Gymnast } from './gymnast.entity';
-import { Tournament } from './tournament.entity';
+import { ITournament } from './types/tournament.interface';
 export declare enum ChoreographyCategory {
     YOUTH = "YOUTH",
     JUNIOR = "JUNIOR",
@@ -22,7 +22,7 @@ export declare class Choreography {
     gymnastCount: number;
     oldestGymnastAge: number;
     notes: string;
-    tournament: Tournament;
+    tournament: ITournament;
     gymnasts: Gymnast[];
     createdAt: Date;
     updatedAt: Date;
