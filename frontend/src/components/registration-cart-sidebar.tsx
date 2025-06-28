@@ -1,0 +1,316 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useRegistration } from '@/contexts/registration-context';
+import { 
+  UserPlus, 
+  ChevronDown, 
+  ChevronRight, 
+  Trash2, 
+  Users, 
+  UserCheck, 
+  ClipboardList,
+  Trophy,
+  Calendar,
+  CheckCircle,
+  AlertTriangle,
+  X
+} from 'lucide-react';
+import { countries } from '@/lib/countries';
+
+interface RegistrationCartSidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  onConfirmRegistration: () => void;
+}
+
+export function RegistrationCartSidebar({ 
+  isOpen, 
+  onToggle, 
+  onConfirmRegistration 
+}: RegistrationCartSidebarProps) {
+  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration } = useRegistration();
+  const [expandedSections, setExpandedSections] = useState({
+    choreographies: true,
+    coaches: true,
+    judges: true,
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const getCountryInfo = (code: string) => {
+    const country = countries.find(c => c.code === code);
+    return country || { code, name: code, flag: '🏳️' };
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const totalCount = getTotalCount();
+
+  return (
+    <>
+      <Sheet open={isOpen} onOpenChange={onToggle}>
+        <SheetContent side="right" className="w-96 p-0 gap-0">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <SheetHeader className="p-4 pr-12 border-b bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-blue-600" />
+                  <SheetTitle className="text-lg font-semibold text-gray-900">
+                    Registration Summary
+                  </SheetTitle>
+                </div>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                  {totalCount} items
+                </Badge>
+              </div>
+              {state.tournament && state.country && (
+                <div className="mt-2 text-sm text-gray-600 space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Trophy className="w-4 h-4" />
+                    <span className="truncate">{state.tournament.shortName || state.tournament.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>{getCountryInfo(state.country).flag}</span>
+                    <span>{getCountryInfo(state.country).name}</span>
+                  </div>
+                </div>
+              )}
+            </SheetHeader>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {totalCount === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <UserPlus className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p className="text-lg font-medium">No registrations yet</p>
+                  <p className="text-sm">Start registering choreographies, coaches, or judges</p>
+                </div>
+              ) : (
+                <>
+                  {/* Choreographies Section */}
+                  {state.choreographies.length > 0 && (
+                    <Card>
+                      <CardHeader 
+                        className="cursor-pointer pb-3" 
+                        onClick={() => toggleSection('choreographies')}
+                      >
+                        <CardTitle className="flex items-center justify-between text-base">
+                          <div className="flex items-center gap-2">
+                            <ClipboardList className="w-4 h-4 text-purple-600" />
+                            <span>Choreographies</span>
+                            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                              {state.choreographies.length}
+                            </Badge>
+                          </div>
+                          {expandedSections.choreographies ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      {expandedSections.choreographies && (
+                        <CardContent className="space-y-3 pt-0">
+                          {state.choreographies.map((choreo) => (
+                            <div key={choreo.id} className="border rounded-lg p-3 bg-purple-50/50">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-sm truncate">{choreo.name}</h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge className="bg-purple-100 text-purple-800">
+                                      {choreo.category}
+                                    </Badge>
+                                    <Badge variant="outline">
+                                      {choreo.type}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                    <Users className="w-3 h-3" />
+                                    <span>{choreo.gymnastsCount} gymnasts</span>
+                                    <span>•</span>
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{formatDate(choreo.registeredAt)}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeChoreography(choreo.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      )}
+                    </Card>
+                  )}
+
+                  {/* Coaches Section */}
+                  {state.coaches.length > 0 && (
+                    <Card>
+                      <CardHeader 
+                        className="cursor-pointer pb-3" 
+                        onClick={() => toggleSection('coaches')}
+                      >
+                        <CardTitle className="flex items-center justify-between text-base">
+                          <div className="flex items-center gap-2">
+                            <UserCheck className="w-4 h-4 text-green-600" />
+                            <span>Coaches</span>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                              {state.coaches.length}
+                            </Badge>
+                          </div>
+                          {expandedSections.coaches ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      {expandedSections.coaches && (
+                        <CardContent className="space-y-3 pt-0">
+                          {state.coaches.map((coach) => (
+                            <div key={coach.id} className="border rounded-lg p-3 bg-green-50/50">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-sm truncate">{coach.name}</h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge className="bg-green-100 text-green-800">
+                                      {coach.level}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {getCountryInfo(coach.country).flag} {getCountryInfo(coach.country).name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{formatDate(coach.registeredAt)}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeCoach(coach.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      )}
+                    </Card>
+                  )}
+
+                  {/* Judges Section */}
+                  {state.judges.length > 0 && (
+                    <Card>
+                      <CardHeader 
+                        className="cursor-pointer pb-3" 
+                        onClick={() => toggleSection('judges')}
+                      >
+                        <CardTitle className="flex items-center justify-between text-base">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-blue-600" />
+                            <span>Judges</span>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                              {state.judges.length}
+                            </Badge>
+                          </div>
+                          {expandedSections.judges ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      {expandedSections.judges && (
+                        <CardContent className="space-y-3 pt-0">
+                          {state.judges.map((judge) => (
+                            <div key={judge.id} className="border rounded-lg p-3 bg-blue-50/50">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-sm truncate">{judge.name}</h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge className="bg-blue-100 text-blue-800">
+                                      Category {judge.category}
+                                    </Badge>
+                                    <span className="text-xs text-gray-500">
+                                      {getCountryInfo(judge.country).flag} {getCountryInfo(judge.country).name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{formatDate(judge.registeredAt)}</span>
+                                  </div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeJudge(judge.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      )}
+                    </Card>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t bg-gray-50">
+              {canConfirmRegistration() ? (
+                <Button 
+                  onClick={onConfirmRegistration}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3"
+                  size="lg"
+                >
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Confirm Registration ({totalCount} items)
+                </Button>
+              ) : (
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 text-orange-600 mb-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span className="text-sm font-medium">No items to register</span>
+                  </div>
+                  <Button disabled className="w-full" size="lg">
+                    Confirm Registration
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+} 

@@ -10,13 +10,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { JudgeDataTable } from '@/components/forms/judge-data-table';
 import { TournamentNav } from '@/components/ui/tournament-nav';
+import { RegistrationCartSidebar } from '@/components/registration-cart-sidebar';
 import { APIService } from '@/lib/api';
 import { countries, getCountryByCode } from '@/lib/countries';
 import type { Judge, Tournament } from '@/types';
+import { useRegistration, RegisteredJudge } from '@/contexts/registration-context';
 import { Scale, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function JudgeRegistrationPage() {
   const router = useRouter();
+  const { addJudge, clearAll, getTotalCount } = useRegistration();
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +32,38 @@ export default function JudgeRegistrationPage() {
     message: string;
     judges?: Judge[];
   } | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleToggleRegistrationSummary = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleConfirmRegistration = async () => {
+    try {
+      const totalItems = getTotalCount();
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
+        description: 'You will receive a confirmation email shortly.',
+        duration: 5000,
+      });
+
+      // Clear the registration cart
+      clearAll();
+      
+      // Close the sidebar
+      setIsSidebarOpen(false);
+      
+      // Redirect to dashboard or confirmation page
+      router.push('/registration/dashboard');
+      
+    } catch (error) {
+      console.error('Registration confirmation failed:', error);
+      toast.error('Failed to confirm registration. Please try again.');
+    }
+  };
 
   // Load tournament and country from localStorage
   useEffect(() => {
@@ -69,10 +105,28 @@ export default function JudgeRegistrationPage() {
       // In a real implementation, this would call an API endpoint
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
 
+      // Add judges to registration cart
+      selectedJudges.forEach(judge => {
+        const cartJudge: RegisteredJudge = {
+          id: judge.id,
+          name: judge.fullName,
+          category: judge.categoryDescription,
+          country: judge.country,
+          registeredAt: new Date(),
+        };
+        addJudge(cartJudge);
+      });
+
       setRegistrationResult({
         success: true,
         message: `Successfully registered ${selectedJudges.length} judge(s) for ${selectedTournament.name}!`,
         judges: selectedJudges,
+      });
+
+      // Show success toast
+      toast.success(`${selectedJudges.length} judge${selectedJudges.length > 1 ? 's' : ''} added to cart!`, {
+        description: 'Judges have been added to your registration cart.',
+        duration: 3000,
       });
 
       // Reset form
@@ -109,7 +163,11 @@ export default function JudgeRegistrationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Tournament Navigation */}
-      <TournamentNav currentPage="Judge Registration" />
+      <TournamentNav 
+        currentPage="Judge Registration" 
+        showRegistrationSummary={true}
+        onToggleRegistrationSummary={handleToggleRegistrationSummary}
+      />
 
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
@@ -265,6 +323,12 @@ export default function JudgeRegistrationPage() {
           </Card>
         )}
       </div>
+
+      <RegistrationCartSidebar
+        isOpen={isSidebarOpen}
+        onToggle={handleToggleRegistrationSummary}
+        onConfirmRegistration={handleConfirmRegistration}
+      />
     </div>
   );
 }

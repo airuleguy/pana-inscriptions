@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { GymnastDataTable } from '@/components/forms/gymnast-data-table';
 import { TournamentNav } from '@/components/ui/tournament-nav';
+import { RegistrationCartSidebar } from '@/components/registration-cart-sidebar';
 import { APIService } from '@/lib/api';
 import { 
   generateChoreographyName, 
@@ -20,10 +21,13 @@ import {
 } from '@/lib/utils';
 import { countries } from '@/lib/countries';
 import type { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
+import { useRegistration, RegisteredChoreography } from '@/contexts/registration-context';
 import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ChoreographyRegistrationPage() {
   const router = useRouter();
+  const { addChoreography, clearAll, getTotalCount } = useRegistration();
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +39,38 @@ export default function ChoreographyRegistrationPage() {
     message: string;
     choreography?: Choreography;
   } | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleToggleRegistrationSummary = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleConfirmRegistration = async () => {
+    try {
+      const totalItems = getTotalCount();
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
+        description: 'You will receive a confirmation email shortly.',
+        duration: 5000,
+      });
+
+      // Clear the registration cart
+      clearAll();
+      
+      // Close the sidebar
+      setIsSidebarOpen(false);
+      
+      // Redirect to dashboard or confirmation page
+      router.push('/registration/dashboard');
+      
+    } catch (error) {
+      console.error('Registration confirmation failed:', error);
+      toast.error('Failed to confirm registration. Please try again.');
+    }
+  };
 
   // Load tournament and country from localStorage
   useEffect(() => {
@@ -131,10 +167,29 @@ export default function ChoreographyRegistrationPage() {
 
       const registeredChoreography = await APIService.createChoreography(choreographyData);
 
+      // Add to registration cart
+      const cartChoreography: RegisteredChoreography = {
+        id: registeredChoreography.id,
+        name: choreographyName,
+        category: determinedCategory,
+        type: getChoreographyTypeDisplayName(determinedType),
+        gymnastsCount: gymnastCount,
+        gymnasts: selectedGymnasts,
+        registeredAt: new Date(),
+      };
+
+      addChoreography(cartChoreography);
+
       setRegistrationResult({
         success: true,
         message: `Choreography "${choreographyName}" successfully registered!`,
         choreography: registeredChoreography,
+      });
+
+      // Show success toast
+      toast.success('Choreography added to cart!', {
+        description: `${choreographyName} has been added to your registration cart.`,
+        duration: 3000,
       });
 
       // Reset form
@@ -171,7 +226,11 @@ export default function ChoreographyRegistrationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Tournament Navigation */}
-      <TournamentNav currentPage="Choreography Registration" />
+      <TournamentNav 
+        currentPage="Choreography Registration" 
+        showRegistrationSummary={true}
+        onToggleRegistrationSummary={handleToggleRegistrationSummary}
+      />
 
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
@@ -361,6 +420,12 @@ export default function ChoreographyRegistrationPage() {
 
         </div>
       </div>
+
+      <RegistrationCartSidebar
+        isOpen={isSidebarOpen}
+        onToggle={handleToggleRegistrationSummary}
+        onConfirmRegistration={handleConfirmRegistration}
+      />
     </div>
   );
 } 

@@ -6,25 +6,31 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Globe, Settings, ArrowLeft } from 'lucide-react';
+import { Trophy, Globe, Settings, ArrowLeft, UserPlus } from 'lucide-react';
 import { Tournament } from '@/types';
 import { countries } from '@/lib/countries';
+import { useRegistration } from '@/contexts/registration-context';
 
 interface TournamentNavProps {
   currentPage?: string;
   showBackButton?: boolean;
   backHref?: string;
+  showRegistrationSummary?: boolean;
+  onToggleRegistrationSummary?: () => void;
 }
 
 export function TournamentNav({ 
   currentPage = 'Registration',
   showBackButton = true,
-  backHref = '/registration/dashboard'
+  backHref = '/registration/dashboard',
+  showRegistrationSummary = false,
+  onToggleRegistrationSummary
 }: TournamentNavProps) {
   const router = useRouter();
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [mounted, setMounted] = useState(false);
+  const { getTotalCount } = useRegistration();
 
   useEffect(() => {
     setMounted(true);
@@ -78,6 +84,7 @@ export function TournamentNav({
   }
 
   const countryInfo = getCountryInfo(selectedCountry);
+  const totalCount = getTotalCount();
 
   return (
     <div className="border-b bg-white/90 backdrop-blur-sm shadow-sm">
@@ -110,6 +117,22 @@ export function TournamentNav({
           </div>
           
           <div className="flex items-center gap-2">
+            {showRegistrationSummary && onToggleRegistrationSummary && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onToggleRegistrationSummary}
+                className="relative"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Summary
+                {totalCount > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center p-0 min-w-[20px]">
+                    {totalCount}
+                  </Badge>
+                )}
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={handleChangeSelection}>
               <Settings className="w-4 h-4 mr-2" />
               Change

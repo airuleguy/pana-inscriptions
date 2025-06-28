@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
+import { RegistrationProvider } from '@/contexts/registration-context';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -15,7 +16,9 @@ export function Providers({ children }: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <RegistrationProvider>
+        {children}
+      </RegistrationProvider>
       <Toaster 
         position="top-right"
         richColors
