@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { GymnastSelector } from '@/components/forms/gymnast-selector';
+import { GymnastDataTable } from '@/components/forms/gymnast-data-table';
 import { APIService } from '@/lib/api';
 import { 
   generateChoreographyName, 
@@ -17,7 +17,7 @@ import {
   getChoreographyTypeColor,
   isValidGymnastCount
 } from '@/lib/utils';
-import { countries, popularCountries, getCountryByCode, type Country } from '@/lib/countries';
+import { countries, popularCountries, getCountryByCode } from '@/lib/countries';
 import type { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
 import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 
@@ -427,7 +427,7 @@ export default function ChoreographyRegistrationPage() {
               </CardHeader>
               <CardContent>
                 {selectedCountry ? (
-                  <GymnastSelector
+                  <GymnastDataTable
                     countryCode={selectedCountry}
                     selectedGymnasts={selectedGymnasts}
                     onSelectionChange={setSelectedGymnasts}

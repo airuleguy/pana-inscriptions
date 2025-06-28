@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, MapPin, Award, Globe, GraduationCap } from 'lucide-react';
+import { Trophy, Calendar, MapPin, Globe } from 'lucide-react';
 
 export default function HomePage() {
   return (

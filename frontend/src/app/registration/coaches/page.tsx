@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { CoachSelector } from '@/components/forms/coach-selector';
+import { CoachDataTable } from '@/components/forms/coach-data-table';
 import { APIService } from '@/lib/api';
 import { countries, popularCountries, getCountryByCode, type Country } from '@/lib/countries';
 import type { Coach, Tournament } from '@/types';
@@ -327,7 +327,7 @@ export default function CoachRegistrationPage() {
               </CardHeader>
               <CardContent>
                 {selectedCountry ? (
-                  <CoachSelector
+                  <CoachDataTable
                     countryCode={selectedCountry}
                     selectedCoaches={selectedCoaches}
                     onSelectionChange={setSelectedCoaches}
