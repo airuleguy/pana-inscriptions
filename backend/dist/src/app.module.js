@@ -19,6 +19,7 @@ const choreography_controller_1 = require("./controllers/choreography.controller
 const gymnast_controller_1 = require("./controllers/gymnast.controller");
 const tournament_controller_1 = require("./controllers/tournament.controller");
 const coach_controller_1 = require("./controllers/coach.controller");
+const judge_controller_1 = require("./controllers/judge.controller");
 const health_controller_1 = require("./modules/health/health.controller");
 const choreography_service_1 = require("./services/choreography.service");
 const tournament_service_1 = require("./services/tournament.service");
@@ -50,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
             gymnast_controller_1.GymnastController,
             tournament_controller_1.TournamentController,
             coach_controller_1.CoachController,
+            judge_controller_1.JudgeController,
             health_controller_1.HealthController,
         ],
         providers: [

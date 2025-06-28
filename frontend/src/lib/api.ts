@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Choreography, ChoreographyType, Tournament } from '@/types';
+import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament } from '@/types';
 
 /**
  * API service for communicating with the backend
@@ -108,6 +108,38 @@ export class APIService {
    */
   static async clearCoachCache(): Promise<void> {
     await this.fetchAPI('/api/v1/coaches/cache', { method: 'DELETE' });
+  }
+
+  // ==================== JUDGES ====================
+
+  /**
+   * Get all certified judges with optional country filter
+   */
+  static async getJudges(country?: string): Promise<Judge[]> {
+    const endpoint = country 
+      ? `/api/v1/judges?country=${encodeURIComponent(country)}`
+      : '/api/v1/judges';
+    
+    const figJudges = await this.fetchAPI<any[]>(endpoint);
+    
+    // Transform FIG backend data to frontend format
+    return figJudges.map(fig => this.transformFigToJudge(fig));
+  }
+
+  /**
+   * Search judges by name and country
+   */
+  static async searchJudges(query: string, country?: string): Promise<Judge[]> {
+    // Get all judges for the country, then filter client-side
+    const judges = await this.getJudges(country);
+    return this.searchJudgesLocal(judges, query);
+  }
+
+  /**
+   * Clear judge cache on the backend
+   */
+  static async clearJudgeCache(): Promise<void> {
+    await this.fetchAPI('/api/v1/judges/cache', { method: 'DELETE' });
   }
 
   // ==================== CHOREOGRAPHIES ====================
@@ -253,6 +285,28 @@ export class APIService {
   }
 
   /**
+   * Transform backend FIG judge data to frontend format
+   */
+  private static transformFigToJudge(fig: any): Judge {
+    const dateOfBirth = new Date(fig.birth);
+    const age = this.calculateAge(dateOfBirth);
+    
+    return {
+      id: fig.id,
+      firstName: fig.firstName,
+      lastName: fig.lastName,
+      fullName: `${fig.firstName} ${fig.lastName}`,
+      birth: fig.birth,
+      dateOfBirth,
+      gender: fig.gender.toUpperCase() as 'MALE' | 'FEMALE',
+      country: fig.country,
+      category: fig.category,
+      categoryDescription: this.getJudgeCategoryDescription(fig.category),
+      age,
+    };
+  }
+
+  /**
    * Transform backend choreography to frontend format
    */
   private static transformBackendToChoreography(backend: any): Choreography {
@@ -341,6 +395,19 @@ export class APIService {
     const levels = level.split(', ');
     const descriptions = levels.map(l => COACH_LEVEL_INFO[l as keyof typeof COACH_LEVEL_INFO] || l);
     return descriptions.join(', ');
+  }
+
+  /**
+   * Get human-readable description for judge category
+   */
+  private static getJudgeCategoryDescription(category: string): string {
+    const categoryMap: Record<string, string> = {
+      '1': 'Category 1 (International Brevet)',
+      '2': 'Category 2 (Regional)',
+      '3': 'Category 3 (National)',
+      '4': 'Category 4 (Candidate)',
+    };
+    return categoryMap[category] || `Category ${category}`;
   }
 
   // ==================== UTILITY HELPERS ====================
@@ -464,5 +531,45 @@ export class APIService {
       c.level.split(', ').forEach(level => levels.add(level.trim()));
     });
     return Array.from(levels).sort();
+  }
+
+  // ==================== JUDGE SEARCH & FILTER HELPERS ====================
+
+  /**
+   * Search judges by name (client-side filtering)
+   */
+  static searchJudgesLocal(judges: Judge[], query: string): Judge[] {
+    if (!query.trim()) return judges;
+    
+    const searchTerm = query.toLowerCase().trim();
+    return judges.filter(j => 
+      j.firstName.toLowerCase().includes(searchTerm) ||
+      j.lastName.toLowerCase().includes(searchTerm) ||
+      j.fullName.toLowerCase().includes(searchTerm) ||
+      j.categoryDescription.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  /**
+   * Filter judges by category
+   */
+  static filterJudgesByCategory(judges: Judge[], category: string): Judge[] {
+    return judges.filter(j => j.category === category);
+  }
+
+  /**
+   * Get unique countries from judges (client-side)
+   */
+  static getUniqueJudgeCountries(judges: Judge[]): string[] {
+    const countries = new Set(judges.map(j => j.country));
+    return Array.from(countries).sort();
+  }
+
+  /**
+   * Get unique categories from judges (client-side)
+   */
+  static getUniqueJudgeCategories(judges: Judge[]): string[] {
+    const categories = new Set(judges.map(j => j.category));
+    return Array.from(categories).sort();
   }
 } 

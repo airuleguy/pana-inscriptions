@@ -2,14 +2,17 @@ import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CoachDto } from '../dto/coach.dto';
+import { JudgeDto } from '../dto/judge.dto';
 export declare class FigApiService {
     private readonly configService;
     private cacheManager;
     private readonly logger;
     private readonly figApiUrl;
     private readonly figCoachApiUrl;
+    private readonly figJudgeApiUrl;
     private readonly CACHE_KEY;
     private readonly COACH_CACHE_KEY;
+    private readonly JUDGE_CACHE_KEY;
     private readonly CACHE_TTL;
     constructor(configService: ConfigService, cacheManager: Cache);
     getGymnasts(): Promise<GymnastDto[]>;
@@ -20,4 +23,8 @@ export declare class FigApiService {
     getCoachesByCountry(country: string): Promise<CoachDto[]>;
     getCoachById(id: string): Promise<CoachDto | null>;
     clearCoachCache(): Promise<void>;
+    getJudges(): Promise<JudgeDto[]>;
+    getJudgesByCountry(country: string): Promise<JudgeDto[]>;
+    getJudgeById(id: string): Promise<JudgeDto | null>;
+    clearJudgeCache(): Promise<void>;
 }

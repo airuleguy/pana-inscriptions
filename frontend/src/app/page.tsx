@@ -50,19 +50,14 @@ export default function HomePage() {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Register your choreographies and coaches for the most prestigious aerobic gymnastics 
-              tournament in the Americas. Connected to the official FIG athlete and coach database.
+              Select your tournament and country, then register choreographies, coaches, and judges for the most 
+              prestigious aerobic gymnastics tournament in the Americas. Connected to the official FIG database.
             </p>
             
             <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
               <Button size="lg" asChild className="shadow-lg font-semibold">
-                <Link href="/registration/choreography">
-                  Register Choreography
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
-                <Link href="/registration/coaches">
-                  Register Coach
+                <Link href="/tournament-selection">
+                  Start Registration
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="shadow-md border-2 font-semibold">
@@ -77,7 +72,7 @@ export default function HomePage() {
 
 
       {/* Tournament Info */}
-      <section className="py-16 px-4 bg-secondary/30">
+      <section id="tournament-info" className="py-16 px-4 bg-secondary/30">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-foreground mb-12">
@@ -142,22 +137,17 @@ export default function HomePage() {
             Ready to Register Your Team?
           </h2>
           <p className="text-xl mb-8 text-blue-100 leading-relaxed">
-            Register choreographies and coaches for the most prestigious aerobic gymnastics championship in the Americas
+            Register choreographies, coaches, and judges for the most prestigious aerobic gymnastics championship in the Americas
           </p>
           
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
-              <Link href="/registration/choreography">
-                Register Choreography
-              </Link>
-            </Button>
-            <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
-              <Link href="/registration/coaches">
-                Register Coach
+              <Link href="/tournament-selection">
+                Start Registration
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg font-semibold" asChild>
-              <Link href="/about">
+              <Link href="#tournament-info">
                 Learn More
               </Link>
             </Button>

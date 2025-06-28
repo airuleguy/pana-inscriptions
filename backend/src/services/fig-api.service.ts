@@ -5,6 +5,7 @@ import { Cache } from 'cache-manager';
 import axios, { AxiosResponse } from 'axios';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CoachDto } from '../dto/coach.dto';
+import { JudgeDto } from '../dto/judge.dto';
 
 interface FigApiGymnast {
   idgymnastlicense: string;
@@ -29,13 +30,26 @@ interface FigApiCoach {
   level: string;
 }
 
+interface FigApiJudge {
+  idfig: string;
+  discipline: string;
+  category: string;
+  preferredfirstname: string;
+  preferredlastname: string;
+  birth: string;
+  gender: string;
+  country: string;
+}
+
 @Injectable()
 export class FigApiService {
   private readonly logger = new Logger(FigApiService.name);
   private readonly figApiUrl: string;
   private readonly figCoachApiUrl: string;
+  private readonly figJudgeApiUrl: string;
   private readonly CACHE_KEY = 'fig-gymnasts';
   private readonly COACH_CACHE_KEY = 'fig-coaches';
+  private readonly JUDGE_CACHE_KEY = 'fig-judges';
   private readonly CACHE_TTL = 3600; // 1 hour in seconds
 
   constructor(
@@ -45,6 +59,7 @@ export class FigApiService {
     // Base URLs for FIG APIs
     this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
     this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
+    this.figJudgeApiUrl = 'https://www.gymnastics.sport/api/judges.php';
   }
 
   async getGymnasts(): Promise<GymnastDto[]> {
@@ -287,5 +302,128 @@ export class FigApiService {
   async clearCoachCache(): Promise<void> {
     await this.cacheManager.del(this.COACH_CACHE_KEY);
     this.logger.log('FIG coach cache cleared');
+  }
+
+  // ==================== JUDGES ====================
+
+  async getJudges(): Promise<JudgeDto[]> {
+    try {
+      // Try to get from cache first
+      const cachedData = await this.cacheManager.get<JudgeDto[]>(this.JUDGE_CACHE_KEY);
+      if (cachedData) {
+        this.logger.log('Returning cached FIG judge data');
+        return cachedData;
+      }
+
+      // If not in cache, fetch from FIG API
+      this.logger.log('Fetching judge data from FIG API');
+      const apiUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=&id=&category=&lastname=`;
+      const response: AxiosResponse<FigApiJudge[]> = await axios.get(apiUrl, {
+        timeout: 30000, // Increased timeout since API returns large dataset
+      });
+
+      if (!Array.isArray(response.data)) {
+        throw new HttpException('FIG Judge API returned unexpected data format', HttpStatus.BAD_GATEWAY);
+      }
+
+      // Transform the data
+      const judges: JudgeDto[] = response.data.map(judge => ({
+        id: judge.idfig,
+        firstName: judge.preferredfirstname,
+        lastName: judge.preferredlastname,
+        birth: judge.birth,
+        gender: judge.gender,
+        country: judge.country,
+        discipline: judge.discipline,
+        category: judge.category,
+      }));
+
+      // Cache the result
+      await this.cacheManager.set(this.JUDGE_CACHE_KEY, judges, this.CACHE_TTL);
+      this.logger.log(`Cached ${judges.length} judges from FIG API`);
+
+      return judges;
+    } catch (error) {
+      this.logger.error('Failed to fetch judges from FIG API', error);
+      
+      if (error.response?.status === 429) {
+        throw new HttpException('FIG Judge API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
+      }
+      
+      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+        throw new HttpException('FIG Judge API timeout', HttpStatus.GATEWAY_TIMEOUT);
+      }
+
+      throw new HttpException('Failed to fetch judge data', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  async getJudgesByCountry(country: string): Promise<JudgeDto[]> {
+    try {
+      // Try to get country-specific data from cache first
+      const cacheKey = `${this.JUDGE_CACHE_KEY}-${country.toUpperCase()}`;
+      const cachedData = await this.cacheManager.get<JudgeDto[]>(cacheKey);
+      if (cachedData) {
+        this.logger.log(`Returning cached FIG judge data for country: ${country}`);
+        return cachedData;
+      }
+
+      // Fetch with country filter from FIG API
+      this.logger.log(`Fetching judge data from FIG API for country: ${country}`);
+      const countrySpecificUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&category=&lastname=`;
+      
+      const response: AxiosResponse<FigApiJudge[]> = await axios.get(countrySpecificUrl, {
+        timeout: 30000,
+      });
+
+      if (!Array.isArray(response.data)) {
+        throw new HttpException('FIG Judge API returned unexpected data format', HttpStatus.BAD_GATEWAY);
+      }
+
+      // Transform the data
+      const judges: JudgeDto[] = response.data.map(judge => ({
+        id: judge.idfig,
+        firstName: judge.preferredfirstname,
+        lastName: judge.preferredlastname,
+        birth: judge.birth,
+        gender: judge.gender,
+        country: judge.country,
+        discipline: judge.discipline,
+        category: judge.category,
+      }));
+
+      // Cache the country-specific result
+      await this.cacheManager.set(cacheKey, judges, this.CACHE_TTL);
+      this.logger.log(`Cached ${judges.length} judges from FIG API for country: ${country}`);
+
+      return judges;
+    } catch (error) {
+      this.logger.error(`Failed to fetch judges from FIG API for country: ${country}`, error);
+      
+      if (error.response?.status === 429) {
+        throw new HttpException('FIG Judge API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
+      }
+      
+      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+        throw new HttpException('FIG Judge API timeout', HttpStatus.GATEWAY_TIMEOUT);
+      }
+
+      // Fallback to filtering all judges
+      this.logger.log(`Falling back to filtering all judges for country: ${country}`);
+      const allJudges = await this.getJudges();
+      return allJudges.filter(judge => 
+        judge.country.toLowerCase() === country.toLowerCase()
+      );
+    }
+  }
+
+  async getJudgeById(id: string): Promise<JudgeDto | null> {
+    const allJudges = await this.getJudges();
+    return allJudges.find(judge => judge.id === id) || null;
+  }
+
+  async clearJudgeCache(): Promise<void> {
+    await this.cacheManager.del(this.JUDGE_CACHE_KEY);
+    this.logger.log('FIG judge cache cleared');
   }
 } 

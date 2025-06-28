@@ -23,6 +23,18 @@ export interface FIGCoach {
   level: string; // L1, L2, L3, LHB, LBR
 }
 
+// FIG Judge API Types
+export interface FIGJudge {
+  idfig: string;
+  discipline: 'AER';
+  category: string; // 1, 2, 3, 4
+  preferredfirstname: string;
+  preferredlastname: string;
+  birth: string; // ISO date string
+  gender: 'Male' | 'Female';
+  country: string; // 3-letter country code
+}
+
 // Application Types
 export interface Gymnast {
   id: string; // Maps to idgymnastlicense
@@ -47,6 +59,20 @@ export interface Coach {
   country: string;
   level: string; // L1, L2, L3, LHB, LBR
   levelDescription: string; // Human-readable level description
+}
+
+export interface Judge {
+  id: string; // Maps to FIG judge ID (idfig)
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  birth: string; // ISO date string
+  dateOfBirth: Date;
+  gender: 'MALE' | 'FEMALE';
+  country: string;
+  category: string; // 1, 2, 3, 4
+  categoryDescription: string; // Human-readable category description
+  age: number; // Calculated age
 }
 
 export interface Country {

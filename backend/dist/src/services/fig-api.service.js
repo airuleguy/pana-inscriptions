@@ -25,9 +25,11 @@ let FigApiService = FigApiService_1 = class FigApiService {
         this.logger = new common_1.Logger(FigApiService_1.name);
         this.CACHE_KEY = 'fig-gymnasts';
         this.COACH_CACHE_KEY = 'fig-coaches';
+        this.JUDGE_CACHE_KEY = 'fig-judges';
         this.CACHE_TTL = 3600;
         this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
         this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
+        this.figJudgeApiUrl = 'https://www.gymnastics.sport/api/judges.php';
     }
     async getGymnasts() {
         try {
@@ -208,6 +210,97 @@ let FigApiService = FigApiService_1 = class FigApiService {
     async clearCoachCache() {
         await this.cacheManager.del(this.COACH_CACHE_KEY);
         this.logger.log('FIG coach cache cleared');
+    }
+    async getJudges() {
+        try {
+            const cachedData = await this.cacheManager.get(this.JUDGE_CACHE_KEY);
+            if (cachedData) {
+                this.logger.log('Returning cached FIG judge data');
+                return cachedData;
+            }
+            this.logger.log('Fetching judge data from FIG API');
+            const apiUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=&id=&category=&lastname=`;
+            const response = await axios_1.default.get(apiUrl, {
+                timeout: 30000,
+            });
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG Judge API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
+            }
+            const judges = response.data.map(judge => ({
+                id: judge.idfig,
+                firstName: judge.preferredfirstname,
+                lastName: judge.preferredlastname,
+                birth: judge.birth,
+                gender: judge.gender,
+                country: judge.country,
+                discipline: judge.discipline,
+                category: judge.category,
+            }));
+            await this.cacheManager.set(this.JUDGE_CACHE_KEY, judges, this.CACHE_TTL);
+            this.logger.log(`Cached ${judges.length} judges from FIG API`);
+            return judges;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch judges from FIG API', error);
+            if (error.response?.status === 429) {
+                throw new common_1.HttpException('FIG Judge API rate limit exceeded', common_1.HttpStatus.TOO_MANY_REQUESTS);
+            }
+            if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+                throw new common_1.HttpException('FIG Judge API timeout', common_1.HttpStatus.GATEWAY_TIMEOUT);
+            }
+            throw new common_1.HttpException('Failed to fetch judge data', common_1.HttpStatus.BAD_GATEWAY);
+        }
+    }
+    async getJudgesByCountry(country) {
+        try {
+            const cacheKey = `${this.JUDGE_CACHE_KEY}-${country.toUpperCase()}`;
+            const cachedData = await this.cacheManager.get(cacheKey);
+            if (cachedData) {
+                this.logger.log(`Returning cached FIG judge data for country: ${country}`);
+                return cachedData;
+            }
+            this.logger.log(`Fetching judge data from FIG API for country: ${country}`);
+            const countrySpecificUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&category=&lastname=`;
+            const response = await axios_1.default.get(countrySpecificUrl, {
+                timeout: 30000,
+            });
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG Judge API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
+            }
+            const judges = response.data.map(judge => ({
+                id: judge.idfig,
+                firstName: judge.preferredfirstname,
+                lastName: judge.preferredlastname,
+                birth: judge.birth,
+                gender: judge.gender,
+                country: judge.country,
+                discipline: judge.discipline,
+                category: judge.category,
+            }));
+            await this.cacheManager.set(cacheKey, judges, this.CACHE_TTL);
+            this.logger.log(`Cached ${judges.length} judges from FIG API for country: ${country}`);
+            return judges;
+        }
+        catch (error) {
+            this.logger.error(`Failed to fetch judges from FIG API for country: ${country}`, error);
+            if (error.response?.status === 429) {
+                throw new common_1.HttpException('FIG Judge API rate limit exceeded', common_1.HttpStatus.TOO_MANY_REQUESTS);
+            }
+            if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+                throw new common_1.HttpException('FIG Judge API timeout', common_1.HttpStatus.GATEWAY_TIMEOUT);
+            }
+            this.logger.log(`Falling back to filtering all judges for country: ${country}`);
+            const allJudges = await this.getJudges();
+            return allJudges.filter(judge => judge.country.toLowerCase() === country.toLowerCase());
+        }
+    }
+    async getJudgeById(id) {
+        const allJudges = await this.getJudges();
+        return allJudges.find(judge => judge.id === id) || null;
+    }
+    async clearJudgeCache() {
+        await this.cacheManager.del(this.JUDGE_CACHE_KEY);
+        this.logger.log('FIG judge cache cleared');
     }
 };
 exports.FigApiService = FigApiService;
