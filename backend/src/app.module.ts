@@ -9,6 +9,7 @@ import { Tournament } from './entities/tournament.entity';
 import { ChoreographyController } from './controllers/choreography.controller';
 import { GymnastController } from './controllers/gymnast.controller';
 import { TournamentController } from './controllers/tournament.controller';
+import { CoachController } from './controllers/coach.controller';
 import { HealthController } from './modules/health/health.controller';
 import { ChoreographyService } from './services/choreography.service';
 import { TournamentService } from './services/tournament.service';
@@ -43,6 +44,7 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     ChoreographyController,
     GymnastController,
     TournamentController,
+    CoachController,
     HealthController,
   ],
   providers: [

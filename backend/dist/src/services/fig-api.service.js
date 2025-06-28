@@ -24,8 +24,10 @@ let FigApiService = FigApiService_1 = class FigApiService {
         this.cacheManager = cacheManager;
         this.logger = new common_1.Logger(FigApiService_1.name);
         this.CACHE_KEY = 'fig-gymnasts';
+        this.COACH_CACHE_KEY = 'fig-coaches';
         this.CACHE_TTL = 3600;
         this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
+        this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
     }
     async getGymnasts() {
         try {
@@ -117,6 +119,95 @@ let FigApiService = FigApiService_1 = class FigApiService {
     async clearCache() {
         await this.cacheManager.del(this.CACHE_KEY);
         this.logger.log('FIG gymnast cache cleared');
+    }
+    async getCoaches() {
+        try {
+            const cachedData = await this.cacheManager.get(this.COACH_CACHE_KEY);
+            if (cachedData) {
+                this.logger.log('Returning cached FIG coach data');
+                return cachedData;
+            }
+            this.logger.log('Fetching coach data from FIG API');
+            const apiUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=&id=&level=&lastname=&firstname=`;
+            const response = await axios_1.default.get(apiUrl, {
+                timeout: 30000,
+            });
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG Coach API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
+            }
+            const coaches = response.data.map(coach => ({
+                id: coach.id,
+                firstName: coach.preferredfirstname,
+                lastName: coach.preferredlastname,
+                gender: coach.gender,
+                country: coach.country,
+                discipline: coach.discipline,
+                level: coach.level,
+            }));
+            await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL);
+            this.logger.log(`Cached ${coaches.length} coaches from FIG API`);
+            return coaches;
+        }
+        catch (error) {
+            this.logger.error('Failed to fetch coaches from FIG API', error);
+            if (error.response?.status === 429) {
+                throw new common_1.HttpException('FIG Coach API rate limit exceeded', common_1.HttpStatus.TOO_MANY_REQUESTS);
+            }
+            if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+                throw new common_1.HttpException('FIG Coach API timeout', common_1.HttpStatus.GATEWAY_TIMEOUT);
+            }
+            throw new common_1.HttpException('Failed to fetch coach data', common_1.HttpStatus.BAD_GATEWAY);
+        }
+    }
+    async getCoachesByCountry(country) {
+        try {
+            const cacheKey = `${this.COACH_CACHE_KEY}-${country.toUpperCase()}`;
+            const cachedData = await this.cacheManager.get(cacheKey);
+            if (cachedData) {
+                this.logger.log(`Returning cached FIG coach data for country: ${country}`);
+                return cachedData;
+            }
+            this.logger.log(`Fetching coach data from FIG API for country: ${country}`);
+            const countrySpecificUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&level=&lastname=&firstname=`;
+            const response = await axios_1.default.get(countrySpecificUrl, {
+                timeout: 30000,
+            });
+            if (!Array.isArray(response.data)) {
+                throw new common_1.HttpException('FIG Coach API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
+            }
+            const coaches = response.data.map(coach => ({
+                id: coach.id,
+                firstName: coach.preferredfirstname,
+                lastName: coach.preferredlastname,
+                gender: coach.gender,
+                country: coach.country,
+                discipline: coach.discipline,
+                level: coach.level,
+            }));
+            await this.cacheManager.set(cacheKey, coaches, this.CACHE_TTL);
+            this.logger.log(`Cached ${coaches.length} coaches from FIG API for country: ${country}`);
+            return coaches;
+        }
+        catch (error) {
+            this.logger.error(`Failed to fetch coaches from FIG API for country: ${country}`, error);
+            if (error.response?.status === 429) {
+                throw new common_1.HttpException('FIG Coach API rate limit exceeded', common_1.HttpStatus.TOO_MANY_REQUESTS);
+            }
+            if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+                throw new common_1.HttpException('FIG Coach API timeout', common_1.HttpStatus.GATEWAY_TIMEOUT);
+            }
+            this.logger.log(`Falling back to filtering all coaches for country: ${country}`);
+            const allCoaches = await this.getCoaches();
+            return allCoaches.filter(coach => coach.country.toLowerCase() === country.toLowerCase());
+        }
+    }
+    async getCoachById(id) {
+        const allCoaches = await this.getCoaches();
+        return allCoaches.find(coach => coach.id === id) || null;
+    }
+    async clearCoachCache() {
+        await this.cacheManager.del(this.COACH_CACHE_KEY);
+        this.logger.log('FIG coach cache cleared');
     }
 };
 exports.FigApiService = FigApiService;

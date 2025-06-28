@@ -12,6 +12,17 @@ export interface FIGGymnast {
   country: string; // 3-letter country code
 }
 
+// FIG Coach API Types
+export interface FIGCoach {
+  id: string;
+  preferredlastname: string;
+  preferredfirstname: string;
+  country: string; // 3-letter country code
+  gender: 'Male' | 'Female';
+  discipline: 'AER';
+  level: string; // L1, L2, L3, LHB, LBR
+}
+
 // Application Types
 export interface Gymnast {
   id: string; // Maps to idgymnastlicense
@@ -25,6 +36,17 @@ export interface Gymnast {
   licenseExpiryDate: Date;
   age: number;
   category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+}
+
+export interface Coach {
+  id: string; // Maps to FIG coach ID
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  gender: 'MALE' | 'FEMALE';
+  country: string;
+  level: string; // L1, L2, L3, LHB, LBR
+  levelDescription: string; // Human-readable level description
 }
 
 export interface Country {
@@ -184,8 +206,21 @@ export const CACHE_CONFIG = {
     key: 'fig_gymnasts_cache',
     duration: 24 * 60 * 60 * 1000, // 24 hours
   },
+  FIG_COACHES: {
+    key: 'fig_coaches_cache',
+    duration: 24 * 60 * 60 * 1000, // 24 hours
+  },
   COUNTRIES: {
     key: 'countries_cache',
     duration: 7 * 24 * 60 * 60 * 1000, // 7 days
   }
+} as const;
+
+// Coach level information
+export const COACH_LEVEL_INFO = {
+  'L1': 'Level 1 Coach',
+  'L2': 'Level 2 Coach', 
+  'L3': 'Level 3 Coach',
+  'LHB': 'Level High Bronze Coach',
+  'LBR': 'Level Bronze Coach'
 } as const; 

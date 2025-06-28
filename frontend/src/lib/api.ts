@@ -1,4 +1,4 @@
-import { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
+import { Gymnast, Coach, Choreography, ChoreographyType, Tournament } from '@/types';
 
 /**
  * API service for communicating with the backend
@@ -76,6 +76,38 @@ export class APIService {
    */
   static async clearGymnastCache(): Promise<void> {
     await this.fetchAPI('/api/v1/gymnasts/cache', { method: 'DELETE' });
+  }
+
+  // ==================== COACHES ====================
+
+  /**
+   * Get all licensed coaches with optional country filter
+   */
+  static async getCoaches(country?: string): Promise<Coach[]> {
+    const endpoint = country 
+      ? `/api/v1/coaches?country=${encodeURIComponent(country)}`
+      : '/api/v1/coaches';
+    
+    const figCoaches = await this.fetchAPI<any[]>(endpoint);
+    
+    // Transform FIG backend data to frontend format
+    return figCoaches.map(fig => this.transformFigToCoach(fig));
+  }
+
+  /**
+   * Search coaches by name and country
+   */
+  static async searchCoaches(query: string, country?: string): Promise<Coach[]> {
+    // Get all coaches for the country, then filter client-side
+    const coaches = await this.getCoaches(country);
+    return this.searchCoachesLocal(coaches, query);
+  }
+
+  /**
+   * Clear coach cache on the backend
+   */
+  static async clearCoachCache(): Promise<void> {
+    await this.fetchAPI('/api/v1/coaches/cache', { method: 'DELETE' });
   }
 
   // ==================== CHOREOGRAPHIES ====================
@@ -205,6 +237,22 @@ export class APIService {
   }
 
   /**
+   * Transform backend FIG coach data to frontend format
+   */
+  private static transformFigToCoach(fig: any): Coach {
+    return {
+      id: fig.id,
+      firstName: fig.firstName,
+      lastName: fig.lastName,
+      fullName: `${fig.firstName} ${fig.lastName}`,
+      gender: fig.gender.toUpperCase() as 'MALE' | 'FEMALE',
+      country: fig.country,
+      level: fig.level,
+      levelDescription: this.getCoachLevelDescription(fig.level),
+    };
+  }
+
+  /**
    * Transform backend choreography to frontend format
    */
   private static transformBackendToChoreography(backend: any): Choreography {
@@ -285,6 +333,16 @@ export class APIService {
     return dto;
   }
 
+  /**
+   * Get human-readable description for coach level
+   */
+  private static getCoachLevelDescription(level: string): string {
+    const { COACH_LEVEL_INFO } = require('@/types');
+    const levels = level.split(', ');
+    const descriptions = levels.map(l => COACH_LEVEL_INFO[l as keyof typeof COACH_LEVEL_INFO] || l);
+    return descriptions.join(', ');
+  }
+
   // ==================== UTILITY HELPERS ====================
 
   private static calculateAge(birthDate: Date): number {
@@ -363,5 +421,48 @@ export class APIService {
   static getUniqueCountries(gymnasts: Gymnast[]): string[] {
     const countries = new Set(gymnasts.map(g => g.country));
     return Array.from(countries).sort();
+  }
+
+  // ==================== COACH SEARCH & FILTER HELPERS ====================
+
+  /**
+   * Search coaches by name (client-side filtering)
+   */
+  static searchCoachesLocal(coaches: Coach[], query: string): Coach[] {
+    if (!query.trim()) return coaches;
+    
+    const searchTerm = query.toLowerCase().trim();
+    return coaches.filter(c => 
+      c.firstName.toLowerCase().includes(searchTerm) ||
+      c.lastName.toLowerCase().includes(searchTerm) ||
+      c.fullName.toLowerCase().includes(searchTerm) ||
+      c.levelDescription.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  /**
+   * Filter coaches by level
+   */
+  static filterCoachesByLevel(coaches: Coach[], level: string): Coach[] {
+    return coaches.filter(c => c.level.includes(level));
+  }
+
+  /**
+   * Get unique countries from coaches (client-side)
+   */
+  static getUniqueCoachCountries(coaches: Coach[]): string[] {
+    const countries = new Set(coaches.map(c => c.country));
+    return Array.from(countries).sort();
+  }
+
+  /**
+   * Get unique levels from coaches (client-side)
+   */
+  static getUniqueCoachLevels(coaches: Coach[]): string[] {
+    const levels = new Set<string>();
+    coaches.forEach(c => {
+      c.level.split(', ').forEach(level => levels.add(level.trim()));
+    });
+    return Array.from(levels).sort();
   }
 } 

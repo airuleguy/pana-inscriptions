@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -12,35 +12,16 @@ import { GymnastSelector } from '@/components/forms/gymnast-selector';
 import { APIService } from '@/lib/api';
 import { 
   generateChoreographyName, 
-  getCountryFlag, 
   determineChoreographyType, 
   getChoreographyTypeDisplayName,
   getChoreographyTypeColor,
   isValidGymnastCount
 } from '@/lib/utils';
+import { countries, popularCountries, getCountryByCode, type Country } from '@/lib/countries';
 import type { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
 import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 
-// Sample countries with AER gymnasts
-const SAMPLE_COUNTRIES = [
-  { code: 'USA', name: 'United States' },
-  { code: 'BRA', name: 'Brazil' },
-  { code: 'ARG', name: 'Argentina' },
-  { code: 'CAN', name: 'Canada' },
-  { code: 'MEX', name: 'Mexico' },
-  { code: 'CHI', name: 'Chile' },
-  { code: 'COL', name: 'Colombia' },
-  { code: 'ESP', name: 'Spain' },
-  { code: 'FRA', name: 'France' },
-  { code: 'GER', name: 'Germany' },
-  { code: 'ITA', name: 'Italy' },
-  { code: 'RUS', name: 'Russia' },
-  { code: 'CHN', name: 'China' },
-  { code: 'JPN', name: 'Japan' },
-  { code: 'AUS', name: 'Australia' },
-];
-
-export default function RegisterPage() {
+export default function ChoreographyRegistrationPage() {
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [availableTournaments, setAvailableTournaments] = useState<Tournament[]>([]);
@@ -254,14 +235,34 @@ export default function RegisterPage() {
                   <Label htmlFor="country">Country</Label>
                   <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
+                      <SelectValue placeholder="Select your country">
+                        {selectedCountry && getCountryByCode(selectedCountry) && (
+                          <>
+                            <span className="text-lg">{getCountryByCode(selectedCountry)!.flag}</span> {getCountryByCode(selectedCountry)!.name}
+                          </>
+                        )}
+                      </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      {SAMPLE_COUNTRIES.map(country => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {getCountryFlag(country.code)} {country.name}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="max-h-[300px]">
+                      {/* Popular Countries First */}
+                      <SelectGroup>
+                        <SelectLabel>Popular Countries</SelectLabel>
+                        {popularCountries.map(country => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.flag} {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      
+                      {/* All Countries */}
+                      <SelectGroup>
+                        <SelectLabel>All Countries</SelectLabel>
+                        {countries.map(country => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.flag} {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </div>

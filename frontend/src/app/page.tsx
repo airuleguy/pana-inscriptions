@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Calendar, MapPin, Award, Globe } from 'lucide-react';
+import { Trophy, Users, Calendar, MapPin, Award, Globe, GraduationCap } from 'lucide-react';
 
 export default function HomePage() {
   return (
@@ -50,14 +50,19 @@ export default function HomePage() {
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Register your choreographies for the most prestigious aerobic gymnastics 
-              tournament in the Americas. Connected to the official FIG athlete database.
+              Register your choreographies and coaches for the most prestigious aerobic gymnastics 
+              tournament in the Americas. Connected to the official FIG athlete and coach database.
             </p>
             
-            <div className="flex items-center justify-center gap-4 mt-8">
+            <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
               <Button size="lg" asChild className="shadow-lg font-semibold">
-                <Link href="/register">
-                  Register as Representative
+                <Link href="/registration/choreography">
+                  Register Choreography
+                </Link>
+              </Button>
+              <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
+                <Link href="/registration/coaches">
+                  Register Coach
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="shadow-md border-2 font-semibold">
@@ -137,13 +142,18 @@ export default function HomePage() {
             Ready to Register Your Team?
           </h2>
           <p className="text-xl mb-8 text-blue-100 leading-relaxed">
-            Join the most prestigious aerobic gymnastics championship in the Americas
+            Register choreographies and coaches for the most prestigious aerobic gymnastics championship in the Americas
           </p>
           
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
-              <Link href="/register">
-                Start Registration
+              <Link href="/registration/choreography">
+                Register Choreography
+              </Link>
+            </Button>
+            <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
+              <Link href="/registration/coaches">
+                Register Coach
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg font-semibold" asChild>

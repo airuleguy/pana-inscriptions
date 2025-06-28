@@ -4,6 +4,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import axios, { AxiosResponse } from 'axios';
 import { GymnastDto } from '../dto/gymnast.dto';
+import { CoachDto } from '../dto/coach.dto';
 
 interface FigApiGymnast {
   idgymnastlicense: string;
@@ -18,19 +19,32 @@ interface FigApiGymnast {
   country: string;
 }
 
+interface FigApiCoach {
+  id: string;
+  preferredlastname: string;
+  preferredfirstname: string;
+  country: string;
+  gender: string;
+  discipline: string;
+  level: string;
+}
+
 @Injectable()
 export class FigApiService {
   private readonly logger = new Logger(FigApiService.name);
   private readonly figApiUrl: string;
+  private readonly figCoachApiUrl: string;
   private readonly CACHE_KEY = 'fig-gymnasts';
+  private readonly COACH_CACHE_KEY = 'fig-coaches';
   private readonly CACHE_TTL = 3600; // 1 hour in seconds
 
   constructor(
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    // Base URL for FIG API - we'll add parameters dynamically
+    // Base URLs for FIG APIs
     this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
+    this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
   }
 
   async getGymnasts(): Promise<GymnastDto[]> {
@@ -152,5 +166,126 @@ export class FigApiService {
   async clearCache(): Promise<void> {
     await this.cacheManager.del(this.CACHE_KEY);
     this.logger.log('FIG gymnast cache cleared');
+  }
+
+  // ==================== COACHES ====================
+
+  async getCoaches(): Promise<CoachDto[]> {
+    try {
+      // Try to get from cache first
+      const cachedData = await this.cacheManager.get<CoachDto[]>(this.COACH_CACHE_KEY);
+      if (cachedData) {
+        this.logger.log('Returning cached FIG coach data');
+        return cachedData;
+      }
+
+      // If not in cache, fetch from FIG API
+      this.logger.log('Fetching coach data from FIG API');
+      const apiUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=&id=&level=&lastname=&firstname=`;
+      const response: AxiosResponse<FigApiCoach[]> = await axios.get(apiUrl, {
+        timeout: 30000, // Increased timeout since API returns large dataset
+      });
+
+      if (!Array.isArray(response.data)) {
+        throw new HttpException('FIG Coach API returned unexpected data format', HttpStatus.BAD_GATEWAY);
+      }
+
+      // Transform the data
+      const coaches: CoachDto[] = response.data.map(coach => ({
+        id: coach.id,
+        firstName: coach.preferredfirstname,
+        lastName: coach.preferredlastname,
+        gender: coach.gender,
+        country: coach.country,
+        discipline: coach.discipline,
+        level: coach.level,
+      }));
+
+      // Cache the result
+      await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL);
+      this.logger.log(`Cached ${coaches.length} coaches from FIG API`);
+
+      return coaches;
+    } catch (error) {
+      this.logger.error('Failed to fetch coaches from FIG API', error);
+      
+      if (error.response?.status === 429) {
+        throw new HttpException('FIG Coach API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
+      }
+      
+      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+        throw new HttpException('FIG Coach API timeout', HttpStatus.GATEWAY_TIMEOUT);
+      }
+
+      throw new HttpException('Failed to fetch coach data', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  async getCoachesByCountry(country: string): Promise<CoachDto[]> {
+    try {
+      // Try to get country-specific data from cache first
+      const cacheKey = `${this.COACH_CACHE_KEY}-${country.toUpperCase()}`;
+      const cachedData = await this.cacheManager.get<CoachDto[]>(cacheKey);
+      if (cachedData) {
+        this.logger.log(`Returning cached FIG coach data for country: ${country}`);
+        return cachedData;
+      }
+
+      // Fetch with country filter from FIG API
+      this.logger.log(`Fetching coach data from FIG API for country: ${country}`);
+      const countrySpecificUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&level=&lastname=&firstname=`;
+      
+      const response: AxiosResponse<FigApiCoach[]> = await axios.get(countrySpecificUrl, {
+        timeout: 30000,
+      });
+
+      if (!Array.isArray(response.data)) {
+        throw new HttpException('FIG Coach API returned unexpected data format', HttpStatus.BAD_GATEWAY);
+      }
+
+      // Transform the data
+      const coaches: CoachDto[] = response.data.map(coach => ({
+        id: coach.id,
+        firstName: coach.preferredfirstname,
+        lastName: coach.preferredlastname,
+        gender: coach.gender,
+        country: coach.country,
+        discipline: coach.discipline,
+        level: coach.level,
+      }));
+
+      // Cache the country-specific result
+      await this.cacheManager.set(cacheKey, coaches, this.CACHE_TTL);
+      this.logger.log(`Cached ${coaches.length} coaches from FIG API for country: ${country}`);
+
+      return coaches;
+    } catch (error) {
+      this.logger.error(`Failed to fetch coaches from FIG API for country: ${country}`, error);
+      
+      if (error.response?.status === 429) {
+        throw new HttpException('FIG Coach API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
+      }
+      
+      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
+        throw new HttpException('FIG Coach API timeout', HttpStatus.GATEWAY_TIMEOUT);
+      }
+
+      // Fallback to filtering all coaches
+      this.logger.log(`Falling back to filtering all coaches for country: ${country}`);
+      const allCoaches = await this.getCoaches();
+      return allCoaches.filter(coach => 
+        coach.country.toLowerCase() === country.toLowerCase()
+      );
+    }
+  }
+
+  async getCoachById(id: string): Promise<CoachDto | null> {
+    const allCoaches = await this.getCoaches();
+    return allCoaches.find(coach => coach.id === id) || null;
+  }
+
+  async clearCoachCache(): Promise<void> {
+    await this.cacheManager.del(this.COACH_CACHE_KEY);
+    this.logger.log('FIG coach cache cleared');
   }
 } 
