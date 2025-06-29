@@ -19,6 +19,7 @@ const swagger_1 = require("@nestjs/swagger");
 const coach_registration_service_1 = require("../services/coach-registration.service");
 const judge_registration_service_1 = require("../services/judge-registration.service");
 const choreography_service_1 = require("../services/choreography.service");
+const country_auth_guard_1 = require("../guards/country-auth.guard");
 let GlobalRegistrationsController = GlobalRegistrationsController_1 = class GlobalRegistrationsController {
     constructor(coachRegistrationService, judgeRegistrationService, choreographyService) {
         this.coachRegistrationService = coachRegistrationService;
@@ -26,27 +27,28 @@ let GlobalRegistrationsController = GlobalRegistrationsController_1 = class Glob
         this.choreographyService = choreographyService;
         this.logger = new common_1.Logger(GlobalRegistrationsController_1.name);
     }
-    async getAllJudgeRegistrations(country, tournamentId, category) {
-        this.logger.log(`Getting global judge registrations with filters: country=${country}, tournament=${tournamentId}, category=${category}`);
+    async getAllJudgeRegistrations(request, tournamentId, category) {
+        const country = request.userCountry;
+        this.logger.log(`Getting global judge registrations for ${country} with filters: tournament=${tournamentId}, category=${category}`);
         return this.judgeRegistrationService.findAll(country, tournamentId);
     }
-    async getAllCoachRegistrations(country, tournamentId, level) {
-        this.logger.log(`Getting global coach registrations with filters: country=${country}, tournament=${tournamentId}, level=${level}`);
+    async getAllCoachRegistrations(request, tournamentId, level) {
+        const country = request.userCountry;
+        this.logger.log(`Getting global coach registrations for ${country} with filters: tournament=${tournamentId}, level=${level}`);
         return this.coachRegistrationService.findAll(country, tournamentId);
     }
-    async getAllChoreographyRegistrations(country, category, type) {
-        this.logger.log(`Getting global choreography registrations with filters: country=${country}, category=${category}, type=${type}`);
-        if (country) {
-            return this.choreographyService.findByCountry(country);
-        }
-        return this.choreographyService.findAll();
+    async getAllChoreographyRegistrations(request, category, type) {
+        const country = request.userCountry;
+        this.logger.log(`Getting global choreography registrations for ${country} with filters: category=${category}, type=${type}`);
+        return this.choreographyService.findByCountry(country);
     }
-    async getGlobalRegistrationSummary(country) {
-        this.logger.log(`Getting global registration summary${country ? ` for country: ${country}` : ''}`);
+    async getGlobalRegistrationSummary(request) {
+        const country = request.userCountry;
+        this.logger.log(`Getting registration summary for country: ${country}`);
         const [judges, coaches, choreographies] = await Promise.all([
             this.judgeRegistrationService.findAll(country),
             this.coachRegistrationService.findAll(country),
-            country ? this.choreographyService.findByCountry(country) : this.choreographyService.findAll()
+            this.choreographyService.findByCountry(country)
         ]);
         const tournamentStats = {};
         judges.forEach(judge => {
@@ -83,82 +85,84 @@ let GlobalRegistrationsController = GlobalRegistrationsController_1 = class Glob
 exports.GlobalRegistrationsController = GlobalRegistrationsController;
 __decorate([
     (0, common_1.Get)('judges'),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get judge registrations across tournaments',
-        description: 'Retrieve judge registrations with cross-tournament filtering capabilities'
+        description: 'Retrieve judge registrations for your country with cross-tournament filtering capabilities'
     }),
-    (0, swagger_1.ApiQuery)({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' }),
     (0, swagger_1.ApiQuery)({ name: 'tournament', required: false, description: 'Filter by tournament ID' }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false, description: 'Filter by judge category' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: 'Judge registrations retrieved successfully'
     }),
-    __param(0, (0, common_1.Query)('country')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('tournament')),
     __param(2, (0, common_1.Query)('category')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], GlobalRegistrationsController.prototype, "getAllJudgeRegistrations", null);
 __decorate([
     (0, common_1.Get)('coaches'),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get coach registrations across tournaments',
-        description: 'Retrieve coach registrations with cross-tournament filtering capabilities'
+        description: 'Retrieve coach registrations for your country with cross-tournament filtering capabilities'
     }),
-    (0, swagger_1.ApiQuery)({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' }),
     (0, swagger_1.ApiQuery)({ name: 'tournament', required: false, description: 'Filter by tournament ID' }),
     (0, swagger_1.ApiQuery)({ name: 'level', required: false, description: 'Filter by coach level' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: 'Coach registrations retrieved successfully'
     }),
-    __param(0, (0, common_1.Query)('country')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('tournament')),
     __param(2, (0, common_1.Query)('level')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], GlobalRegistrationsController.prototype, "getAllCoachRegistrations", null);
 __decorate([
     (0, common_1.Get)('choreographies'),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Get choreography registrations across tournaments',
-        description: 'Retrieve choreography registrations with cross-tournament filtering capabilities'
+        description: 'Retrieve choreography registrations for your country with cross-tournament filtering capabilities'
     }),
-    (0, swagger_1.ApiQuery)({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false, description: 'Filter by category (YOUTH, JUNIOR, SENIOR)' }),
     (0, swagger_1.ApiQuery)({ name: 'type', required: false, description: 'Filter by type (MIND, WIND, MXP, TRIO, GRP, DNCE)' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: 'Choreography registrations retrieved successfully'
     }),
-    __param(0, (0, common_1.Query)('country')),
+    __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Query)('category')),
     __param(2, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], GlobalRegistrationsController.prototype, "getAllChoreographyRegistrations", null);
 __decorate([
     (0, common_1.Get)('summary'),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
-        summary: 'Get global registration summary',
-        description: 'Get summary statistics across all tournaments and countries'
+        summary: 'Get registration summary for your country',
+        description: 'Get summary statistics across all tournaments for your country'
     }),
-    (0, swagger_1.ApiQuery)({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
-        description: 'Global registration summary retrieved successfully'
+        description: 'Registration summary retrieved successfully'
     }),
-    __param(0, (0, common_1.Query)('country')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], GlobalRegistrationsController.prototype, "getGlobalRegistrationSummary", null);
 exports.GlobalRegistrationsController = GlobalRegistrationsController = GlobalRegistrationsController_1 = __decorate([
     (0, swagger_1.ApiTags)('global-registrations'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(country_auth_guard_1.CountryAuthGuard),
     (0, common_1.Controller)('api/v1/registrations'),
     __metadata("design:paramtypes", [coach_registration_service_1.CoachRegistrationService,
         judge_registration_service_1.JudgeRegistrationService,

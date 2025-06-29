@@ -19,18 +19,17 @@ const choreography_service_1 = require("../services/choreography.service");
 const create_choreography_dto_1 = require("../dto/create-choreography.dto");
 const update_choreography_dto_1 = require("../dto/update-choreography.dto");
 const choreography_entity_1 = require("../entities/choreography.entity");
+const country_auth_guard_1 = require("../guards/country-auth.guard");
 let ChoreographyController = class ChoreographyController {
     constructor(choreographyService) {
         this.choreographyService = choreographyService;
     }
-    async create(createChoreographyDto) {
+    async create(createChoreographyDto, request) {
         return this.choreographyService.create(createChoreographyDto);
     }
-    async findAll(country) {
-        if (country) {
-            return this.choreographyService.findByCountry(country);
-        }
-        return this.choreographyService.findAll();
+    async findAll(request) {
+        const country = request.userCountry;
+        return this.choreographyService.findByCountry(country);
     }
     async findOne(id) {
         return this.choreographyService.findOne(id);
@@ -48,9 +47,10 @@ let ChoreographyController = class ChoreographyController {
 exports.ChoreographyController = ChoreographyController;
 __decorate([
     (0, common_1.Post)(),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
         summary: 'Create a new choreography',
-        description: 'Register a new choreography for the tournament with validation of business rules'
+        description: 'Register a new choreography from your country for the tournament with validation of business rules'
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.CREATED,
@@ -62,30 +62,26 @@ __decorate([
         description: 'Invalid input or business rule violation'
     }),
     __param(0, (0, common_1.Body)(common_1.ValidationPipe)),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_choreography_dto_1.CreateChoreographyDto]),
+    __metadata("design:paramtypes", [create_choreography_dto_1.CreateChoreographyDto, Object]),
     __metadata("design:returntype", Promise)
 ], ChoreographyController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
+    (0, country_auth_guard_1.CountryScoped)(),
     (0, swagger_1.ApiOperation)({
-        summary: 'Get all choreographies',
-        description: 'Retrieve all registered choreographies with optional country filter'
-    }),
-    (0, swagger_1.ApiQuery)({
-        name: 'country',
-        required: false,
-        description: 'Filter by country code (ISO 3166-1 alpha-3)',
-        example: 'USA'
+        summary: 'Get all choreographies from your country',
+        description: 'Retrieve all registered choreographies from your country'
     }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: 'List of choreographies',
         type: [choreography_entity_1.Choreography]
     }),
-    __param(0, (0, common_1.Query)('country')),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ChoreographyController.prototype, "findAll", null);
 __decorate([
@@ -177,6 +173,8 @@ __decorate([
 ], ChoreographyController.prototype, "getCountryStats", null);
 exports.ChoreographyController = ChoreographyController = __decorate([
     (0, swagger_1.ApiTags)('choreographies'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(country_auth_guard_1.CountryAuthGuard),
     (0, common_1.Controller)('api/v1/choreographies'),
     __metadata("design:paramtypes", [choreography_service_1.ChoreographyService])
 ], ChoreographyController);

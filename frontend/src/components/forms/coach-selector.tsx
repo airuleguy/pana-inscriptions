@@ -14,14 +14,14 @@ import { getInitials } from '@/lib/utils';
 import type { Coach } from '@/types';
 
 // Simple debounce implementation
-function debounce<T extends (...args: unknown[]) => void>(
-  func: T,
+function debounce(
+  func: (query: string) => Promise<void>,
   delay: number
-): (...args: Parameters<T>) => void {
+): (query: string) => void {
   let timeoutId: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return (query: string) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
+    timeoutId = setTimeout(() => func(query), delay);
   };
 }
 

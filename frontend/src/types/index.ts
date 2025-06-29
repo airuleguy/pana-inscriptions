@@ -170,17 +170,38 @@ export interface CacheData<T = any> {
   expiresAt: number;
 }
 
-// Auth Types
-export interface AuthUser {
+// Auth Types - Consolidated to match backend implementation
+export interface User {
   id: string;
-  email: string;
-  name: string;
-  countryCode: string;
-  role: 'REPRESENTATIVE' | 'ADMIN';
-  verified: boolean;
-  }
-  
-  // Constants
+  username: string;
+  country: string;
+  role: 'DELEGATE' | 'ADMIN';
+  isActive: boolean;
+  createdAt: Date;
+  lastLoginAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: User;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+// Constants
 export const GYMNAST_COUNTS = [1, 2, 3, 5, 8] as const;
 export const CATEGORIES = VALID_CATEGORIES;
 export const CHOREOGRAPHY_STATUS = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;

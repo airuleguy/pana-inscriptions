@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { RegistrationLayout } from '@/components/registration-layout';
+import { ProtectedRoute } from '@/components/protected-route';
 import type { Tournament } from '@/types';
 import { APIService } from '@/lib/api';
 
-export default function TournamentRegistrationLayout({
+function TournamentRegistrationLayoutContent({
   children,
 }: {
   children: React.ReactNode;
@@ -58,4 +59,18 @@ export default function TournamentRegistrationLayout({
   }
 
   return <RegistrationLayout>{children}</RegistrationLayout>;
+}
+
+export default function TournamentRegistrationLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ProtectedRoute>
+      <TournamentRegistrationLayoutContent>
+        {children}
+      </TournamentRegistrationLayoutContent>
+    </ProtectedRoute>
+  );
 } 

@@ -84,8 +84,7 @@ export default function JudgeRegistrationPage() {
       // Save selections to database using tournament-centric API
       const saveResult = await APIService.saveJudgeSelections(
         selectedJudges,
-        tournamentId, // Use tournament ID from URL
-        selectedCountry
+        tournamentId // Use tournament ID from URL
       );
 
       if (!saveResult.success) {

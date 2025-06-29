@@ -1,10 +1,44 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Calendar, MapPin, Globe } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function HomePage() {
+  const { state, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Don't redirect while still loading auth state
+    if (isLoading) return;
+
+    // If authenticated, redirect to tournament selection
+    if (state.isAuthenticated) {
+      router.push('/tournament-selection');
+    }
+  }, [state.isAuthenticated, isLoading, router]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If authenticated, don't show the landing page (will redirect)
+  if (state.isAuthenticated) {
+    return null;
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}

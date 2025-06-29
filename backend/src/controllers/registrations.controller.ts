@@ -1,10 +1,14 @@
-import { Controller, Get, Query, HttpStatus, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Query, HttpStatus, Logger, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 import { CoachRegistrationService } from '../services/coach-registration.service';
 import { JudgeRegistrationService } from '../services/judge-registration.service';
 import { ChoreographyService } from '../services/choreography.service';
+import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 
 @ApiTags('global-registrations')
+@ApiBearerAuth()
+@UseGuards(CountryAuthGuard)
 @Controller('api/v1/registrations')
 export class GlobalRegistrationsController {
   private readonly logger = new Logger(GlobalRegistrationsController.name);
@@ -16,11 +20,11 @@ export class GlobalRegistrationsController {
   ) {}
 
   @Get('judges')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get judge registrations across tournaments',
-    description: 'Retrieve judge registrations with cross-tournament filtering capabilities'
+    description: 'Retrieve judge registrations for your country with cross-tournament filtering capabilities'
   })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiQuery({ name: 'tournament', required: false, description: 'Filter by tournament ID' })
   @ApiQuery({ name: 'category', required: false, description: 'Filter by judge category' })
   @ApiResponse({ 
@@ -28,20 +32,21 @@ export class GlobalRegistrationsController {
     description: 'Judge registrations retrieved successfully'
   })
   async getAllJudgeRegistrations(
-    @Query('country') country?: string,
+    @Req() request: Request,
     @Query('tournament') tournamentId?: string,
     @Query('category') category?: string
   ) {
-    this.logger.log(`Getting global judge registrations with filters: country=${country}, tournament=${tournamentId}, category=${category}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting global judge registrations for ${country} with filters: tournament=${tournamentId}, category=${category}`);
     return this.judgeRegistrationService.findAll(country, tournamentId);
   }
 
   @Get('coaches')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get coach registrations across tournaments',
-    description: 'Retrieve coach registrations with cross-tournament filtering capabilities'
+    description: 'Retrieve coach registrations for your country with cross-tournament filtering capabilities'
   })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiQuery({ name: 'tournament', required: false, description: 'Filter by tournament ID' })
   @ApiQuery({ name: 'level', required: false, description: 'Filter by coach level' })
   @ApiResponse({ 
@@ -49,20 +54,21 @@ export class GlobalRegistrationsController {
     description: 'Coach registrations retrieved successfully'
   })
   async getAllCoachRegistrations(
-    @Query('country') country?: string,
+    @Req() request: Request,
     @Query('tournament') tournamentId?: string,
     @Query('level') level?: string
   ) {
-    this.logger.log(`Getting global coach registrations with filters: country=${country}, tournament=${tournamentId}, level=${level}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting global coach registrations for ${country} with filters: tournament=${tournamentId}, level=${level}`);
     return this.coachRegistrationService.findAll(country, tournamentId);
   }
 
   @Get('choreographies')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get choreography registrations across tournaments',
-    description: 'Retrieve choreography registrations with cross-tournament filtering capabilities'
+    description: 'Retrieve choreography registrations for your country with cross-tournament filtering capabilities'
   })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiQuery({ name: 'category', required: false, description: 'Filter by category (YOUTH, JUNIOR, SENIOR)' })
   @ApiQuery({ name: 'type', required: false, description: 'Filter by type (MIND, WIND, MXP, TRIO, GRP, DNCE)' })
   @ApiResponse({ 
@@ -70,37 +76,36 @@ export class GlobalRegistrationsController {
     description: 'Choreography registrations retrieved successfully'
   })
   async getAllChoreographyRegistrations(
-    @Query('country') country?: string,
+    @Req() request: Request,
     @Query('category') category?: string,
     @Query('type') type?: string
   ) {
-    this.logger.log(`Getting global choreography registrations with filters: country=${country}, category=${category}, type=${type}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting global choreography registrations for ${country} with filters: category=${category}, type=${type}`);
     
-    if (country) {
-      return this.choreographyService.findByCountry(country);
-    }
-    return this.choreographyService.findAll();
+    return this.choreographyService.findByCountry(country);
   }
 
   @Get('summary')
+  @CountryScoped()
   @ApiOperation({ 
-    summary: 'Get global registration summary',
-    description: 'Get summary statistics across all tournaments and countries'
+    summary: 'Get registration summary for your country',
+    description: 'Get summary statistics across all tournaments for your country'
   })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiResponse({ 
     status: HttpStatus.OK, 
-    description: 'Global registration summary retrieved successfully'
+    description: 'Registration summary retrieved successfully'
   })
   async getGlobalRegistrationSummary(
-    @Query('country') country?: string
+    @Req() request: Request
   ) {
-    this.logger.log(`Getting global registration summary${country ? ` for country: ${country}` : ''}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting registration summary for country: ${country}`);
     
     const [judges, coaches, choreographies] = await Promise.all([
       this.judgeRegistrationService.findAll(country),
       this.coachRegistrationService.findAll(country),
-      country ? this.choreographyService.findByCountry(country) : this.choreographyService.findAll()
+      this.choreographyService.findByCountry(country)
     ]);
 
     // Group by tournament

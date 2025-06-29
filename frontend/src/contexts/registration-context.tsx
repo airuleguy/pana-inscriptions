@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Gymnast, Coach, Judge, Tournament } from '@/types';
+import type { Gymnast, Coach, Judge, Tournament, Choreography } from '@/types';
 import { APIService } from '@/lib/api';
 
 export interface RegisteredChoreography {
@@ -12,20 +12,7 @@ export interface RegisteredChoreography {
   gymnastsCount: number;
   gymnasts: Gymnast[];
   registeredAt: Date;
-  choreographyData?: {
-    name: string;
-    category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
-    type: string;
-    country: string;
-    tournament: Tournament;
-    gymnasts: Gymnast[];
-    gymnastCount: 1 | 2 | 3 | 5 | 8;
-    notes?: string;
-    status?: 'SUBMITTED';
-    musicFile?: File;
-    musicFileName?: string;
-    submittedBy?: string;
-  };
+  choreographyData?: Choreography;
 }
 
 export interface RegisteredCoach {

@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament } from '@/types';
+import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User } from '@/types';
 import { ChoreographyCategory } from '@/constants/categories';
 
 /**
@@ -7,6 +7,21 @@ import { ChoreographyCategory } from '@/constants/categories';
  */
 export class APIService {
   private static readonly BASE_URL = ''; // Use relative URLs since Next.js will proxy to backend
+  private static authToken: string | null = null;
+  
+  /**
+   * Set authentication token for API requests
+   */
+  static setAuthToken(token: string | null) {
+    this.authToken = token;
+  }
+
+  /**
+   * Get current authentication token
+   */
+  static getAuthToken(): string | null {
+    return this.authToken;
+  }
   
   /**
    * Generic fetch wrapper with error handling
@@ -14,17 +29,43 @@ export class APIService {
   private static async fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.BASE_URL}${endpoint}`;
     
+    // Add authentication header if token is available
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add any existing headers
+    if (options?.headers) {
+      Object.entries(options.headers).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          headers[key] = value;
+        }
+      });
+    }
+    
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+    
     try {
       const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...options?.headers,
-        },
+        headers,
         ...options,
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
+        
+        // Handle 401 Unauthorized - token might be expired
+        if (response.status === 401) {
+          this.authToken = null;
+          // Clear stored auth data
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('pana-auth-token');
+            localStorage.removeItem('pana-auth-user');
+          }
+        }
+        
         throw new Error(
           errorData?.message || 
           `API error: ${response.status} ${response.statusText}`
@@ -38,6 +79,59 @@ export class APIService {
         throw error;
       }
       throw new Error('Network error occurred');
+    }
+  }
+
+  // ==================== AUTHENTICATION ====================
+
+  /**
+   * Authenticate user with username and password
+   */
+  static async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    const response = await this.fetchAPI<AuthResponse>('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+    
+    // Set token for subsequent requests
+    this.setAuthToken(response.accessToken);
+    
+    return response;
+  }
+
+  /**
+   * Refresh authentication token
+   */
+  static async refreshToken(): Promise<AuthResponse> {
+    const response = await this.fetchAPI<AuthResponse>('/api/v1/auth/refresh', {
+      method: 'POST',
+    });
+    
+    this.setAuthToken(response.accessToken);
+    
+    return response;
+  }
+
+  /**
+   * Verify current token is valid
+   */
+  static async verifyToken(): Promise<User> {
+    return await this.fetchAPI<User>('/api/v1/auth/verify');
+  }
+
+  /**
+   * Logout user (optional backend call)
+   */
+  static async logout(): Promise<void> {
+    try {
+      await this.fetchAPI('/api/v1/auth/logout', {
+        method: 'POST',
+      });
+    } catch (error) {
+      // Ignore logout errors - token will be cleared anyway
+      console.warn('Logout request failed:', error);
+    } finally {
+      this.setAuthToken(null);
     }
   }
 

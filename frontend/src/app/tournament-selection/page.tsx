@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trophy, Calendar, MapPin, Globe, ArrowRight, Users, UserCheck, ClipboardList } from 'lucide-react';
+import { Trophy, Calendar, MapPin, Globe, ArrowRight } from 'lucide-react';
 import { APIService } from '@/lib/api';
 import { Tournament } from '@/types';
-import { countries, popularCountries, Country } from '@/lib/countries';
+import { countries, popularCountries } from '@/lib/countries';
+import { ProtectedRoute } from '@/components/protected-route';
 
-export default function TournamentSelectionPage() {
+function TournamentSelectionContent() {
   const router = useRouter();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -271,5 +272,13 @@ export default function TournamentSelectionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TournamentSelectionPage() {
+  return (
+    <ProtectedRoute>
+      <TournamentSelectionContent />
+    </ProtectedRoute>
   );
 } 

@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
+import { AuthProvider } from '@/contexts/auth-context';
 import { RegistrationProvider } from '@/contexts/registration-context';
 
 interface ProvidersProps {
@@ -16,9 +17,11 @@ export function Providers({ children }: ProvidersProps) {
       enableSystem
       disableTransitionOnChange
     >
-      <RegistrationProvider>
-        {children}
-      </RegistrationProvider>
+      <AuthProvider>
+        <RegistrationProvider>
+          {children}
+        </RegistrationProvider>
+      </AuthProvider>
       <Toaster 
         position="top-right"
         richColors

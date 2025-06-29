@@ -17,6 +17,8 @@ const choreography_entity_1 = require("../entities/choreography.entity");
 const tournament_entity_1 = require("../entities/tournament.entity");
 const coach_entity_1 = require("../entities/coach.entity");
 const judge_entity_1 = require("../entities/judge.entity");
+const user_entity_1 = require("../entities/user.entity");
+const user_session_entity_1 = require("../entities/user-session.entity");
 let DatabaseConfig = class DatabaseConfig {
     constructor(configService) {
         this.configService = configService;
@@ -30,7 +32,7 @@ let DatabaseConfig = class DatabaseConfig {
             username: this.configService.get('POSTGRES_USER'),
             password: this.configService.get('POSTGRES_PASSWORD'),
             database: this.configService.get('POSTGRES_DB'),
-            entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge],
+            entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge, user_entity_1.User, user_session_entity_1.UserSession],
             synchronize: !isProduction,
             dropSchema: !isProduction,
             logging: !isProduction,

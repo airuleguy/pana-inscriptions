@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, Logger, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 import { CoachRegistrationService } from '../services/coach-registration.service';
 import { JudgeRegistrationService } from '../services/judge-registration.service';
 import { ChoreographyService } from '../services/choreography.service';
@@ -11,8 +12,11 @@ import { BatchRegistrationDto, BatchRegistrationResponseDto } from '../dto/batch
 import { Coach } from '../entities/coach.entity';
 import { Judge } from '../entities/judge.entity';
 import { Choreography } from '../entities/choreography.entity';
+import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 
 @ApiTags('tournament-registrations')
+@ApiBearerAuth()
+@UseGuards(CountryAuthGuard)
 @Controller('api/v1/tournaments/:tournamentId/registrations')
 export class TournamentRegistrationsController {
   private readonly logger = new Logger(TournamentRegistrationsController.name);
@@ -26,9 +30,10 @@ export class TournamentRegistrationsController {
 
   // === JUDGES ===
   @Post('judges')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Register judges for tournament',
-    description: 'Register one or multiple judges for a specific tournament'
+    description: 'Register one or multiple judges from your country for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
   @ApiResponse({ 
@@ -42,18 +47,23 @@ export class TournamentRegistrationsController {
   })
   async registerJudges(
     @Param('tournamentId') tournamentId: string,
-    @Body() registrationData: CreateJudgeRegistrationDto | CreateJudgeRegistrationDto[]
+    @Body() registrationData: CreateJudgeRegistrationDto | CreateJudgeRegistrationDto[],
+    @Req() request: Request
   ): Promise<{
     success: boolean;
     results: Judge[];
     errors?: string[];
   }> {
     const judges = Array.isArray(registrationData) ? registrationData : [registrationData];
+    const userCountry = (request as any).userCountry;
     
-    // Ensure all registrations are for the specified tournament
-    judges.forEach(judge => judge.tournamentId = tournamentId);
+    // Ensure all registrations are for the specified tournament and user's country
+    judges.forEach(judge => {
+      judge.tournamentId = tournamentId;
+      judge.country = userCountry; // Force country to user's country
+    });
     
-    this.logger.log(`Registering ${judges.length} judge(s) for tournament: ${tournamentId}`);
+    this.logger.log(`Registering ${judges.length} judge(s) from ${userCountry} for tournament: ${tournamentId}`);
     
     const results: Judge[] = [];
     const errors: string[] = [];
@@ -78,12 +88,12 @@ export class TournamentRegistrationsController {
   }
 
   @Get('judges')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get tournament judge registrations',
-    description: 'Retrieve judge registrations for a specific tournament'
+    description: 'Retrieve judge registrations from your country for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiResponse({ 
     status: HttpStatus.OK, 
     description: 'Judge registrations retrieved successfully',
@@ -91,9 +101,10 @@ export class TournamentRegistrationsController {
   })
   async getTournamentJudges(
     @Param('tournamentId') tournamentId: string,
-    @Query('country') country?: string
+    @Req() request: Request
   ): Promise<Judge[]> {
-    this.logger.log(`Getting judge registrations for tournament: ${tournamentId}${country ? `, country: ${country}` : ''}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting judge registrations for tournament: ${tournamentId}, country: ${country}`);
     return this.judgeRegistrationService.findAll(country, tournamentId);
   }
 
@@ -141,6 +152,7 @@ export class TournamentRegistrationsController {
 
   // === COACHES ===
   @Post('coaches')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Register coaches for tournament',
     description: 'Register one or multiple coaches for a specific tournament'
@@ -157,18 +169,23 @@ export class TournamentRegistrationsController {
   })
   async registerCoaches(
     @Param('tournamentId') tournamentId: string,
-    @Body() registrationData: CreateCoachRegistrationDto | CreateCoachRegistrationDto[]
+    @Body() registrationData: CreateCoachRegistrationDto | CreateCoachRegistrationDto[],
+    @Req() request: Request
   ): Promise<{
     success: boolean;
     results: Coach[];
     errors?: string[];
   }> {
     const coaches = Array.isArray(registrationData) ? registrationData : [registrationData];
+    const userCountry = (request as any).userCountry;
     
-    // Ensure all registrations are for the specified tournament
-    coaches.forEach(coach => coach.tournamentId = tournamentId);
+    // Ensure all registrations are for the specified tournament and user's country
+    coaches.forEach(coach => {
+      coach.tournamentId = tournamentId;
+      coach.country = userCountry; // Force country to user's country
+    });
     
-    this.logger.log(`Registering ${coaches.length} coach(es) for tournament: ${tournamentId}`);
+    this.logger.log(`Registering ${coaches.length} coach(es) from ${userCountry} for tournament: ${tournamentId}`);
     
     const results: Coach[] = [];
     const errors: string[] = [];
@@ -193,12 +210,12 @@ export class TournamentRegistrationsController {
   }
 
   @Get('coaches')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get tournament coach registrations',
-    description: 'Retrieve coach registrations for a specific tournament'
+    description: 'Retrieve coach registrations from your country for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiResponse({ 
     status: HttpStatus.OK, 
     description: 'Coach registrations retrieved successfully',
@@ -206,13 +223,15 @@ export class TournamentRegistrationsController {
   })
   async getTournamentCoaches(
     @Param('tournamentId') tournamentId: string,
-    @Query('country') country?: string
+    @Req() request: Request
   ): Promise<Coach[]> {
-    this.logger.log(`Getting coach registrations for tournament: ${tournamentId}${country ? `, country: ${country}` : ''}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting coach registrations for tournament: ${tournamentId}, country: ${country}`);
     return this.coachRegistrationService.findAll(country, tournamentId);
   }
 
   @Put('coaches/:coachId')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Update coach registration',
     description: 'Update a coach registration for a tournament'
@@ -236,6 +255,7 @@ export class TournamentRegistrationsController {
   }
 
   @Delete('coaches/:coachId')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Remove coach registration',
     description: 'Remove a coach registration from a tournament'
@@ -256,9 +276,10 @@ export class TournamentRegistrationsController {
 
   // === CHOREOGRAPHIES ===
   @Post('choreographies')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Register choreographies for tournament',
-    description: 'Register one or multiple choreographies for a specific tournament with automatic tournament-specific business rule validation'
+    description: 'Register one or multiple choreographies for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
   @ApiResponse({ 
@@ -268,31 +289,36 @@ export class TournamentRegistrationsController {
   })
   @ApiResponse({ 
     status: HttpStatus.BAD_REQUEST, 
-    description: 'Invalid input or tournament business rule violation'
+    description: 'Invalid input or tournament-specific validation failed'
   })
   async registerChoreographies(
     @Param('tournamentId') tournamentId: string,
-    @Body() registrationData: CreateChoreographyDto | CreateChoreographyDto[]
+    @Body() registrationData: CreateChoreographyDto | CreateChoreographyDto[],
+    @Req() request: Request
   ): Promise<{
     success: boolean;
     results: Choreography[];
     errors?: string[];
   }> {
     const choreographies = Array.isArray(registrationData) ? registrationData : [registrationData];
+    const userCountry = (request as any).userCountry;
     
-    // Ensure all registrations are for the specified tournament
-    choreographies.forEach(choreo => choreo.tournamentId = tournamentId);
+    // Ensure all registrations are for the specified tournament and user's country
+    choreographies.forEach(choreo => {
+      choreo.tournamentId = tournamentId;
+      choreo.country = userCountry; // Force country to user's country
+    });
     
-    this.logger.log(`Registering ${choreographies.length} choreograph(ies) for tournament: ${tournamentId}`);
+    this.logger.log(`Registering ${choreographies.length} choreograph(ies) from ${userCountry} for tournament: ${tournamentId}`);
     
     const results: Choreography[] = [];
     const errors: string[] = [];
 
     for (const choreoDto of choreographies) {
       try {
-        const choreography = await this.choreographyService.create(choreoDto);
-        results.push(choreography);
-        this.logger.log(`Successfully registered choreography: ${choreography.name}`);
+        const choreo = await this.choreographyService.create(choreoDto);
+        results.push(choreo);
+        this.logger.log(`Successfully registered choreography: ${choreo.name}`);
       } catch (error) {
         const errorMessage = `Failed to register choreography "${choreoDto.name}": ${error.message}`;
         this.logger.error(errorMessage);
@@ -308,14 +334,14 @@ export class TournamentRegistrationsController {
   }
 
   @Get('choreographies')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get tournament choreography registrations',
-    description: 'Retrieve choreography registrations for a specific tournament'
+    description: 'Retrieve choreography registrations from your country for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiQuery({ name: 'category', required: false, description: 'Filter by category (YOUTH, JUNIOR, SENIOR)' })
-  @ApiQuery({ name: 'type', required: false, description: 'Filter by choreography type (MIND, WIND, MXP, TRIO, GRP, DNCE)' })
+  @ApiQuery({ name: 'type', required: false, description: 'Filter by type (MIND, WIND, MXP, TRIO, GRP, DNCE)' })
   @ApiResponse({ 
     status: HttpStatus.OK, 
     description: 'Choreography registrations retrieved successfully',
@@ -323,21 +349,30 @@ export class TournamentRegistrationsController {
   })
   async getTournamentChoreographies(
     @Param('tournamentId') tournamentId: string,
-    @Query('country') country?: string,
+    @Req() request: Request,
     @Query('category') category?: string,
     @Query('type') type?: string
   ): Promise<Choreography[]> {
-    this.logger.log(`Getting choreography registrations for tournament: ${tournamentId}`);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting choreography registrations for tournament: ${tournamentId}, country: ${country}`);
     
-    // For now, let's filter by country if provided
-    // TODO: Add tournament-specific filtering to choreography service
-    if (country) {
-      return this.choreographyService.findByCountry(country);
+    // Get all choreographies for the country and filter by tournament
+    const allChoreographies = await this.choreographyService.findByCountry(country);
+    let tournamentChoreographies = allChoreographies.filter(choreo => choreo.tournament.id === tournamentId);
+    
+    // Apply additional filters if provided
+    if (category) {
+      tournamentChoreographies = tournamentChoreographies.filter(choreo => choreo.category === category);
     }
-    return this.choreographyService.findAll();
+    if (type) {
+      tournamentChoreographies = tournamentChoreographies.filter(choreo => choreo.type === type);
+    }
+    
+    return tournamentChoreographies;
   }
 
   @Put('choreographies/:choreographyId')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Update choreography registration',
     description: 'Update a choreography registration for a tournament'
@@ -361,6 +396,7 @@ export class TournamentRegistrationsController {
   }
 
   @Delete('choreographies/:choreographyId')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Remove choreography registration',
     description: 'Remove a choreography registration from a tournament'
@@ -381,59 +417,71 @@ export class TournamentRegistrationsController {
 
   // === BATCH OPERATIONS ===
   @Post('batch')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Batch register for tournament',
-    description: 'Register multiple types of entities (judges, coaches, choreographies) for a tournament in a single request with tournament-specific validation'
+    description: 'Register multiple choreographies, coaches, and judges in a single request for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
   @ApiResponse({ 
     status: HttpStatus.CREATED, 
-    description: 'Batch registration completed successfully',
+    description: 'Batch registration completed',
     type: BatchRegistrationResponseDto
   })
   @ApiResponse({ 
     status: HttpStatus.BAD_REQUEST, 
-    description: 'Invalid input data or tournament business rule violations'
+    description: 'Invalid input or business rule violations'
   })
   async batchRegister(
     @Param('tournamentId') tournamentId: string,
-    @Body() batchData: BatchRegistrationDto
+    @Body() batchData: BatchRegistrationDto,
+    @Req() request: Request
   ): Promise<BatchRegistrationResponseDto> {
-    // Ensure all registrations are for the specified tournament
-    batchData.choreographies?.forEach(choreo => choreo.tournamentId = tournamentId);
-    batchData.coaches?.forEach(coach => coach.tournamentId = tournamentId);
-    batchData.judges?.forEach(judge => judge.tournamentId = tournamentId);
+    const userCountry = (request as any).userCountry;
     
-    // Update tournament info in batch data
-    batchData.tournament.id = tournamentId;
+    // Ensure all registrations are for the specified tournament and user's country
+    if (batchData.choreographies) {
+      batchData.choreographies.forEach(choreo => {
+        choreo.tournamentId = tournamentId;
+        choreo.country = userCountry;
+      });
+    }
+    if (batchData.coaches) {
+      batchData.coaches.forEach(coach => {
+        coach.tournamentId = tournamentId;
+        coach.country = userCountry;
+      });
+    }
+    if (batchData.judges) {
+      batchData.judges.forEach(judge => {
+        judge.tournamentId = tournamentId;
+        judge.country = userCountry;
+      });
+    }
     
-    this.logger.log(`Processing batch registration for tournament: ${tournamentId}`);
-    
+    this.logger.log(`Batch registration for tournament: ${tournamentId}, country: ${userCountry}`);
     return this.batchRegistrationService.processBatchRegistration(batchData);
   }
 
   // === SUMMARY ENDPOINTS ===
   @Get('summary')
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Get tournament registration summary',
-    description: 'Get a comprehensive summary of all registrations for a tournament'
+    description: 'Get summary of all registrations from your country for a specific tournament'
   })
   @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
-  @ApiQuery({ name: 'country', required: false, description: 'Filter by country code (ISO 3166-1 alpha-3)' })
   @ApiResponse({ 
     status: HttpStatus.OK, 
-    description: 'Tournament registration summary retrieved successfully'
+    description: 'Registration summary retrieved successfully'
   })
   async getTournamentRegistrationSummary(
     @Param('tournamentId') tournamentId: string,
-    @Query('country') country?: string
+    @Req() request: Request
   ) {
-    this.logger.log(`Getting registration summary for tournament: ${tournamentId}${country ? `, country: ${country}` : ''}`);
-    
-    if (country) {
-      return this.batchRegistrationService.getRegistrationSummary(country, tournamentId);
-    }
-    return this.batchRegistrationService.getTournamentStats(tournamentId);
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting registration summary for tournament: ${tournamentId}, country: ${country}`);
+    return this.batchRegistrationService.getRegistrationSummary(country, tournamentId);
   }
 
   @Get('stats')

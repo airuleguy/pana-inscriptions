@@ -86,8 +86,7 @@ export default function CoachRegistrationPage() {
       // Save selections to database using tournament-centric API
       const saveResult = await APIService.saveCoachSelections(
         selectedCoaches,
-        tournamentId, // Use tournament ID from URL
-        selectedCountry
+        tournamentId // Use tournament ID from URL
       );
 
       if (!saveResult.success) {

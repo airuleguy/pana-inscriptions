@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   UseGuards,
   HttpStatus,
+  Req,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,21 +18,27 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { ChoreographyService } from '../services/choreography.service';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { Choreography } from '../entities/choreography.entity';
+import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 
 @ApiTags('choreographies')
+@ApiBearerAuth()
+@UseGuards(CountryAuthGuard)
 @Controller('api/v1/choreographies')
 export class ChoreographyController {
   constructor(private readonly choreographyService: ChoreographyService) {}
 
   @Post()
+  @CountryScoped()
   @ApiOperation({ 
     summary: 'Create a new choreography',
-    description: 'Register a new choreography for the tournament with validation of business rules'
+    description: 'Register a new choreography from your country for the tournament with validation of business rules'
   })
   @ApiResponse({ 
     status: HttpStatus.CREATED, 
@@ -43,32 +50,27 @@ export class ChoreographyController {
     description: 'Invalid input or business rule violation'
   })
   async create(
-    @Body(ValidationPipe) createChoreographyDto: CreateChoreographyDto
+    @Body(ValidationPipe) createChoreographyDto: CreateChoreographyDto,
+    @Req() request: Request
   ): Promise<Choreography> {
+    // Country will be automatically injected by the guard
     return this.choreographyService.create(createChoreographyDto);
   }
 
   @Get()
+  @CountryScoped()
   @ApiOperation({ 
-    summary: 'Get all choreographies',
-    description: 'Retrieve all registered choreographies with optional country filter'
-  })
-  @ApiQuery({ 
-    name: 'country', 
-    required: false, 
-    description: 'Filter by country code (ISO 3166-1 alpha-3)',
-    example: 'USA'
+    summary: 'Get all choreographies from your country',
+    description: 'Retrieve all registered choreographies from your country'
   })
   @ApiResponse({ 
     status: HttpStatus.OK, 
     description: 'List of choreographies',
     type: [Choreography]
   })
-  async findAll(@Query('country') country?: string): Promise<Choreography[]> {
-    if (country) {
-      return this.choreographyService.findByCountry(country);
-    }
-    return this.choreographyService.findAll();
+  async findAll(@Req() request: Request): Promise<Choreography[]> {
+    const country = (request as any).userCountry;
+    return this.choreographyService.findByCountry(country);
   }
 
   @Get(':id')

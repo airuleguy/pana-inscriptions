@@ -6,6 +6,8 @@ import { Choreography } from '../entities/choreography.entity';
 import { Tournament } from '../entities/tournament.entity';
 import { Coach } from '../entities/coach.entity';
 import { Judge } from '../entities/judge.entity';
+import { User } from '../entities/user.entity';
+import { UserSession } from '../entities/user-session.entity';
 
 @Injectable()
 export class DatabaseConfig implements TypeOrmOptionsFactory {
@@ -21,7 +23,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       username: this.configService.get<string>('POSTGRES_USER'),
       password: this.configService.get<string>('POSTGRES_PASSWORD'),
       database: this.configService.get<string>('POSTGRES_DB'),
-      entities: [Gymnast, Choreography, Tournament, Coach, Judge],
+      entities: [Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession],
       synchronize: !isProduction, // Auto-create tables in development
       dropSchema: !isProduction, // Drop schema in development
       logging: !isProduction,

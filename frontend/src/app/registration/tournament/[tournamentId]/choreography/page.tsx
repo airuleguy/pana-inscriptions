@@ -165,29 +165,20 @@ export default function ChoreographyRegistrationPage() {
         notes: '',
       };
 
-      // Create registration entry for local state
-      const registrationData: RegisteredChoreography = {
-        id: `temp-${Date.now()}`,
-        name: choreographyData.name,
-        category: choreographyData.category,
-        type: choreographyData.type,
-        gymnastsCount: gymnasts.length,
-        gymnasts: gymnasts,
-        registeredAt: new Date(),
-        choreographyData: {
-          name: choreographyData.name,
-          category: choreographyData.category,
-          type: choreographyData.type,
-          country: choreographyData.country,
-          tournament: choreographyData.tournament,
-          gymnasts: choreographyData.gymnasts,
-          gymnastCount: choreographyData.gymnastCount,
-          notes: choreographyData.notes || '',
-        },
-      };
-
       // Save to database using API
       const result = await APIService.createChoreography(choreographyData, tournamentId);
+
+      // Create registration entry for local state
+      const registrationData: RegisteredChoreography = {
+        id: result.id,
+        name: result.name,
+        category: result.category,
+        type: result.type,
+        gymnastsCount: result.gymnasts.length,
+        gymnasts: result.gymnasts,
+        registeredAt: new Date(),
+        choreographyData: result, // Use the full choreography object returned from the API
+      };
 
       // Add to registration summary
       addChoreography(registrationData);
