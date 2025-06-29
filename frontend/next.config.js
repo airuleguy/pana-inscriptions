@@ -16,7 +16,7 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ['www.gymnastics.sport'], // For potential gymnast photos from FIG
+    domains: [], // No direct FIG API usage - images handled through backend
   },
   async rewrites() {
     return [
@@ -28,7 +28,6 @@ const nextConfig = {
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_FIG_API_URL: process.env.NEXT_PUBLIC_FIG_API_URL,
   },
 };
 

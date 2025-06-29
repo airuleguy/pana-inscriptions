@@ -1,39 +1,4 @@
-// FIG API Types
-export interface FIGGymnast {
-  idgymnastlicense: string;
-  gymnastid: string;
-  discipline: 'AER';
-  validto: string; // ISO date string
-  licensestatus: string; // ISO date string
-  preferredlastname: string;
-  preferredfirstname: string;
-  birth: string; // ISO date string
-  gender: 'male' | 'female';
-  country: string; // 3-letter country code
-}
-
-// FIG Coach API Types
-export interface FIGCoach {
-  id: string;
-  preferredlastname: string;
-  preferredfirstname: string;
-  country: string; // 3-letter country code
-  gender: 'Male' | 'Female';
-  discipline: 'AER';
-  level: string; // L1, L2, L3, LHB, LBR
-}
-
-// FIG Judge API Types
-export interface FIGJudge {
-  idfig: string;
-  discipline: 'AER';
-  category: string; // 1, 2, 3, 4
-  preferredfirstname: string;
-  preferredlastname: string;
-  birth: string; // ISO date string
-  gender: 'Male' | 'Female';
-  country: string; // 3-letter country code
-}
+// FIG API Types removed - all FIG data now comes through backend API
 
 // Application Types
 import { ChoreographyCategory, VALID_CATEGORIES, AGE_LIMITS as CATEGORY_AGE_LIMITS } from '../constants/categories';
@@ -247,25 +212,10 @@ export const CHOREOGRAPHY_TYPE_INFO = {
 
 // Cache configuration
 export const CACHE_CONFIG = {
-  FIG_GYMNASTS: {
-    key: 'fig_gymnasts_cache',
-    duration: 24 * 60 * 60 * 1000, // 24 hours
-  },
-  FIG_COACHES: {
-    key: 'fig_coaches_cache',
-    duration: 24 * 60 * 60 * 1000, // 24 hours
-  },
   COUNTRIES: {
     key: 'countries_cache',
     duration: 7 * 24 * 60 * 60 * 1000, // 7 days
   }
 } as const;
 
-// Coach level information
-export const COACH_LEVEL_INFO = {
-  'L1': 'Level 1 Coach',
-  'L2': 'Level 2 Coach', 
-  'L3': 'Level 3 Coach',
-  'LHB': 'Level High Bronze Coach',
-  'LBR': 'Level Bronze Coach'
-} as const; 
+// Coach level information moved to APIService since it's only used for data transformation from backend 
