@@ -27,7 +27,11 @@ __decorate([
     __metadata("design:type", String)
 ], CoachDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'Male' }),
+    (0, swagger_1.ApiProperty)({ description: 'Full name', example: 'John Smith' }),
+    __metadata("design:type", String)
+], CoachDto.prototype, "fullName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'MALE', enum: ['MALE', 'FEMALE'] }),
     __metadata("design:type", String)
 ], CoachDto.prototype, "gender", void 0);
 __decorate([
@@ -42,4 +46,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Coach level', example: 'L1, L2' }),
     __metadata("design:type", String)
 ], CoachDto.prototype, "level", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach' }),
+    __metadata("design:type", String)
+], CoachDto.prototype, "levelDescription", void 0);
 //# sourceMappingURL=coach.dto.js.map

@@ -28,4 +28,9 @@ export declare class FigApiService {
     getJudgesByCountry(country: string): Promise<JudgeDto[]>;
     getJudgeById(id: string): Promise<JudgeDto | null>;
     clearJudgeCache(): Promise<void>;
+    private transformFigApiCoachToDto;
+    private transformFigApiJudgeToDto;
+    private getCoachLevelDescription;
+    private getJudgeCategoryDescription;
+    private transformFigApiGymnastToDto;
 }

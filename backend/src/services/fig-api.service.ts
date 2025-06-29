@@ -89,24 +89,8 @@ export class FigApiService {
         throw new HttpException('FIG API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const gymnasts: GymnastDto[] = response.data.map(athlete => {
-        // Parse license expiry date and check validity
-        const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
-        const isLicenseValid = licenseExpiryDate > new Date();
-        
-        return {
-          figId: athlete.gymnastid,
-          firstName: athlete.preferredfirstname,
-          lastName: athlete.preferredlastname,
-          gender: athlete.gender === 'male' ? 'M' : 'F',
-          country: athlete.country,
-          birthDate: athlete.birth,
-          discipline: athlete.discipline,
-          isLicensed: isLicenseValid,
-          licenseExpiryDate: athlete.validto,
-        };
-      });
+      // Transform the data to match frontend expectations at ingestion point
+      const gymnasts: GymnastDto[] = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
 
       // Cache the result
       await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
@@ -150,24 +134,8 @@ export class FigApiService {
         throw new HttpException('FIG API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const gymnasts: GymnastDto[] = response.data.map(athlete => {
-        // Parse license expiry date and check validity
-        const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
-        const isLicenseValid = licenseExpiryDate > new Date();
-        
-        return {
-          figId: athlete.gymnastid,
-          firstName: athlete.preferredfirstname,
-          lastName: athlete.preferredlastname,
-          gender: athlete.gender === 'male' ? 'M' : 'F',
-          country: athlete.country,
-          birthDate: athlete.birth,
-          discipline: athlete.discipline,
-          isLicensed: isLicenseValid,
-          licenseExpiryDate: athlete.validto,
-        };
-      });
+      // Transform the data to match frontend expectations at ingestion point
+      const gymnasts: GymnastDto[] = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
 
       // Cache the country-specific result
       await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
@@ -226,16 +194,8 @@ export class FigApiService {
         throw new HttpException('FIG Coach API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const coaches: CoachDto[] = response.data.map(coach => ({
-        id: coach.id,
-        firstName: coach.preferredfirstname,
-        lastName: coach.preferredlastname,
-        gender: coach.gender,
-        country: coach.country,
-        discipline: coach.discipline,
-        level: coach.level,
-      }));
+      // Transform the data to match frontend expectations at ingestion point
+      const coaches: CoachDto[] = response.data.map(coach => this.transformFigApiCoachToDto(coach));
 
       // Cache the result
       await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL);
@@ -279,16 +239,8 @@ export class FigApiService {
         throw new HttpException('FIG Coach API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const coaches: CoachDto[] = response.data.map(coach => ({
-        id: coach.id,
-        firstName: coach.preferredfirstname,
-        lastName: coach.preferredlastname,
-        gender: coach.gender,
-        country: coach.country,
-        discipline: coach.discipline,
-        level: coach.level,
-      }));
+      // Transform the data to match frontend expectations at ingestion point
+      const coaches: CoachDto[] = response.data.map(coach => this.transformFigApiCoachToDto(coach));
 
       // Cache the country-specific result
       await this.cacheManager.set(cacheKey, coaches, this.CACHE_TTL);
@@ -347,17 +299,8 @@ export class FigApiService {
         throw new HttpException('FIG Judge API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const judges: JudgeDto[] = response.data.map(judge => ({
-        id: judge.idfig,
-        firstName: judge.preferredfirstname,
-        lastName: judge.preferredlastname,
-        birth: judge.birth,
-        gender: judge.gender,
-        country: judge.country,
-        discipline: judge.discipline,
-        category: judge.category,
-      }));
+      // Transform the data to match frontend expectations at ingestion point
+      const judges: JudgeDto[] = response.data.map(judge => this.transformFigApiJudgeToDto(judge));
 
       // Cache the result
       await this.cacheManager.set(this.JUDGE_CACHE_KEY, judges, this.CACHE_TTL);
@@ -401,17 +344,8 @@ export class FigApiService {
         throw new HttpException('FIG Judge API returned unexpected data format', HttpStatus.BAD_GATEWAY);
       }
 
-      // Transform the data
-      const judges: JudgeDto[] = response.data.map(judge => ({
-        id: judge.idfig,
-        firstName: judge.preferredfirstname,
-        lastName: judge.preferredlastname,
-        birth: judge.birth,
-        gender: judge.gender,
-        country: judge.country,
-        discipline: judge.discipline,
-        category: judge.category,
-      }));
+      // Transform the data to match frontend expectations at ingestion point
+      const judges: JudgeDto[] = response.data.map(judge => this.transformFigApiJudgeToDto(judge));
 
       // Cache the country-specific result
       await this.cacheManager.set(cacheKey, judges, this.CACHE_TTL);
@@ -446,5 +380,149 @@ export class FigApiService {
   async clearJudgeCache(): Promise<void> {
     await this.cacheManager.del(this.JUDGE_CACHE_KEY);
     this.logger.log('FIG judge cache cleared');
+  }
+
+  /**
+   * Transform FIG API coach data to match frontend expectations at ingestion point
+   * This ensures data consistency and acts as a facade between FIG API and our system
+   */
+  private transformFigApiCoachToDto(coach: FigApiCoach): CoachDto {
+    // Transform gender to frontend format
+    const gender: 'MALE' | 'FEMALE' = coach.gender.toLowerCase() === 'male' ? 'MALE' : 'FEMALE';
+    
+    // Generate full name
+    const fullName = `${coach.preferredfirstname} ${coach.preferredlastname}`;
+    
+    // Generate level description
+    const levelDescription = this.getCoachLevelDescription(coach.level);
+    
+    return {
+      id: coach.id,
+      firstName: coach.preferredfirstname,
+      lastName: coach.preferredlastname,
+      fullName,
+      gender,
+      country: coach.country.toUpperCase(),
+      discipline: coach.discipline,
+      level: coach.level,
+      levelDescription,
+    };
+  }
+
+  /**
+   * Transform FIG API judge data to match frontend expectations at ingestion point
+   * This ensures data consistency and acts as a facade between FIG API and our system
+   */
+  private transformFigApiJudgeToDto(judge: FigApiJudge): JudgeDto {
+    // Transform gender to frontend format
+    const gender: 'MALE' | 'FEMALE' = judge.gender.toLowerCase() === 'male' ? 'MALE' : 'FEMALE';
+    
+    // Generate full name
+    const fullName = `${judge.preferredfirstname} ${judge.preferredlastname}`;
+    
+    // Parse birth date and calculate age
+    const dateOfBirth = new Date(judge.birth + 'T00:00:00Z');
+    const today = new Date();
+    let age = today.getFullYear() - dateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+      age--;
+    }
+    
+    // Generate category description
+    const categoryDescription = this.getJudgeCategoryDescription(judge.category);
+    
+    return {
+      id: judge.idfig,
+      firstName: judge.preferredfirstname,
+      lastName: judge.preferredlastname,
+      fullName,
+      birth: judge.birth,
+      dateOfBirth,
+      gender,
+      country: judge.country.toUpperCase(),
+      discipline: judge.discipline,
+      category: judge.category,
+      categoryDescription,
+      age,
+    };
+  }
+
+  /**
+   * Get human-readable description for coach level
+   */
+  private getCoachLevelDescription(level: string): string {
+    const COACH_LEVEL_INFO = {
+      'L1': 'Level 1 Coach',
+      'L2': 'Level 2 Coach', 
+      'L3': 'Level 3 Coach',
+      'LHB': 'Level High Bronze Coach',
+      'LBR': 'Level Bronze Coach'
+    } as const;
+    
+    const levels = level.split(', ');
+    const descriptions = levels.map(l => COACH_LEVEL_INFO[l as keyof typeof COACH_LEVEL_INFO] || l);
+    return descriptions.join(', ');
+  }
+
+  /**
+   * Get human-readable description for judge category
+   */
+  private getJudgeCategoryDescription(category: string): string {
+    const categoryMap: Record<string, string> = {
+      '1': 'Category 1 (International Brevet)',
+      '2': 'Category 2 (Regional)',
+      '3': 'Category 3 (National)',
+      '4': 'Category 4 (Candidate)',
+    };
+    return categoryMap[category] || `Category ${category}`;
+  }
+
+  /**
+   * Transform FIG API gymnast data to match frontend expectations at ingestion point
+   * This ensures data consistency and acts as a facade between FIG API and our system
+   */
+  private transformFigApiGymnastToDto(athlete: FigApiGymnast): GymnastDto {
+    // Parse license expiry date and check validity
+    const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
+    const isLicenseValid = licenseExpiryDate > new Date();
+    
+    // Parse birth date
+    const dateOfBirth = new Date(athlete.birth + 'T00:00:00Z');
+    
+    // Calculate age
+    const today = new Date();
+    let age = today.getFullYear() - dateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+      age--;
+    }
+    
+    // Determine category based on age
+    let category: 'YOUTH' | 'JUNIOR' | 'SENIOR' = 'SENIOR';
+    if (age <= 15) category = 'YOUTH';
+    else if (age <= 17) category = 'JUNIOR';
+    
+    // Transform gender to frontend format
+    const gender: 'MALE' | 'FEMALE' = athlete.gender === 'male' ? 'MALE' : 'FEMALE';
+    
+    // Generate full name
+    const fullName = `${athlete.preferredfirstname} ${athlete.preferredlastname}`;
+    
+    return {
+      id: '', // Will be set by database
+      figId: athlete.gymnastid,
+      firstName: athlete.preferredfirstname,
+      lastName: athlete.preferredlastname,
+      fullName,
+      gender,
+      country: athlete.country.toUpperCase(),
+      dateOfBirth,
+      discipline: athlete.discipline,
+      licenseValid: isLicenseValid,
+      licenseExpiryDate,
+      age,
+      category,
+    };
   }
 } 

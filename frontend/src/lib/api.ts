@@ -147,8 +147,8 @@ export class APIService {
     
     const figGymnasts = await this.fetchAPI<any[]>(endpoint);
     
-    // Transform FIG backend data to frontend format
-    return figGymnasts.map(fig => this.transformFigToGymnast(fig));
+    // Transform backend data to frontend format
+    return figGymnasts.map(fig => this.transformBackendToGymnast(fig));
   }
 
   /**
@@ -157,7 +157,7 @@ export class APIService {
   static async getGymnastByFigId(figId: string): Promise<Gymnast | null> {
     try {
       const figGymnast = await this.fetchAPI<any>(`/api/v1/gymnasts/${encodeURIComponent(figId)}`);
-      return figGymnast ? this.transformFigToGymnast(figGymnast) : null;
+      return figGymnast ? this.transformBackendToGymnast(figGymnast) : null;
     } catch (error) {
       if (error instanceof Error && error.message.includes('404')) {
         return null;
@@ -183,10 +183,10 @@ export class APIService {
       ? `/api/v1/coaches?country=${encodeURIComponent(country)}`
       : '/api/v1/coaches';
     
-    const figCoaches = await this.fetchAPI<any[]>(endpoint);
+    const figCoaches = await this.fetchAPI<Coach[]>(endpoint);
     
-    // Transform FIG backend data to frontend format
-    return figCoaches.map(fig => this.transformFigToCoach(fig));
+    // Data is already transformed by backend - return directly
+    return figCoaches;
   }
 
   /**
@@ -241,18 +241,10 @@ export class APIService {
       ? `/api/v1/judges?country=${encodeURIComponent(country)}`
       : '/api/v1/judges';
     
-    const figJudges = await this.fetchAPI<{
-      id: string;
-      firstName: string;
-      lastName: string;
-      birth: string;
-      gender: string;
-      country: string;
-      category: string;
-    }[]>(endpoint);
+    const figJudges = await this.fetchAPI<Judge[]>(endpoint);
     
-    // Transform FIG backend data to frontend format
-    return figJudges.map(fig => this.transformFigToJudge(fig));
+    // Data is already transformed by backend - return directly
+    return figJudges;
   }
 
   /**
@@ -584,121 +576,39 @@ export class APIService {
   // ==================== TRANSFORMATION HELPERS ====================
 
   /**
-   * Transform FIG gymnast data to application format
+   * Transform backend gymnast data to application format (minimal transformation since backend now handles most)
    */
-  private static transformFigToGymnast(dto: {
+  private static transformBackendToGymnast(dto: {
+    id: string;
     figId: string;
     firstName: string;
     lastName: string;
-    gender: string; // 'M' or 'F' from backend
+    fullName: string;
+    gender: 'MALE' | 'FEMALE';
     country: string;
-    birthDate: string; // ISO date string
+    dateOfBirth: string; // ISO timestamp from backend
     discipline: string;
-    isLicensed: boolean;
-    licenseExpiryDate: string; // YYYY-MM-DD format from backend
+    licenseValid: boolean;
+    licenseExpiryDate: string; // ISO timestamp from backend
+    age: number;
+    category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
   }): Gymnast {
-    const dateOfBirth = new Date(dto.birthDate + 'T00:00:00Z');
-    const licenseExpiryDate = new Date(dto.licenseExpiryDate + 'T00:00:00Z');
-    const age = this.calculateAge(dateOfBirth);
-    const category = this.determineCategory(age);
-
     return {
-      id: dto.figId,
+      id: dto.figId, // Use figId as the external identifier
       firstName: dto.firstName,
       lastName: dto.lastName,
-      fullName: `${dto.firstName} ${dto.lastName}`,
-      dateOfBirth,
-      gender: dto.gender === 'M' ? 'MALE' : 'FEMALE',
-      country: dto.country.toUpperCase(),
-      licenseValid: dto.isLicensed,
-      licenseExpiryDate,
-      age,
-      category,
+      fullName: dto.fullName,
+      dateOfBirth: new Date(dto.dateOfBirth),
+      gender: dto.gender,
+      country: dto.country,
+      licenseValid: dto.licenseValid,
+      licenseExpiryDate: new Date(dto.licenseExpiryDate),
+      age: dto.age,
+      category: dto.category as ChoreographyCategory,
     };
   }
 
-  /**
-   * Transform FIG coach data to application format
-   */
-  private static transformFigToCoach(dto: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    gender: string; // 'Male' or 'Female' from backend
-    country: string;
-    level: string;
-  }): Coach {
-    return {
-      id: dto.id,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      fullName: `${dto.firstName} ${dto.lastName}`,
-      gender: dto.gender.toUpperCase() as 'MALE' | 'FEMALE',
-      country: dto.country.toUpperCase(),
-      level: dto.level,
-      levelDescription: this.getCoachLevelDescription(dto.level),
-    };
-  }
 
-  /**
-   * Transform FIG judge data to application format
-   */
-  private static transformFigToJudge(dto: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    birth: string;
-    gender: string; // 'Male' or 'Female' from backend
-    country: string;
-    category: string;
-  }): Judge {
-    const dateOfBirth = new Date(dto.birth);
-    const age = this.calculateAge(dateOfBirth);
-
-    return {
-      id: dto.id,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      fullName: `${dto.firstName} ${dto.lastName}`,
-      birth: dto.birth,
-      dateOfBirth,
-      gender: dto.gender.toUpperCase() as 'MALE' | 'FEMALE',
-      country: dto.country.toUpperCase(),
-      category: dto.category,
-      categoryDescription: this.getJudgeCategoryDescription(dto.category),
-      age,
-    };
-  }
-
-  /**
-   * Get human-readable description for coach level
-   */
-  private static getCoachLevelDescription(level: string): string {
-    const COACH_LEVEL_INFO = {
-      'L1': 'Level 1 Coach',
-      'L2': 'Level 2 Coach', 
-      'L3': 'Level 3 Coach',
-      'LHB': 'Level High Bronze Coach',
-      'LBR': 'Level Bronze Coach'
-    } as const;
-    
-    const levels = level.split(', ');
-    const descriptions = levels.map(l => COACH_LEVEL_INFO[l as keyof typeof COACH_LEVEL_INFO] || l);
-    return descriptions.join(', ');
-  }
-
-  /**
-   * Get human-readable description for judge category
-   */
-  private static getJudgeCategoryDescription(category: string): string {
-    const categoryMap: Record<string, string> = {
-      '1': 'Category 1 (International Brevet)',
-      '2': 'Category 2 (Regional)',
-      '3': 'Category 3 (National)',
-      '4': 'Category 4 (Candidate)',
-    };
-    return categoryMap[category] || `Category ${category}`;
-  }
 
   // ==================== UTILITY HELPERS ====================
 

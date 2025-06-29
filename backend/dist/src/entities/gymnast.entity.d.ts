@@ -4,11 +4,15 @@ export declare class Gymnast {
     figId: string;
     firstName: string;
     lastName: string;
-    gender: string;
+    fullName: string;
+    gender: 'MALE' | 'FEMALE';
     country: string;
-    birthDate: string;
+    dateOfBirth: Date;
     discipline: string;
-    isLicensed: boolean;
+    licenseValid: boolean;
+    licenseExpiryDate: Date;
+    age: number;
+    category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
     choreographies: Choreography[];
     createdAt: Date;
     updatedAt: Date;

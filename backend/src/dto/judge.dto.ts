@@ -10,11 +10,17 @@ export class JudgeDto {
   @ApiProperty({ description: 'Last name', example: 'ABDELAAL' })
   lastName: string;
 
-  @ApiProperty({ description: 'Date of birth', example: '1974-07-29' })
+  @ApiProperty({ description: 'Full name', example: 'Reham Abdelraouf Ahmed ABDELAAL' })
+  fullName: string;
+
+  @ApiProperty({ description: 'Date of birth (ISO string)', example: '1974-07-29' })
   birth: string;
 
-  @ApiProperty({ description: 'Gender', example: 'Female' })
-  gender: string;
+  @ApiProperty({ description: 'Date of birth as Date object', example: '1974-07-29T00:00:00Z' })
+  dateOfBirth: Date;
+
+  @ApiProperty({ description: 'Gender', example: 'FEMALE', enum: ['MALE', 'FEMALE'] })
+  gender: 'MALE' | 'FEMALE';
 
   @ApiProperty({ description: 'Country code', example: 'EGY' })
   country: string;
@@ -24,4 +30,10 @@ export class JudgeDto {
 
   @ApiProperty({ description: 'Judge category', example: '3' })
   category: string;
+
+  @ApiProperty({ description: 'Category description', example: 'Category 3 (National)' })
+  categoryDescription: string;
+
+  @ApiProperty({ description: 'Current age', example: 49 })
+  age: number;
 } 

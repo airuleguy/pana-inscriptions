@@ -16,19 +16,31 @@ export class Gymnast {
   lastName: string;
 
   @Column()
-  gender: string;
+  fullName: string;
+
+  @Column()
+  gender: 'MALE' | 'FEMALE';
 
   @Column()
   country: string;
 
-  @Column({ type: 'date' })
-  birthDate: string;
+  @Column({ type: 'timestamp' })
+  dateOfBirth: Date;
 
   @Column()
   discipline: string;
 
   @Column({ default: true })
-  isLicensed: boolean;
+  licenseValid: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  licenseExpiryDate: Date;
+
+  @Column({ type: 'int' })
+  age: number;
+
+  @Column()
+  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
 
   @ManyToMany(() => Choreography, choreography => choreography.gymnasts)
   choreographies: Choreography[];

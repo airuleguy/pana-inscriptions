@@ -1,11 +1,15 @@
 export declare class GymnastDto {
+    id: string;
     figId: string;
     firstName: string;
     lastName: string;
-    gender: string;
+    fullName: string;
+    gender: 'MALE' | 'FEMALE';
     country: string;
-    birthDate: string;
+    dateOfBirth: Date;
     discipline: string;
-    isLicensed: boolean;
-    licenseExpiryDate: string;
+    licenseValid: boolean;
+    licenseExpiryDate?: Date;
+    age: number;
+    category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
 }

@@ -2,8 +2,10 @@ export declare class CoachDto {
     id: string;
     firstName: string;
     lastName: string;
-    gender: string;
+    fullName: string;
+    gender: 'MALE' | 'FEMALE';
     country: string;
     discipline: string;
     level: string;
+    levelDescription: string;
 }

@@ -61,14 +61,14 @@ export class ChoreographyService {
   }
 
   async findAll(): Promise<Choreography[]> {
-    return this.choreographyRepository.find({
+    return await this.choreographyRepository.find({
       relations: ['gymnasts', 'tournament'],
       order: { createdAt: 'DESC' },
     });
   }
 
   async findByCountry(country: string): Promise<Choreography[]> {
-    return this.choreographyRepository.find({
+    return await this.choreographyRepository.find({
       where: { country: country.toUpperCase() },
       relations: ['gymnasts', 'tournament'],
       order: { createdAt: 'DESC' },
@@ -176,7 +176,7 @@ export class ChoreographyService {
       if (!gymnast) {
         throw new BadRequestException(`Gymnast with FIG ID ${figId} not found`);
       }
-      if (!gymnast.isLicensed) {
+      if (!gymnast.licenseValid) {
         throw new BadRequestException(`Gymnast ${gymnast.firstName} ${gymnast.lastName} is not licensed`);
       }
       gymnasts.push(gymnast);
@@ -254,6 +254,8 @@ export class ChoreographyService {
 
     return await queryBuilder.getMany();
   }
+
+
 
   /**
    * Update choreography registration status

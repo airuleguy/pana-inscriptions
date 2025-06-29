@@ -34,15 +34,19 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
+], Gymnast.prototype, "fullName", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
 ], Gymnast.prototype, "gender", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Gymnast.prototype, "country", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date' }),
-    __metadata("design:type", String)
-], Gymnast.prototype, "birthDate", void 0);
+    (0, typeorm_1.Column)({ type: 'timestamp' }),
+    __metadata("design:type", Date)
+], Gymnast.prototype, "dateOfBirth", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
@@ -50,7 +54,19 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
-], Gymnast.prototype, "isLicensed", void 0);
+], Gymnast.prototype, "licenseValid", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    __metadata("design:type", Date)
+], Gymnast.prototype, "licenseExpiryDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int' }),
+    __metadata("design:type", Number)
+], Gymnast.prototype, "age", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Gymnast.prototype, "category", void 0);
 __decorate([
     (0, typeorm_1.ManyToMany)(() => choreography_entity_1.Choreography, choreography => choreography.gymnasts),
     __metadata("design:type", Array)

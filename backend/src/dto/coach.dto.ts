@@ -10,8 +10,11 @@ export class CoachDto {
   @ApiProperty({ description: 'Last name', example: 'Smith' })
   lastName: string;
 
-  @ApiProperty({ description: 'Gender', example: 'Male' })
-  gender: string;
+  @ApiProperty({ description: 'Full name', example: 'John Smith' })
+  fullName: string;
+
+  @ApiProperty({ description: 'Gender', example: 'MALE', enum: ['MALE', 'FEMALE'] })
+  gender: 'MALE' | 'FEMALE';
 
   @ApiProperty({ description: 'Country code', example: 'USA' })
   country: string;
@@ -21,4 +24,7 @@ export class CoachDto {
 
   @ApiProperty({ description: 'Coach level', example: 'L1, L2' })
   level: string;
+
+  @ApiProperty({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach' })
+  levelDescription: string;
 } 

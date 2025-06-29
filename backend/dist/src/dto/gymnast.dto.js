@@ -15,6 +15,10 @@ class GymnastDto {
 }
 exports.GymnastDto = GymnastDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Internal UUID', example: 'uuid-string' }),
+    __metadata("design:type", String)
+], GymnastDto.prototype, "id", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ description: 'FIG ID of the gymnast', example: 'FIG123456' }),
     __metadata("design:type", String)
 ], GymnastDto.prototype, "figId", void 0);
@@ -27,7 +31,11 @@ __decorate([
     __metadata("design:type", String)
 ], GymnastDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'M' }),
+    (0, swagger_1.ApiProperty)({ description: 'Full name', example: 'John Smith' }),
+    __metadata("design:type", String)
+], GymnastDto.prototype, "fullName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'MALE', enum: ['MALE', 'FEMALE'] }),
     __metadata("design:type", String)
 ], GymnastDto.prototype, "gender", void 0);
 __decorate([
@@ -35,19 +43,27 @@ __decorate([
     __metadata("design:type", String)
 ], GymnastDto.prototype, "country", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Birth date', example: '2000-01-15' }),
-    __metadata("design:type", String)
-], GymnastDto.prototype, "birthDate", void 0);
+    (0, swagger_1.ApiProperty)({ description: 'Date of birth', example: '2000-01-15T00:00:00Z' }),
+    __metadata("design:type", Date)
+], GymnastDto.prototype, "dateOfBirth", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Discipline', example: 'AER' }),
     __metadata("design:type", String)
 ], GymnastDto.prototype, "discipline", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'License status', example: true }),
+    (0, swagger_1.ApiProperty)({ description: 'License validity status', example: true }),
     __metadata("design:type", Boolean)
-], GymnastDto.prototype, "isLicensed", void 0);
+], GymnastDto.prototype, "licenseValid", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'License expiry date', example: '2027-05-22' }),
-    __metadata("design:type", String)
+    (0, swagger_1.ApiProperty)({ description: 'License expiry date', example: '2027-05-22T00:00:00Z', nullable: true }),
+    __metadata("design:type", Date)
 ], GymnastDto.prototype, "licenseExpiryDate", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Current age', example: 24 }),
+    __metadata("design:type", Number)
+], GymnastDto.prototype, "age", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Age category', example: 'SENIOR', enum: ['YOUTH', 'JUNIOR', 'SENIOR'] }),
+    __metadata("design:type", String)
+], GymnastDto.prototype, "category", void 0);
 //# sourceMappingURL=gymnast.dto.js.map

@@ -51,13 +51,13 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         return this.findOne(result.id);
     }
     async findAll() {
-        return this.choreographyRepository.find({
+        return await this.choreographyRepository.find({
             relations: ['gymnasts', 'tournament'],
             order: { createdAt: 'DESC' },
         });
     }
     async findByCountry(country) {
-        return this.choreographyRepository.find({
+        return await this.choreographyRepository.find({
             where: { country: country.toUpperCase() },
             relations: ['gymnasts', 'tournament'],
             order: { createdAt: 'DESC' },
@@ -136,7 +136,7 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
             if (!gymnast) {
                 throw new common_1.BadRequestException(`Gymnast with FIG ID ${figId} not found`);
             }
-            if (!gymnast.isLicensed) {
+            if (!gymnast.licenseValid) {
                 throw new common_1.BadRequestException(`Gymnast ${gymnast.firstName} ${gymnast.lastName} is not licensed`);
             }
             gymnasts.push(gymnast);

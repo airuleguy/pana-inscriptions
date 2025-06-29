@@ -27,11 +27,19 @@ __decorate([
     __metadata("design:type", String)
 ], JudgeDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Date of birth', example: '1974-07-29' }),
+    (0, swagger_1.ApiProperty)({ description: 'Full name', example: 'Reham Abdelraouf Ahmed ABDELAAL' }),
+    __metadata("design:type", String)
+], JudgeDto.prototype, "fullName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Date of birth (ISO string)', example: '1974-07-29' }),
     __metadata("design:type", String)
 ], JudgeDto.prototype, "birth", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'Female' }),
+    (0, swagger_1.ApiProperty)({ description: 'Date of birth as Date object', example: '1974-07-29T00:00:00Z' }),
+    __metadata("design:type", Date)
+], JudgeDto.prototype, "dateOfBirth", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Gender', example: 'FEMALE', enum: ['MALE', 'FEMALE'] }),
     __metadata("design:type", String)
 ], JudgeDto.prototype, "gender", void 0);
 __decorate([
@@ -46,4 +54,12 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Judge category', example: '3' }),
     __metadata("design:type", String)
 ], JudgeDto.prototype, "category", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Category description', example: 'Category 3 (National)' }),
+    __metadata("design:type", String)
+], JudgeDto.prototype, "categoryDescription", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Current age', example: 49 }),
+    __metadata("design:type", Number)
+], JudgeDto.prototype, "age", void 0);
 //# sourceMappingURL=judge.dto.js.map
