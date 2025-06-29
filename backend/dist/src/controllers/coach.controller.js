@@ -11,15 +11,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var CoachController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CoachController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const fig_api_service_1 = require("../services/fig-api.service");
 const coach_dto_1 = require("../dto/coach.dto");
-let CoachController = class CoachController {
+let CoachController = CoachController_1 = class CoachController {
     constructor(figApiService) {
         this.figApiService = figApiService;
+        this.logger = new common_1.Logger(CoachController_1.name);
     }
     async findAll(country) {
         if (country) {
@@ -96,7 +98,7 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], CoachController.prototype, "clearCache", null);
-exports.CoachController = CoachController = __decorate([
+exports.CoachController = CoachController = CoachController_1 = __decorate([
     (0, swagger_1.ApiTags)('coaches'),
     (0, common_1.Controller)('api/v1/coaches'),
     __metadata("design:paramtypes", [fig_api_service_1.FigApiService])

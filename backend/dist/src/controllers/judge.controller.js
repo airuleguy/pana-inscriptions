@@ -11,15 +11,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var JudgeController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JudgeController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const fig_api_service_1 = require("../services/fig-api.service");
 const judge_dto_1 = require("../dto/judge.dto");
-let JudgeController = class JudgeController {
+let JudgeController = JudgeController_1 = class JudgeController {
     constructor(figApiService) {
         this.figApiService = figApiService;
+        this.logger = new common_1.Logger(JudgeController_1.name);
     }
     async findAll(country) {
         if (country) {
@@ -96,7 +98,7 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], JudgeController.prototype, "clearCache", null);
-exports.JudgeController = JudgeController = __decorate([
+exports.JudgeController = JudgeController = JudgeController_1 = __decorate([
     (0, swagger_1.ApiTags)('judges'),
     (0, common_1.Controller)('api/v1/judges'),
     __metadata("design:paramtypes", [fig_api_service_1.FigApiService])

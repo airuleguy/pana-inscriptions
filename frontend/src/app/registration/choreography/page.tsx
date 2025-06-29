@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -11,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { GymnastDataTable } from '@/components/forms/gymnast-data-table';
 import { TournamentNav } from '@/components/ui/tournament-nav';
 import { RegistrationCartSidebar } from '@/components/registration-cart-sidebar';
-import { APIService } from '@/lib/api';
 import { 
   generateChoreographyName, 
   determineChoreographyType, 
@@ -19,7 +17,6 @@ import {
   getChoreographyTypeColor,
   isValidGymnastCount
 } from '@/lib/utils';
-import { countries } from '@/lib/countries';
 import type { Gymnast, Choreography, ChoreographyType, Tournament } from '@/types';
 import { useRegistration, RegisteredChoreography } from '@/contexts/registration-context';
 import { Trophy, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
@@ -27,7 +24,7 @@ import { toast } from 'sonner';
 
 export default function ChoreographyRegistrationPage() {
   const router = useRouter();
-  const { addChoreography, clearAll, getTotalCount } = useRegistration();
+  const { addChoreography } = useRegistration();
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,30 +43,8 @@ export default function ChoreographyRegistrationPage() {
   };
 
   const handleConfirmRegistration = async () => {
-    try {
-      const totalItems = getTotalCount();
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
-        description: 'You will receive a confirmation email shortly.',
-        duration: 5000,
-      });
-
-      // Clear the registration cart
-      clearAll();
-      
-      // Close the sidebar
-      setIsSidebarOpen(false);
-      
-      // Redirect to dashboard or confirmation page
-      router.push('/registration/dashboard');
-      
-    } catch (error) {
-      console.error('Registration confirmation failed:', error);
-      toast.error('Failed to confirm registration. Please try again.');
-    }
+    // Redirect to dashboard for final registration
+    router.push('/registration/dashboard');
   };
 
   // Load tournament and country from localStorage
@@ -149,46 +124,46 @@ export default function ChoreographyRegistrationPage() {
     setRegistrationResult(null);
 
     try {
-      const choreographyData: Omit<Choreography, 'id' | 'registrationDate' | 'lastModified'> = {
-        name: choreographyName,
-        category: determinedCategory,
-        type: determinedType,
-        countryCode: selectedCountry,
-        tournament: selectedTournament,
-        selectedGymnasts,
-        gymnastCount: gymnastCount as 1 | 2 | 3 | 5 | 8,
-        routineDescription,
-        status: 'SUBMITTED',
-        notes: routineDescription,
-        musicFile: undefined,
-        musicFileName: undefined,
-        submittedBy: undefined,
-      };
+      // Generate a temporary ID for the cart
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      const registeredChoreography = await APIService.createChoreography(choreographyData);
-
-      // Add to registration cart
+      // Add to registration cart (no backend API call)
       const cartChoreography: RegisteredChoreography = {
-        id: registeredChoreography.id,
+        id: tempId,
         name: choreographyName,
         category: determinedCategory,
         type: getChoreographyTypeDisplayName(determinedType),
         gymnastsCount: gymnastCount,
         gymnasts: selectedGymnasts,
         registeredAt: new Date(),
+        // Store additional data needed for final submission
+        choreographyData: {
+          name: choreographyName,
+          category: determinedCategory,
+          type: determinedType,
+          countryCode: selectedCountry,
+          tournament: selectedTournament,
+          selectedGymnasts,
+          gymnastCount: gymnastCount as 1 | 2 | 3 | 5 | 8,
+          routineDescription,
+          status: 'SUBMITTED',
+          notes: routineDescription,
+          musicFile: undefined,
+          musicFileName: undefined,
+          submittedBy: undefined,
+        },
       };
 
       addChoreography(cartChoreography);
 
       setRegistrationResult({
         success: true,
-        message: `Choreography "${choreographyName}" successfully registered!`,
-        choreography: registeredChoreography,
+        message: `Choreography "${choreographyName}" added to registration cart!`,
       });
 
       // Show success toast
       toast.success('Choreography added to cart!', {
-        description: `${choreographyName} has been added to your registration cart.`,
+        description: `${choreographyName} has been added to your registration cart. Use the cart to complete registration.`,
         duration: 3000,
       });
 
@@ -197,8 +172,8 @@ export default function ChoreographyRegistrationPage() {
       setRoutineDescription('');
       
     } catch (error: unknown) {
-      console.error('Registration failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register choreography. Please try again.';
+      console.error('Adding choreography to cart failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to add choreography to cart. Please try again.';
       setRegistrationResult({
         success: false,
         message: errorMessage,
@@ -376,12 +351,12 @@ export default function ChoreographyRegistrationPage() {
                     {submitting ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Registering...
+                        Adding to Cart...
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4 mr-2" />
-                        Register Choreography
+                        Add Choreography to Cart
                       </>
                     )}
                   </Button>
@@ -402,7 +377,7 @@ export default function ChoreographyRegistrationPage() {
                   )}
                   <div>
                     <p className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                      {registrationResult.success ? 'Registration Successful!' : 'Registration Failed'}
+                      {registrationResult.success ? 'Added to Cart Successfully!' : 'Failed to Add to Cart'}
                     </p>
                     <p className={`text-sm mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
                       {registrationResult.message}
@@ -425,6 +400,7 @@ export default function ChoreographyRegistrationPage() {
         isOpen={isSidebarOpen}
         onToggle={handleToggleRegistrationSummary}
         onConfirmRegistration={handleConfirmRegistration}
+        isSubmitting={false}
       />
     </div>
   );

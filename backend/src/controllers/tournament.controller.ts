@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpStatus, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { TournamentService } from '../services/tournament.service';
+import { BatchRegistrationService } from '../services/batch-registration.service';
 import { CreateTournamentDto } from '../dto/create-tournament.dto';
 import { UpdateTournamentDto } from '../dto/update-tournament.dto';
 import { Tournament, TournamentType } from '../entities/tournament.entity';
@@ -8,7 +9,12 @@ import { Tournament, TournamentType } from '../entities/tournament.entity';
 @ApiTags('tournaments')
 @Controller('api/v1/tournaments')
 export class TournamentController {
-  constructor(private readonly tournamentService: TournamentService) {}
+  private readonly logger = new Logger(TournamentController.name);
+
+  constructor(
+    private readonly tournamentService: TournamentService,
+    private readonly batchRegistrationService: BatchRegistrationService,
+  ) {}
 
   @Post()
   @ApiOperation({ 
@@ -128,6 +134,75 @@ export class TournamentController {
   })
   update(@Param('id') id: string, @Body() updateTournamentDto: UpdateTournamentDto) {
     return this.tournamentService.update(id, updateTournamentDto);
+  }
+
+  @Get(':id/registrations')
+  @ApiOperation({ 
+    summary: 'Get tournament registrations',
+    description: 'Retrieve all registrations for a specific tournament'
+  })
+  @ApiParam({ name: 'id', description: 'Tournament UUID' })
+  @ApiQuery({ 
+    name: 'country', 
+    required: false, 
+    description: 'Filter by country code (ISO 3166-1 alpha-3)',
+    example: 'USA'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Tournament registrations retrieved successfully'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Tournament not found'
+  })
+  async getTournamentRegistrations(
+    @Param('id') tournamentId: string,
+    @Query('country') country?: string
+  ) {
+    this.logger.log(`Getting registrations for tournament: ${tournamentId}${country ? `, country: ${country}` : ''}`);
+    
+    if (country) {
+      return this.batchRegistrationService.getExistingRegistrations(country, tournamentId);
+    } else {
+      return this.batchRegistrationService.getTournamentStats(tournamentId);
+    }
+  }
+
+  @Get(':id/registrations/summary')
+  @ApiOperation({ 
+    summary: 'Get tournament registration summary',
+    description: 'Retrieve registration summary for a specific tournament and country'
+  })
+  @ApiParam({ name: 'id', description: 'Tournament UUID' })
+  @ApiQuery({ 
+    name: 'country', 
+    required: true, 
+    description: 'Country code (ISO 3166-1 alpha-3)',
+    example: 'USA'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Tournament registration summary retrieved successfully'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Tournament not found'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Country parameter is required'
+  })
+  async getTournamentRegistrationSummary(
+    @Param('id') tournamentId: string,
+    @Query('country') country: string
+  ) {
+    if (!country) {
+      throw new Error('Country parameter is required');
+    }
+    
+    this.logger.log(`Getting registration summary for tournament: ${tournamentId}, country: ${country}`);
+    return this.batchRegistrationService.getRegistrationSummary(country, tournamentId);
   }
 
   @Delete(':id')

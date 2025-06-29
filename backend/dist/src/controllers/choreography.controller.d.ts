@@ -12,6 +12,6 @@ export declare class ChoreographyController {
     remove(id: string): Promise<void>;
     getCountryStats(country: string): Promise<{
         totalChoreographies: number;
-        byCategory: Record<import("../entities/choreography.entity").ChoreographyCategory, number>;
+        byCategory: Record<import("../constants/categories").ChoreographyCategory, number>;
     }>;
 }

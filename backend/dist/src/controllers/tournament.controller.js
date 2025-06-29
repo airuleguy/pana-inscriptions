@@ -11,17 +11,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var TournamentController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TournamentController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const tournament_service_1 = require("../services/tournament.service");
+const batch_registration_service_1 = require("../services/batch-registration.service");
 const create_tournament_dto_1 = require("../dto/create-tournament.dto");
 const update_tournament_dto_1 = require("../dto/update-tournament.dto");
 const tournament_entity_1 = require("../entities/tournament.entity");
-let TournamentController = class TournamentController {
-    constructor(tournamentService) {
+let TournamentController = TournamentController_1 = class TournamentController {
+    constructor(tournamentService, batchRegistrationService) {
         this.tournamentService = tournamentService;
+        this.batchRegistrationService = batchRegistrationService;
+        this.logger = new common_1.Logger(TournamentController_1.name);
     }
     create(createTournamentDto) {
         return this.tournamentService.create(createTournamentDto);
@@ -43,6 +47,22 @@ let TournamentController = class TournamentController {
     }
     update(id, updateTournamentDto) {
         return this.tournamentService.update(id, updateTournamentDto);
+    }
+    async getTournamentRegistrations(tournamentId, country) {
+        this.logger.log(`Getting registrations for tournament: ${tournamentId}${country ? `, country: ${country}` : ''}`);
+        if (country) {
+            return this.batchRegistrationService.getExistingRegistrations(country, tournamentId);
+        }
+        else {
+            return this.batchRegistrationService.getTournamentStats(tournamentId);
+        }
+    }
+    async getTournamentRegistrationSummary(tournamentId, country) {
+        if (!country) {
+            throw new Error('Country parameter is required');
+        }
+        this.logger.log(`Getting registration summary for tournament: ${tournamentId}, country: ${country}`);
+        return this.batchRegistrationService.getRegistrationSummary(country, tournamentId);
     }
     remove(id) {
         return this.tournamentService.remove(id);
@@ -180,6 +200,64 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], TournamentController.prototype, "update", null);
 __decorate([
+    (0, common_1.Get)(':id/registrations'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get tournament registrations',
+        description: 'Retrieve all registrations for a specific tournament'
+    }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Tournament UUID' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'country',
+        required: false,
+        description: 'Filter by country code (ISO 3166-1 alpha-3)',
+        example: 'USA'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Tournament registrations retrieved successfully'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.NOT_FOUND,
+        description: 'Tournament not found'
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)('country')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], TournamentController.prototype, "getTournamentRegistrations", null);
+__decorate([
+    (0, common_1.Get)(':id/registrations/summary'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get tournament registration summary',
+        description: 'Retrieve registration summary for a specific tournament and country'
+    }),
+    (0, swagger_1.ApiParam)({ name: 'id', description: 'Tournament UUID' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'country',
+        required: true,
+        description: 'Country code (ISO 3166-1 alpha-3)',
+        example: 'USA'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Tournament registration summary retrieved successfully'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.NOT_FOUND,
+        description: 'Tournament not found'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Country parameter is required'
+    }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Query)('country')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], TournamentController.prototype, "getTournamentRegistrationSummary", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, swagger_1.ApiOperation)({
         summary: 'Delete tournament',
@@ -199,9 +277,10 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TournamentController.prototype, "remove", null);
-exports.TournamentController = TournamentController = __decorate([
+exports.TournamentController = TournamentController = TournamentController_1 = __decorate([
     (0, swagger_1.ApiTags)('tournaments'),
     (0, common_1.Controller)('api/v1/tournaments'),
-    __metadata("design:paramtypes", [tournament_service_1.TournamentService])
+    __metadata("design:paramtypes", [tournament_service_1.TournamentService,
+        batch_registration_service_1.BatchRegistrationService])
 ], TournamentController);
 //# sourceMappingURL=tournament.controller.js.map

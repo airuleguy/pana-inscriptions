@@ -18,7 +18,8 @@ import {
   Calendar,
   CheckCircle,
   AlertTriangle,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { countries } from '@/lib/countries';
 
@@ -26,12 +27,14 @@ interface RegistrationCartSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onConfirmRegistration: () => void;
+  isSubmitting?: boolean;
 }
 
 export function RegistrationCartSidebar({ 
   isOpen, 
   onToggle, 
-  onConfirmRegistration 
+  onConfirmRegistration,
+  isSubmitting = false
 }: RegistrationCartSidebarProps) {
   const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration } = useRegistration();
   const [expandedSections, setExpandedSections] = useState({
@@ -81,6 +84,9 @@ export function RegistrationCartSidebar({
                   {totalCount} items
                 </Badge>
               </div>
+              <SheetDescription className="text-sm text-gray-600">
+                Review your selections, then submit your complete registration
+              </SheetDescription>
               {state.tournament && state.country && (
                 <div className="mt-2 text-sm text-gray-600 space-y-1">
                   <div className="flex items-center gap-1">
@@ -144,11 +150,22 @@ export function RegistrationCartSidebar({
                                   </div>
                                   <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <Users className="w-3 h-3" />
-                                    <span>{choreo.gymnastsCount} gymnasts</span>
+                                    <span>{choreo.gymnastsCount} gymnast{choreo.gymnastsCount !== 1 ? 's' : ''}</span>
                                     <span>•</span>
                                     <Calendar className="w-3 h-3" />
                                     <span>{formatDate(choreo.registeredAt)}</span>
                                   </div>
+                                  {/* Gymnast List */}
+                                  {choreo.gymnasts && choreo.gymnasts.length > 0 && (
+                                    <div className="mt-1 text-xs text-gray-500">
+                                      {choreo.gymnasts.map((gymnast, index) => (
+                                        <span key={gymnast.id}>
+                                          {gymnast.firstName} {gymnast.lastName}
+                                          {index < choreo.gymnasts.length - 1 ? ', ' : ''}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                                 <Button
                                   size="sm"
@@ -290,11 +307,16 @@ export function RegistrationCartSidebar({
               {canConfirmRegistration() ? (
                 <Button 
                   onClick={onConfirmRegistration}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3"
+                  disabled={isSubmitting}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 disabled:opacity-50"
                   size="lg"
                 >
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                  Confirm Registration ({totalCount} items)
+                  {isSubmitting ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                  )}
+                  {isSubmitting ? 'Processing...' : `Review & Submit (${totalCount} items)`}
                 </Button>
               ) : (
                 <div className="text-center">

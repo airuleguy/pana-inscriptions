@@ -1,21 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
 import { Gymnast } from './gymnast.entity';
 import { ITournament } from './types/tournament.interface';
+import { ChoreographyCategory, ChoreographyType } from '../constants/categories';
 
-export enum ChoreographyCategory {
-  YOUTH = 'YOUTH',
-  JUNIOR = 'JUNIOR',
-  SENIOR = 'SENIOR'
-}
-
-export enum ChoreographyType {
-  MIND = 'MIND',     // Men's Individual (1)
-  WIND = 'WIND',     // Women's Individual (1)
-  MXP = 'MXP',       // Mixed Pair (2)
-  TRIO = 'TRIO',     // Trio (3)
-  GRP = 'GRP',       // Group (5)
-  DNCE = 'DNCE'      // Dance (8)
-}
+// Re-export for backward compatibility
+export { ChoreographyCategory, ChoreographyType };
 
 @Entity('choreographies')
 export class Choreography {

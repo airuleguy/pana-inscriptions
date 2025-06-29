@@ -110,6 +110,32 @@ export class APIService {
     await this.fetchAPI('/api/v1/coaches/cache', { method: 'DELETE' });
   }
 
+  /**
+   * Save coach selections (persist to database)
+   */
+  static async saveCoachSelections(coaches: Coach[], tournamentId: string, country: string): Promise<{
+    success: boolean;
+    results: any[];
+    errors?: string[];
+  }> {
+    const registrationData = coaches.map(coach => ({
+      figId: coach.id,
+      firstName: coach.firstName,
+      lastName: coach.lastName,
+      fullName: coach.fullName,
+      gender: coach.gender,
+      country: coach.country,
+      level: coach.level,
+      levelDescription: coach.levelDescription,
+      tournamentId: tournamentId,
+    }));
+
+    return await this.fetchAPI('/api/v1/coaches/register-batch', {
+      method: 'POST',
+      body: JSON.stringify({ coaches: registrationData, country, tournamentId }),
+    });
+  }
+
   // ==================== JUDGES ====================
 
   /**
@@ -140,6 +166,33 @@ export class APIService {
    */
   static async clearJudgeCache(): Promise<void> {
     await this.fetchAPI('/api/v1/judges/cache', { method: 'DELETE' });
+  }
+
+  /**
+   * Save judge selections (persist to database)
+   */
+  static async saveJudgeSelections(judges: Judge[], tournamentId: string, country: string): Promise<{
+    success: boolean;
+    results: any[];
+    errors?: string[];
+  }> {
+    const registrationData = judges.map(judge => ({
+      figId: judge.id,
+      firstName: judge.firstName,
+      lastName: judge.lastName,
+      fullName: judge.fullName,
+      birth: judge.birth,
+      gender: judge.gender,
+      country: judge.country,
+      category: judge.category,
+      categoryDescription: judge.categoryDescription,
+      tournamentId: tournamentId,
+    }));
+
+    return await this.fetchAPI('/api/v1/judges/register-batch', {
+      method: 'POST',
+      body: JSON.stringify({ judges: registrationData, country, tournamentId }),
+    });
   }
 
   // ==================== CHOREOGRAPHIES ====================
@@ -227,6 +280,72 @@ export class APIService {
   static async getTournament(id: string): Promise<Tournament> {
     const backendTournament = await this.fetchAPI<any>(`/api/v1/tournaments/${encodeURIComponent(id)}`);
     return this.transformBackendToTournament(backendTournament);
+  }
+
+  // ==================== BATCH REGISTRATION ====================
+
+  /**
+   * Submit batch registration with all choreographies, coaches, and judges
+   */
+  static async submitBatchRegistration(registrationData: {
+    choreographies: any[];
+    coaches: any[];
+    judges: any[];
+    tournament: any;
+    country: string;
+  }): Promise<{
+    success: boolean;
+    results: {
+      choreographies: any[];
+      coaches: any[];
+      judges: any[];
+    };
+    errors?: any[];
+  }> {
+    return this.fetchAPI('/api/v1/registrations/batch', {
+      method: 'POST',
+      body: JSON.stringify(registrationData),
+    });
+  }
+
+  /**
+   * Get existing registrations for a country and tournament
+   */
+  static async getExistingRegistrations(country: string, tournamentId: string): Promise<{
+    choreographies: any[];
+    coaches: any[];
+    judges: any[];
+    totals: {
+      choreographies: number;
+      coaches: number;
+      judges: number;
+      total: number;
+    };
+  }> {
+    return await this.fetchAPI(`/api/v1/batch-registration/existing/${encodeURIComponent(country)}/${encodeURIComponent(tournamentId)}`);
+  }
+
+  /**
+   * Get registration summary for a country and tournament
+   */
+  static async getRegistrationSummary(country: string, tournamentId: string): Promise<{
+    choreographies: any[];
+    coaches: any[];
+    judges: any[];
+    totals: {
+      choreographies: number;
+      coaches: number;
+      judges: number;
+      total: number;
+    };
+    summary: {
+      country: string;
+      tournamentId: string;
+      lastUpdated: Date;
+      registrationStatus: string;
+    };
+  }> {
+    return await this.fetchAPI(`/api/v1/batch-registration/summary/${encodeURIComponent(country)}/${encodeURIComponent(tournamentId)}`);
   }
 
   // ==================== HEALTH ====================

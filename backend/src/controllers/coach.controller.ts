@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, HttpStatus, Delete } from '@nestjs/common';
+import { Controller, Get, Query, Param, HttpStatus, Delete, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { FigApiService } from '../services/fig-api.service';
 import { CoachDto } from '../dto/coach.dto';
@@ -6,7 +6,11 @@ import { CoachDto } from '../dto/coach.dto';
 @ApiTags('coaches')
 @Controller('api/v1/coaches')
 export class CoachController {
-  constructor(private readonly figApiService: FigApiService) {}
+  private readonly logger = new Logger(CoachController.name);
+
+  constructor(
+    private readonly figApiService: FigApiService,
+  ) {}
 
   @Get()
   @ApiOperation({ 
@@ -66,4 +70,6 @@ export class CoachController {
   async clearCache(): Promise<void> {
     return this.figApiService.clearCoachCache();
   }
+
+
 } 

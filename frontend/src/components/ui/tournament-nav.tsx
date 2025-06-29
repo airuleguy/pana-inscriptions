@@ -6,25 +6,23 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Globe, Settings, ArrowLeft, UserPlus } from 'lucide-react';
+import { Trophy, Globe, Settings, ArrowLeft, UserPlus, ClipboardList, Users, UserCheck } from 'lucide-react';
 import { Tournament } from '@/types';
 import { countries } from '@/lib/countries';
 import { useRegistration } from '@/contexts/registration-context';
 
 interface TournamentNavProps {
   currentPage?: string;
-  showBackButton?: boolean;
-  backHref?: string;
   showRegistrationSummary?: boolean;
   onToggleRegistrationSummary?: () => void;
+  showQuickNav?: boolean;
 }
 
 export function TournamentNav({ 
   currentPage = 'Registration',
-  showBackButton = true,
-  backHref = '/registration/dashboard',
   showRegistrationSummary = false,
-  onToggleRegistrationSummary
+  onToggleRegistrationSummary,
+  showQuickNav = true
 }: TournamentNavProps) {
   const router = useRouter();
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -58,25 +56,24 @@ export function TournamentNav({
     router.push('/tournament-selection');
   };
 
+  const handleHomeClick = () => {
+    router.push('/');
+  };
+
   if (!mounted || !selectedTournament || !selectedCountry) {
     return (
       <div className="border-b bg-white/90 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button
+              onClick={handleHomeClick}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
                 <Trophy className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-foreground">{currentPage}</span>
-            </div>
-            {showBackButton && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={backHref}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Link>
-              </Button>
-            )}
+              <span className="font-semibold text-foreground">Tournament Registration</span>
+            </button>
           </div>
         </div>
       </div>
@@ -91,12 +88,15 @@ export function TournamentNav({
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3">
+            <button
+              onClick={handleHomeClick}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
                 <Trophy className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-foreground">{currentPage}</span>
-            </div>
+              <span className="font-semibold text-foreground">Tournament Registration</span>
+            </button>
             
             <div className="hidden sm:flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2">
@@ -106,45 +106,74 @@ export function TournamentNav({
               <div className="text-muted-foreground">•</div>
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{selectedTournament.name}</span>
-                {selectedTournament.isActive && (
-                  <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                    Active
-                  </Badge>
-                )}
+                <button
+                  onClick={handleChangeSelection}
+                  className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer underline decoration-dotted underline-offset-4"
+                >
+                  {selectedTournament.name}
+                </button>
               </div>
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            {showRegistrationSummary && onToggleRegistrationSummary && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onToggleRegistrationSummary}
-                className="relative"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Summary
-                {totalCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center p-0 min-w-[20px]">
-                    {totalCount}
-                  </Badge>
-                )}
-              </Button>
+
+          <div className="flex items-center gap-4">
+            {/* Quick Navigation Buttons */}
+            {showQuickNav && (
+              <div className="hidden md:flex items-center gap-2 border-r border-gray-200 pr-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  <Link href="/registration/choreography">
+                    <ClipboardList className="w-4 h-4 mr-1" />
+                    Choreography
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                >
+                  <Link href="/registration/coaches">
+                    <Users className="w-4 h-4 mr-1" />
+                    Coaches
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <Link href="/registration/judges">
+                    <UserCheck className="w-4 h-4 mr-1" />
+                    Judges
+                  </Link>
+                </Button>
+              </div>
             )}
-            <Button variant="ghost" size="sm" onClick={handleChangeSelection}>
-              <Settings className="w-4 h-4 mr-2" />
-              Change
-            </Button>
-            {showBackButton && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={backHref}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Link>
-              </Button>
-            )}
+            
+            <div className="flex items-center gap-2">
+              {showRegistrationSummary && onToggleRegistrationSummary && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onToggleRegistrationSummary}
+                  className="relative"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Summary
+                  {totalCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center p-0 min-w-[20px]">
+                      {totalCount}
+                    </Badge>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
         
@@ -157,13 +186,52 @@ export function TournamentNav({
             </div>
             <div className="flex items-center gap-2">
               <Trophy className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{selectedTournament.name}</span>
-              {selectedTournament.isActive && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
-                  Active
-                </Badge>
-              )}
+              <button
+                onClick={handleChangeSelection}
+                className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer underline decoration-dotted underline-offset-4"
+              >
+                {selectedTournament.name}
+              </button>
             </div>
+            
+            {/* Mobile Quick Navigation */}
+            {showQuickNav && (
+              <div className="flex gap-2 mt-2 pt-2 border-t">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 flex-1"
+                >
+                  <Link href="/registration/choreography">
+                    <ClipboardList className="w-4 h-4 mr-1" />
+                    Choreography
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50 flex-1"
+                >
+                  <Link href="/registration/coaches">
+                    <Users className="w-4 h-4 mr-1" />
+                    Coaches
+                  </Link>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  asChild
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 flex-1"
+                >
+                  <Link href="/registration/judges">
+                    <UserCheck className="w-4 h-4 mr-1" />
+                    Judges
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

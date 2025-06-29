@@ -36,6 +36,8 @@ export interface FIGJudge {
 }
 
 // Application Types
+import { ChoreographyCategory, VALID_CATEGORIES, AGE_LIMITS as CATEGORY_AGE_LIMITS } from '../constants/categories';
+
 export interface Gymnast {
   id: string; // Maps to idgymnastlicense
   firstName: string;
@@ -47,7 +49,7 @@ export interface Gymnast {
   licenseValid: boolean;
   licenseExpiryDate: Date;
   age: number;
-  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  category: ChoreographyCategory;
 }
 
 export interface Coach {
@@ -112,7 +114,7 @@ export interface Tournament {
 export interface Choreography {
   id: string;
   name: string; // Auto-generated from gymnast surnames
-  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  category: ChoreographyCategory;
   type: ChoreographyType; // Auto-determined from gymnast count and gender
   countryCode: string;
   tournament: Tournament;
@@ -129,7 +131,7 @@ export interface Choreography {
 }
 
 export interface ChoreographyFormData {
-  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  category: ChoreographyCategory;
   type: ChoreographyType;
   gymnastCount: 1 | 2 | 3 | 5 | 8;
   tournamentId: string;
@@ -176,20 +178,16 @@ export interface AuthUser {
   countryCode: string;
   role: 'REPRESENTATIVE' | 'ADMIN';
   verified: boolean;
-}
-
-// Constants
+  }
+  
+  // Constants
 export const GYMNAST_COUNTS = [1, 2, 3, 5, 8] as const;
-export const CATEGORIES = ['YOUTH', 'JUNIOR', 'SENIOR'] as const;
+export const CATEGORIES = VALID_CATEGORIES;
 export const CHOREOGRAPHY_STATUS = ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'] as const;
 export const TOURNAMENT_TYPES = ['CAMPEONATO_PANAMERICANO', 'COPA_PANAMERICANA'] as const;
 
 // Age limits for categories (based on FIG rules)
-export const AGE_LIMITS = {
-  YOUTH: { min: 0, max: 14 },
-  JUNIOR: { min: 15, max: 17 },
-  SENIOR: { min: 18, max: 100   }
-} as const;
+export const AGE_LIMITS = CATEGORY_AGE_LIMITS;
 
 // Tournament type information
 export const TOURNAMENT_TYPE_INFO = {

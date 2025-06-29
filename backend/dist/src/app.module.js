@@ -15,14 +15,21 @@ const database_config_1 = require("./config/database.config");
 const gymnast_entity_1 = require("./entities/gymnast.entity");
 const choreography_entity_1 = require("./entities/choreography.entity");
 const tournament_entity_1 = require("./entities/tournament.entity");
+const coach_entity_1 = require("./entities/coach.entity");
+const judge_entity_1 = require("./entities/judge.entity");
 const choreography_controller_1 = require("./controllers/choreography.controller");
 const gymnast_controller_1 = require("./controllers/gymnast.controller");
 const tournament_controller_1 = require("./controllers/tournament.controller");
 const coach_controller_1 = require("./controllers/coach.controller");
 const judge_controller_1 = require("./controllers/judge.controller");
+const tournament_registrations_controller_1 = require("./controllers/tournament-registrations.controller");
+const registrations_controller_1 = require("./controllers/registrations.controller");
 const health_controller_1 = require("./modules/health/health.controller");
 const choreography_service_1 = require("./services/choreography.service");
 const tournament_service_1 = require("./services/tournament.service");
+const coach_registration_service_1 = require("./services/coach-registration.service");
+const judge_registration_service_1 = require("./services/judge-registration.service");
+const batch_registration_service_1 = require("./services/batch-registration.service");
 const fig_api_service_1 = require("./services/fig-api.service");
 const business_rules_factory_1 = require("./utils/business-rules/business-rules-factory");
 let AppModule = class AppModule {
@@ -39,7 +46,7 @@ exports.AppModule = AppModule = __decorate([
                 imports: [config_1.ConfigModule],
                 useClass: database_config_1.DatabaseConfig,
             }),
-            typeorm_1.TypeOrmModule.forFeature([gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament]),
+            typeorm_1.TypeOrmModule.forFeature([gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge]),
             cache_manager_1.CacheModule.register({
                 isGlobal: true,
                 ttl: 3600,
@@ -52,11 +59,16 @@ exports.AppModule = AppModule = __decorate([
             tournament_controller_1.TournamentController,
             coach_controller_1.CoachController,
             judge_controller_1.JudgeController,
+            tournament_registrations_controller_1.TournamentRegistrationsController,
+            registrations_controller_1.GlobalRegistrationsController,
             health_controller_1.HealthController,
         ],
         providers: [
             choreography_service_1.ChoreographyService,
             tournament_service_1.TournamentService,
+            coach_registration_service_1.CoachRegistrationService,
+            judge_registration_service_1.JudgeRegistrationService,
+            batch_registration_service_1.BatchRegistrationService,
             fig_api_service_1.FigApiService,
             business_rules_factory_1.BusinessRulesFactory,
         ],

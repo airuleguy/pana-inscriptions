@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Gymnast, Coach, Judge, Choreography, Tournament } from '@/types';
+import { APIService } from '@/lib/api';
 
 export interface RegisteredChoreography {
   id: string;
@@ -11,6 +12,21 @@ export interface RegisteredChoreography {
   gymnastsCount: number;
   gymnasts: Gymnast[];
   registeredAt: Date;
+  choreographyData?: {
+    name: string;
+    category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+    type: string;
+    countryCode: string;
+    tournament: Tournament;
+    selectedGymnasts: Gymnast[];
+    gymnastCount: 1 | 2 | 3 | 5 | 8;
+    routineDescription: string;
+    status: 'SUBMITTED';
+    notes: string;
+    musicFile?: File;
+    musicFileName?: string;
+    submittedBy?: string;
+  };
 }
 
 export interface RegisteredCoach {
@@ -19,6 +35,7 @@ export interface RegisteredCoach {
   level: string;
   country: string;
   registeredAt: Date;
+  coachData?: Coach;
 }
 
 export interface RegisteredJudge {
@@ -27,6 +44,7 @@ export interface RegisteredJudge {
   category: string;
   country: string;
   registeredAt: Date;
+  judgeData?: Judge;
 }
 
 interface RegistrationState {
@@ -48,6 +66,8 @@ interface RegistrationContextType {
   clearAll: () => void;
   getTotalCount: () => number;
   canConfirmRegistration: () => boolean;
+  loadExistingRegistrations: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);
@@ -62,6 +82,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     tournament: null,
     country: null,
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -176,6 +197,88 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     return getTotalCount() > 0;
   };
 
+  const loadExistingRegistrations = async () => {
+    if (!state.tournament || !state.country) {
+      console.log('Cannot load existing registrations: missing tournament or country');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const existingRegistrations = await APIService.getExistingRegistrations(
+        state.country,
+        state.tournament.id
+      );
+
+      // Transform backend data to local format and merge with existing local data
+      const existingChoreographies: RegisteredChoreography[] = existingRegistrations.choreographies.map(c => ({
+        id: c.id,
+        name: c.name,
+        category: c.category,
+        type: c.type,
+        gymnastsCount: c.gymnastCount,
+        gymnasts: c.gymnasts || [],
+        registeredAt: new Date(c.createdAt),
+        choreographyData: c
+      }));
+
+      const existingCoaches: RegisteredCoach[] = existingRegistrations.coaches.map(c => ({
+        id: c.id,
+        name: c.fullName,
+        level: c.level,
+        country: c.country,
+        registeredAt: new Date(c.createdAt),
+        coachData: c
+      }));
+
+      const existingJudges: RegisteredJudge[] = existingRegistrations.judges.map(j => ({
+        id: j.id,
+        name: j.fullName,
+        category: j.category,
+        country: j.country,
+        registeredAt: new Date(j.createdAt),
+        judgeData: j
+      }));
+
+      // Merge with existing local registrations (avoid duplicates)
+      setState(prev => {
+        const mergedChoreographies = [
+          ...prev.choreographies,
+          ...existingChoreographies.filter(ec => 
+            !prev.choreographies.some(pc => pc.id === ec.id)
+          )
+        ];
+
+        const mergedCoaches = [
+          ...prev.coaches,
+          ...existingCoaches.filter(ec =>
+            !prev.coaches.some(pc => pc.id === ec.id)
+          )
+        ];
+
+        const mergedJudges = [
+          ...prev.judges,
+          ...existingJudges.filter(ej =>
+            !prev.judges.some(pj => pj.id === ej.id)
+          )
+        ];
+
+        return {
+          ...prev,
+          choreographies: mergedChoreographies,
+          coaches: mergedCoaches,
+          judges: mergedJudges,
+        };
+      });
+
+      console.log('Existing registrations loaded successfully');
+    } catch (error) {
+      console.error('Failed to load existing registrations:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value: RegistrationContextType = {
     state,
     addChoreography,
@@ -187,6 +290,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     clearAll,
     getTotalCount,
     canConfirmRegistration,
+    loadExistingRegistrations,
+    isLoading,
   };
 
   return (

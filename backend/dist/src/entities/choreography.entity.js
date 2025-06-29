@@ -12,21 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Choreography = exports.ChoreographyType = exports.ChoreographyCategory = void 0;
 const typeorm_1 = require("typeorm");
 const gymnast_entity_1 = require("./gymnast.entity");
-var ChoreographyCategory;
-(function (ChoreographyCategory) {
-    ChoreographyCategory["YOUTH"] = "YOUTH";
-    ChoreographyCategory["JUNIOR"] = "JUNIOR";
-    ChoreographyCategory["SENIOR"] = "SENIOR";
-})(ChoreographyCategory || (exports.ChoreographyCategory = ChoreographyCategory = {}));
-var ChoreographyType;
-(function (ChoreographyType) {
-    ChoreographyType["MIND"] = "MIND";
-    ChoreographyType["WIND"] = "WIND";
-    ChoreographyType["MXP"] = "MXP";
-    ChoreographyType["TRIO"] = "TRIO";
-    ChoreographyType["GRP"] = "GRP";
-    ChoreographyType["DNCE"] = "DNCE";
-})(ChoreographyType || (exports.ChoreographyType = ChoreographyType = {}));
+const categories_1 = require("../constants/categories");
+Object.defineProperty(exports, "ChoreographyCategory", { enumerable: true, get: function () { return categories_1.ChoreographyCategory; } });
+Object.defineProperty(exports, "ChoreographyType", { enumerable: true, get: function () { return categories_1.ChoreographyType; } });
 let Choreography = class Choreography {
 };
 exports.Choreography = Choreography;
@@ -45,14 +33,14 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ChoreographyCategory
+        enum: categories_1.ChoreographyCategory
     }),
     __metadata("design:type", String)
 ], Choreography.prototype, "category", void 0);
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: ChoreographyType
+        enum: categories_1.ChoreographyType
     }),
     __metadata("design:type", String)
 ], Choreography.prototype, "type", void 0);

@@ -6,15 +6,78 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Calendar, MapPin, Globe, Users, UserCheck, ClipboardList, ArrowLeft, Settings } from 'lucide-react';
+import { RegistrationCartSidebar } from '@/components/registration-cart-sidebar';
+import { TournamentNav } from '@/components/ui/tournament-nav';
+import { Trophy, Calendar, MapPin, Globe, Users, UserCheck, ClipboardList, ArrowLeft, Settings, UserPlus } from 'lucide-react';
 import { Tournament } from '@/types';
 import { countries } from '@/lib/countries';
+import { useRegistration } from '@/contexts/registration-context';
+import { APIService } from '@/lib/api';
+import { toast } from 'sonner';
 
 export default function RegistrationDashboard() {
   const router = useRouter();
+  const { state, clearAll, getTotalCount, loadExistingRegistrations, isLoading: registrationLoading } = useRegistration();
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleToggleRegistrationSummary = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleConfirmRegistration = async () => {
+    if (submitting || !selectedTournament || !selectedCountry) return;
+    
+    setSubmitting(true);
+    
+    try {
+      const totalItems = getTotalCount();
+      
+      // Prepare batch registration data
+      const choreographyData = state.choreographies.map(c => c.choreographyData).filter(Boolean);
+      const coachData = state.coaches.map(c => c.coachData).filter(Boolean);
+      const judgeData = state.judges.map(j => j.judgeData).filter(Boolean);
+      
+      const registrationData = {
+        choreographies: choreographyData,
+        coaches: coachData,
+        judges: judgeData,
+        tournament: selectedTournament,
+        country: selectedCountry,
+      };
+      
+      // Call batch registration API
+      const result = await APIService.submitBatchRegistration(registrationData);
+      
+      if (result.success) {
+        toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
+          description: 'You will receive a confirmation email shortly.',
+          duration: 5000,
+        });
+
+        // Clear the registration cart
+        clearAll();
+        
+        // Close the sidebar
+        setIsSidebarOpen(false);
+      } else {
+        throw new Error('Registration failed on server');
+      }
+      
+    } catch (error) {
+      console.error('Registration confirmation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to confirm registration';
+      toast.error(errorMessage, {
+        description: 'Please try again or contact support if the problem persists.',
+        duration: 7000,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     // Load selections from localStorage
@@ -38,6 +101,14 @@ export default function RegistrationDashboard() {
 
     setLoading(false);
   }, [router]);
+
+  // Load existing registrations when tournament and country are available
+  useEffect(() => {
+    if (selectedTournament && selectedCountry && !loading) {
+      console.log('Loading existing registrations for:', { country: selectedCountry, tournament: selectedTournament.name });
+      loadExistingRegistrations();
+    }
+  }, [selectedTournament, selectedCountry, loading, loadExistingRegistrations]);
 
   const getCountryInfo = (code: string) => {
     const country = countries.find(c => c.code === code);
@@ -64,36 +135,16 @@ export default function RegistrationDashboard() {
   }
 
   const countryInfo = getCountryInfo(selectedCountry);
+  const totalCount = getTotalCount();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="border-b bg-white/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">
-                  Registration Dashboard
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {countryInfo.flag} {countryInfo.name} • {selectedTournament.name}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleChangeSelection}>
-                <Settings className="w-4 h-4 mr-2" />
-                Change Selection
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Tournament Navigation */}
+      <TournamentNav 
+        currentPage="Registration Dashboard"
+        showRegistrationSummary={true}
+        onToggleRegistrationSummary={handleToggleRegistrationSummary}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
@@ -166,14 +217,121 @@ export default function RegistrationDashboard() {
             </CardContent>
           </Card>
 
+          {/* Existing Registrations Summary */}
+          {(totalCount > 0 || registrationLoading) && (
+            <Card className="shadow-lg border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-800">
+                  <Users className="w-5 h-5" />
+                  Current Registrations Summary
+                  {registrationLoading && (
+                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin ml-2"></div>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {registrationLoading ? (
+                  <p className="text-muted-foreground">Loading existing registrations...</p>
+                ) : (
+                  <>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ClipboardList className="w-4 h-4 text-purple-600" />
+                          <h4 className="font-semibold text-purple-700">Choreographies</h4>
+                        </div>
+                        <p className="text-2xl font-bold text-purple-800">{state.choreographies.length}</p>
+                        {state.choreographies.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {state.choreographies.slice(0, 3).map(c => (
+                              <div key={c.id} className="text-xs text-muted-foreground truncate">
+                                • {c.name} ({c.category})
+                              </div>
+                            ))}
+                            {state.choreographies.length > 3 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{state.choreographies.length - 3} more...
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-4 h-4 text-green-600" />
+                          <h4 className="font-semibold text-green-700">Coaches</h4>
+                        </div>
+                        <p className="text-2xl font-bold text-green-800">{state.coaches.length}</p>
+                        {state.coaches.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {state.coaches.slice(0, 3).map(c => (
+                              <div key={c.id} className="text-xs text-muted-foreground truncate">
+                                • {c.name} ({c.level})
+                              </div>
+                            ))}
+                            {state.coaches.length > 3 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{state.coaches.length - 3} more...
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-white/80 rounded-lg p-4 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UserCheck className="w-4 h-4 text-blue-600" />
+                          <h4 className="font-semibold text-blue-700">Judges</h4>
+                        </div>
+                        <p className="text-2xl font-bold text-blue-800">{state.judges.length}</p>
+                        {state.judges.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {state.judges.slice(0, 3).map(j => (
+                              <div key={j.id} className="text-xs text-muted-foreground truncate">
+                                • {j.name} ({j.category})
+                              </div>
+                            ))}
+                            {state.judges.length > 3 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{state.judges.length - 3} more...
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-green-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-700 font-semibold">Total Registrations:</span>
+                        <Badge variant="default" className="bg-green-600 text-white text-lg px-3 py-1">
+                          {totalCount}
+                        </Badge>
+                      </div>
+                      {totalCount > 0 && (
+                        <Badge variant="default" className="bg-green-100 text-green-800">
+                          Ready to confirm
+                        </Badge>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Registration Options */}
           <div className="space-y-6">
             <div className="text-center">
               <h2 className="text-3xl font-bold text-foreground mb-2">
-                What would you like to register?
+                {totalCount > 0 ? 'Add More Registrations' : 'What would you like to register?'}
               </h2>
               <p className="text-xl text-muted-foreground">
-                Choose from the available registration options below
+                {totalCount > 0 
+                  ? 'Continue building your registration by adding more items'
+                  : 'Choose from the available registration options below'
+                }
               </p>
             </div>
 
@@ -302,6 +460,13 @@ export default function RegistrationDashboard() {
           </Card>
         </div>
       </div>
+
+      <RegistrationCartSidebar
+        isOpen={isSidebarOpen}
+        onToggle={handleToggleRegistrationSummary}
+        onConfirmRegistration={handleConfirmRegistration}
+        isSubmitting={submitting}
+      />
     </div>
   );
 } 

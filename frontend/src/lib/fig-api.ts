@@ -8,6 +8,7 @@ import {
   AGE_LIMITS,
   COACH_LEVEL_INFO
 } from '@/types';
+import { ChoreographyCategory } from '@/constants/categories';
 
 /**
  * Service for interacting with the FIG (Fédération Internationale de Gymnastique) API
@@ -104,7 +105,7 @@ export class FIGAPIService {
    * Get gymnasts by category and country
    */
   static async getGymnastsByCategory(
-    category: 'YOUTH' | 'JUNIOR' | 'SENIOR',
+    category: ChoreographyCategory,
     countryCode: string
   ): Promise<Gymnast[]> {
     const countryGymnasts = await this.getGymnastsByCountry(countryCode);
@@ -303,10 +304,10 @@ export class FIGAPIService {
   /**
    * Determine category based on age
    */
-  private static determineCategory(age: number): 'YOUTH' | 'JUNIOR' | 'SENIOR' {
-    if (age <= AGE_LIMITS.YOUTH.max) return 'YOUTH';
-    if (age <= AGE_LIMITS.JUNIOR.max) return 'JUNIOR';
-    return 'SENIOR';
+  private static determineCategory(age: number): ChoreographyCategory {
+    if (age <= AGE_LIMITS.YOUTH.max) return ChoreographyCategory.YOUTH;
+    if (age <= AGE_LIMITS.JUNIOR.max) return ChoreographyCategory.JUNIOR;
+    return ChoreographyCategory.SENIOR;
   }
 
   /**

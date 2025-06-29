@@ -2,25 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { JudgeDataTable } from '@/components/forms/judge-data-table';
 import { TournamentNav } from '@/components/ui/tournament-nav';
 import { RegistrationCartSidebar } from '@/components/registration-cart-sidebar';
-import { APIService } from '@/lib/api';
-import { countries, getCountryByCode } from '@/lib/countries';
+import { getCountryByCode } from '@/lib/countries';
 import type { Judge, Tournament } from '@/types';
 import { useRegistration, RegisteredJudge } from '@/contexts/registration-context';
-import { Scale, Users, Save, CheckCircle, AlertCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { APIService } from '@/lib/api';
+import { Scale, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function JudgeRegistrationPage() {
   const router = useRouter();
-  const { addJudge, clearAll, getTotalCount } = useRegistration();
+  const { addJudge } = useRegistration();
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,30 +37,8 @@ export default function JudgeRegistrationPage() {
   };
 
   const handleConfirmRegistration = async () => {
-    try {
-      const totalItems = getTotalCount();
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
-        description: 'You will receive a confirmation email shortly.',
-        duration: 5000,
-      });
-
-      // Clear the registration cart
-      clearAll();
-      
-      // Close the sidebar
-      setIsSidebarOpen(false);
-      
-      // Redirect to dashboard or confirmation page
-      router.push('/registration/dashboard');
-      
-    } catch (error) {
-      console.error('Registration confirmation failed:', error);
-      toast.error('Failed to confirm registration. Please try again.');
-    }
+    // Redirect to dashboard for final registration
+    router.push('/registration/dashboard');
   };
 
   // Load tournament and country from localStorage
@@ -101,9 +77,16 @@ export default function JudgeRegistrationPage() {
     setRegistrationResult(null);
 
     try {
-      // For now, we'll simulate a successful registration
-      // In a real implementation, this would call an API endpoint
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      // Save selections to database first
+      const saveResult = await APIService.saveJudgeSelections(
+        selectedJudges,
+        selectedTournament.id,
+        selectedCountry
+      );
+
+      if (!saveResult.success) {
+        throw new Error(saveResult.errors?.join(', ') || 'Failed to save judge selections');
+      }
 
       // Add judges to registration cart
       selectedJudges.forEach(judge => {
@@ -113,19 +96,20 @@ export default function JudgeRegistrationPage() {
           category: judge.categoryDescription,
           country: judge.country,
           registeredAt: new Date(),
+          judgeData: judge, // Store original judge data for final submission
         };
         addJudge(cartJudge);
       });
 
       setRegistrationResult({
         success: true,
-        message: `Successfully registered ${selectedJudges.length} judge(s) for ${selectedTournament.name}!`,
+        message: `Successfully registered ${selectedJudges.length} judge(s) to the database and added to cart!`,
         judges: selectedJudges,
       });
 
       // Show success toast
-      toast.success(`${selectedJudges.length} judge${selectedJudges.length > 1 ? 's' : ''} added to cart!`, {
-        description: 'Judges have been added to your registration cart.',
+      toast.success(`${selectedJudges.length} judge${selectedJudges.length > 1 ? 's' : ''} saved and added to cart!`, {
+        description: 'Judges have been registered in the database and added to your cart.',
         duration: 3000,
       });
 
@@ -134,7 +118,7 @@ export default function JudgeRegistrationPage() {
       setAdditionalNotes('');
       
     } catch (error: unknown) {
-      console.error('Registration failed:', error);
+      console.error('Judge registration failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to register judges. Please try again.';
       setRegistrationResult({
         success: false,
@@ -270,12 +254,12 @@ export default function JudgeRegistrationPage() {
                       {submitting ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Registering Judges...
+                          Adding to Cart...
                         </>
                       ) : (
                         <>
                           <Save className="w-4 h-4 mr-2" />
-                          Register {selectedJudges.length} Judge{selectedJudges.length !== 1 ? 's' : ''}
+                          Add {selectedJudges.length} Judge{selectedJudges.length !== 1 ? 's' : ''} to Cart
                         </>
                       )}
                     </Button>
@@ -299,14 +283,14 @@ export default function JudgeRegistrationPage() {
                 )}
                 <div className="flex-1">
                   <h3 className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                    {registrationResult.success ? 'Registration Successful!' : 'Registration Failed'}
+                    {registrationResult.success ? 'Added to Cart Successfully!' : 'Failed to Add to Cart'}
                   </h3>
                   <p className={`mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
                     {registrationResult.message}
                   </p>
                   {registrationResult.success && registrationResult.judges && (
                     <div className="mt-4">
-                      <h4 className="font-medium text-green-800 mb-2">Registered Judges:</h4>
+                      <h4 className="font-medium text-green-800 mb-2">Added to Cart:</h4>
                       <div className="space-y-1">
                         {registrationResult.judges.map((judge) => (
                           <div key={judge.id} className="flex items-center gap-2 text-sm text-green-700">
@@ -328,6 +312,7 @@ export default function JudgeRegistrationPage() {
         isOpen={isSidebarOpen}
         onToggle={handleToggleRegistrationSummary}
         onConfirmRegistration={handleConfirmRegistration}
+        isSubmitting={false}
       />
     </div>
   );

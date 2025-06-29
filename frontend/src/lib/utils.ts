@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { Gymnast, GYMNAST_COUNTS, ChoreographyType } from "@/types"
+import { ChoreographyCategory } from "@/constants/categories"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -132,13 +133,13 @@ export function truncate(text: string, length: number): string {
 /**
  * Get category color for UI
  */
-export function getCategoryColor(category: 'YOUTH' | 'JUNIOR' | 'SENIOR'): string {
+export function getCategoryColor(category: ChoreographyCategory): string {
   switch (category) {
-    case 'YOUTH':
+    case ChoreographyCategory.YOUTH:
       return 'bg-green-100 text-green-800 border-green-200';
-    case 'JUNIOR':
+    case ChoreographyCategory.JUNIOR:
       return 'bg-blue-100 text-blue-800 border-blue-200';
-    case 'SENIOR':
+    case ChoreographyCategory.SENIOR:
       return 'bg-purple-100 text-purple-800 border-purple-200';
     default:
       return 'bg-gray-100 text-gray-800 border-gray-200';
