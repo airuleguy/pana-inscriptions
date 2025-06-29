@@ -14,11 +14,12 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: false,
         transformOptions: {
             enableImplicitConversion: true,
         },
     }));
+    app.setGlobalPrefix('api/v1');
     app.enableCors({
         origin: [
             'http://localhost:3000',
@@ -36,7 +37,7 @@ async function bootstrap() {
         .addTag('health', 'Health monitoring endpoints')
         .build();
     const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup('api', app, document, {
+    swagger_1.SwaggerModule.setup('api-docs', app, document, {
         customSiteTitle: 'Tournament Registration API',
         customCss: '.swagger-ui .topbar { display: none }',
     });
@@ -50,8 +51,8 @@ async function bootstrap() {
     const port = configService.get('PORT') || 3001;
     await app.listen(port);
     logger.log(`🚀 Application running on: http://localhost:${port}`);
-    logger.log(`📚 API Documentation: http://localhost:${port}/api`);
-    logger.log(`🏥 Health Check: http://localhost:${port}/health`);
+    logger.log(`📚 API Documentation: http://localhost:${port}/api-docs`);
+    logger.log(`🏥 Health Check: http://localhost:${port}/api/v1/health`);
 }
 bootstrap().catch((error) => {
     console.error('❌ Error starting server:', error);

@@ -6,6 +6,7 @@ exports.seedUsers = seedUsers;
 const typeorm_1 = require("typeorm");
 const bcrypt = require("bcrypt");
 const user_entity_1 = require("../entities/user.entity");
+const user_session_entity_1 = require("../entities/user-session.entity");
 const testUsers = [
     {
         username: 'usa_delegate',
@@ -43,6 +44,12 @@ const testUsers = [
         country: 'ADMIN',
         role: user_entity_1.UserRole.ADMIN,
     },
+    {
+        username: 'uruguay',
+        password: '1234',
+        country: 'URU',
+        role: user_entity_1.UserRole.DELEGATE,
+    },
 ];
 exports.testUsers = testUsers;
 async function createDataSource() {
@@ -53,7 +60,7 @@ async function createDataSource() {
         username: process.env.DATABASE_USERNAME || 'postgres',
         password: process.env.DATABASE_PASSWORD || 'postgres',
         database: process.env.DATABASE_NAME || 'pana-inscriptions-db',
-        entities: [user_entity_1.User],
+        entities: [user_entity_1.User, user_session_entity_1.UserSession],
         synchronize: false,
         logging: false,
     });

@@ -46,16 +46,21 @@ let FigApiService = FigApiService_1 = class FigApiService {
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
             }
-            const gymnasts = response.data.map(athlete => ({
-                figId: athlete.gymnastid,
-                firstName: athlete.preferredfirstname,
-                lastName: athlete.preferredlastname,
-                gender: athlete.gender === 'male' ? 'M' : 'F',
-                country: athlete.country,
-                birthDate: athlete.birth,
-                discipline: athlete.discipline,
-                isLicensed: true,
-            }));
+            const gymnasts = response.data.map(athlete => {
+                const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
+                const isLicenseValid = licenseExpiryDate > new Date();
+                return {
+                    figId: athlete.gymnastid,
+                    firstName: athlete.preferredfirstname,
+                    lastName: athlete.preferredlastname,
+                    gender: athlete.gender === 'male' ? 'M' : 'F',
+                    country: athlete.country,
+                    birthDate: athlete.birth,
+                    discipline: athlete.discipline,
+                    isLicensed: isLicenseValid,
+                    licenseExpiryDate: athlete.validto,
+                };
+            });
             await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
             this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API`);
             return gymnasts;
@@ -87,16 +92,21 @@ let FigApiService = FigApiService_1 = class FigApiService {
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
             }
-            const gymnasts = response.data.map(athlete => ({
-                figId: athlete.gymnastid,
-                firstName: athlete.preferredfirstname,
-                lastName: athlete.preferredlastname,
-                gender: athlete.gender === 'male' ? 'M' : 'F',
-                country: athlete.country,
-                birthDate: athlete.birth,
-                discipline: athlete.discipline,
-                isLicensed: true,
-            }));
+            const gymnasts = response.data.map(athlete => {
+                const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
+                const isLicenseValid = licenseExpiryDate > new Date();
+                return {
+                    figId: athlete.gymnastid,
+                    firstName: athlete.preferredfirstname,
+                    lastName: athlete.preferredlastname,
+                    gender: athlete.gender === 'male' ? 'M' : 'F',
+                    country: athlete.country,
+                    birthDate: athlete.birth,
+                    discipline: athlete.discipline,
+                    isLicensed: isLicenseValid,
+                    licenseExpiryDate: athlete.validto,
+                };
+            });
             await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
             this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API for country: ${country}`);
             return gymnasts;

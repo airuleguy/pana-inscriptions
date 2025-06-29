@@ -46,4 +46,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'License status', example: true }),
     __metadata("design:type", Boolean)
 ], GymnastDto.prototype, "isLicensed", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'License expiry date', example: '2027-05-22' }),
+    __metadata("design:type", String)
+], GymnastDto.prototype, "licenseExpiryDate", void 0);
 //# sourceMappingURL=gymnast.dto.js.map

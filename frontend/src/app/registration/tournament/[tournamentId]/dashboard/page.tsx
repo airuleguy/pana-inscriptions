@@ -225,11 +225,6 @@ export default function TournamentRegistrationDashboard() {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <Button size="lg" variant="outline" onClick={() => router.push('/tournament-selection')}>
-                    Change Tournament
-                  </Button>
-                </div>
               </div>
             ) : (
               <div className="space-y-4">

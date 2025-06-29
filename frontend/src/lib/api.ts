@@ -504,8 +504,10 @@ export class APIService {
     birthDate: string; // ISO date string
     discipline: string;
     isLicensed: boolean;
+    licenseExpiryDate: string; // YYYY-MM-DD format from backend
   }): Gymnast {
-    const dateOfBirth = new Date(dto.birthDate);
+    const dateOfBirth = new Date(dto.birthDate + 'T00:00:00Z');
+    const licenseExpiryDate = new Date(dto.licenseExpiryDate + 'T00:00:00Z');
     const age = this.calculateAge(dateOfBirth);
     const category = this.determineCategory(age);
 
@@ -518,7 +520,7 @@ export class APIService {
       gender: dto.gender === 'M' ? 'MALE' : 'FEMALE',
       country: dto.country.toUpperCase(),
       licenseValid: dto.isLicensed,
-      licenseExpiryDate: new Date(), // Backend doesn't provide expiry date, use current date as placeholder
+      licenseExpiryDate,
       age,
       category,
     };

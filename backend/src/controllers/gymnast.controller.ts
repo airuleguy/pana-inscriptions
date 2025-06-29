@@ -4,7 +4,7 @@ import { FigApiService } from '../services/fig-api.service';
 import { GymnastDto } from '../dto/gymnast.dto';
 
 @ApiTags('gymnasts')
-@Controller('api/v1/gymnasts')
+@Controller('gymnasts')
 export class GymnastController {
   constructor(private readonly figApiService: FigApiService) {}
 

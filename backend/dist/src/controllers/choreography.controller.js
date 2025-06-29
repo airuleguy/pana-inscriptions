@@ -175,7 +175,7 @@ exports.ChoreographyController = ChoreographyController = __decorate([
     (0, swagger_1.ApiTags)('choreographies'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(country_auth_guard_1.CountryAuthGuard),
-    (0, common_1.Controller)('api/v1/choreographies'),
+    (0, common_1.Controller)('choreographies'),
     __metadata("design:paramtypes", [choreography_service_1.ChoreographyService])
 ], ChoreographyController);
 //# sourceMappingURL=choreography.controller.js.map

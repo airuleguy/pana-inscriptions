@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, RefreshCw, AlertCircle, Users, Search } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
-import { getInitials, getCategoryColor } from '@/lib/utils';
+import { getInitials, getCategoryColor, formatDateDDMMYYYY } from '@/lib/utils';
 import { ChoreographyCategory } from '@/constants/categories';
 import type { Gymnast } from '@/types';
 import { Input } from '@/components/ui/input';
@@ -49,6 +49,7 @@ export function GymnastDataTable({
       setError(null);
       
       try {
+        // Use backend API service which now includes correct license expiry dates
         const gymnasts = await APIService.getGymnasts(countryCode);
         setAvailableGymnasts(gymnasts);
       } catch (err: unknown) {
@@ -87,7 +88,7 @@ export function GymnastDataTable({
     setError(null);
     
     try {
-      // Clear cache and refetch
+      // Clear cache and refetch using backend API service
       await APIService.clearGymnastCache();
       const gymnasts = await APIService.getGymnasts(countryCode);
       setAvailableGymnasts(gymnasts);
@@ -217,7 +218,7 @@ export function GymnastDataTable({
         ),
         cell: ({ row }) => {
           const date = row.getValue("dateOfBirth") as Date;
-          return <span>{date ? date.toLocaleDateString() : 'N/A'}</span>;
+          return <span>{formatDateDDMMYYYY(date)}</span>;
         },
       },
       {
@@ -231,7 +232,7 @@ export function GymnastDataTable({
                 {gymnast.licenseValid ? 'Valid' : 'Expired'}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                Expires: {gymnast.licenseExpiryDate ? gymnast.licenseExpiryDate.toLocaleDateString() : 'N/A'}
+                Expires: {formatDateDDMMYYYY(gymnast.licenseExpiryDate)}
               </span>
             </div>
           );

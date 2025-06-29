@@ -9,7 +9,7 @@ import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 @ApiTags('global-registrations')
 @ApiBearerAuth()
 @UseGuards(CountryAuthGuard)
-@Controller('api/v1/registrations')
+@Controller('registrations')
 export class GlobalRegistrationsController {
   private readonly logger = new Logger(GlobalRegistrationsController.name);
 

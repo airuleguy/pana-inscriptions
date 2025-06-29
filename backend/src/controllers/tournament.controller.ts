@@ -7,7 +7,7 @@ import { UpdateTournamentDto } from '../dto/update-tournament.dto';
 import { Tournament, TournamentType } from '../entities/tournament.entity';
 
 @ApiTags('tournaments')
-@Controller('api/v1/tournaments')
+@Controller('tournaments')
 export class TournamentController {
   private readonly logger = new Logger(TournamentController.name);
 

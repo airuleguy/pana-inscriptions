@@ -514,7 +514,7 @@ exports.TournamentRegistrationsController = TournamentRegistrationsController = 
     (0, swagger_1.ApiTags)('tournament-registrations'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(country_auth_guard_1.CountryAuthGuard),
-    (0, common_1.Controller)('api/v1/tournaments/:tournamentId/registrations'),
+    (0, common_1.Controller)('tournaments/:tournamentId/registrations'),
     __metadata("design:paramtypes", [coach_registration_service_1.CoachRegistrationService,
         judge_registration_service_1.JudgeRegistrationService,
         choreography_service_1.ChoreographyService,

@@ -241,8 +241,13 @@ export class FIGAPIService {
    * Transform FIG API data to internal application format
    */
   private static transformToInternalFormat(fig: FIGGymnast): Gymnast {
-    const dateOfBirth = new Date(fig.birth);
-    const licenseExpiryDate = new Date(fig.validto);
+    // Parse birth date - FIG API returns YYYY-MM-DD format
+    const dateOfBirth = new Date(fig.birth + 'T00:00:00Z');
+    
+    // Parse license expiry date - FIG API returns YYYY-MM-DD format (e.g. "2027-05-22")
+    // Add 'T00:00:00Z' to ensure it's parsed as UTC
+    const licenseExpiryDate = new Date(fig.validto + 'T00:00:00Z');
+    
     const age = this.calculateAge(dateOfBirth);
     const category = this.determineCategory(age);
     

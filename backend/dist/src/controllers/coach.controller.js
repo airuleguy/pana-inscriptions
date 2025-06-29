@@ -100,7 +100,7 @@ __decorate([
 ], CoachController.prototype, "clearCache", null);
 exports.CoachController = CoachController = CoachController_1 = __decorate([
     (0, swagger_1.ApiTags)('coaches'),
-    (0, common_1.Controller)('api/v1/coaches'),
+    (0, common_1.Controller)('coaches'),
     __metadata("design:paramtypes", [fig_api_service_1.FigApiService])
 ], CoachController);
 //# sourceMappingURL=coach.controller.js.map

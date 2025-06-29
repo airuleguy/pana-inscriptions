@@ -24,4 +24,7 @@ export class GymnastDto {
 
   @ApiProperty({ description: 'License status', example: true })
   isLicensed: boolean;
+
+  @ApiProperty({ description: 'License expiry date', example: '2027-05-22' })
+  licenseExpiryDate: string;
 } 

@@ -7,4 +7,5 @@ export declare class GymnastDto {
     birthDate: string;
     discipline: string;
     isLicensed: boolean;
+    licenseExpiryDate: string;
 }

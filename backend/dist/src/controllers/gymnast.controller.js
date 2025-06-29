@@ -98,7 +98,7 @@ __decorate([
 ], GymnastController.prototype, "clearCache", null);
 exports.GymnastController = GymnastController = __decorate([
     (0, swagger_1.ApiTags)('gymnasts'),
-    (0, common_1.Controller)('api/v1/gymnasts'),
+    (0, common_1.Controller)('gymnasts'),
     __metadata("design:paramtypes", [fig_api_service_1.FigApiService])
 ], GymnastController);
 //# sourceMappingURL=gymnast.controller.js.map

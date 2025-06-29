@@ -30,7 +30,7 @@ import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 @ApiTags('choreographies')
 @ApiBearerAuth()
 @UseGuards(CountryAuthGuard)
-@Controller('api/v1/choreographies')
+@Controller('choreographies')
 export class ChoreographyController {
   constructor(private readonly choreographyService: ChoreographyService) {}
 

@@ -279,7 +279,7 @@ __decorate([
 ], TournamentController.prototype, "remove", null);
 exports.TournamentController = TournamentController = TournamentController_1 = __decorate([
     (0, swagger_1.ApiTags)('tournaments'),
-    (0, common_1.Controller)('api/v1/tournaments'),
+    (0, common_1.Controller)('tournaments'),
     __metadata("design:paramtypes", [tournament_service_1.TournamentService,
         batch_registration_service_1.BatchRegistrationService])
 ], TournamentController);

@@ -4,7 +4,7 @@ import { FigApiService } from '../services/fig-api.service';
 import { JudgeDto } from '../dto/judge.dto';
 
 @ApiTags('judges')
-@Controller('api/v1/judges')
+@Controller('judges')
 export class JudgeController {
   private readonly logger = new Logger(JudgeController.name);
 

@@ -100,7 +100,7 @@ __decorate([
 ], JudgeController.prototype, "clearCache", null);
 exports.JudgeController = JudgeController = JudgeController_1 = __decorate([
     (0, swagger_1.ApiTags)('judges'),
-    (0, common_1.Controller)('api/v1/judges'),
+    (0, common_1.Controller)('judges'),
     __metadata("design:paramtypes", [fig_api_service_1.FigApiService])
 ], JudgeController);
 //# sourceMappingURL=judge.controller.js.map

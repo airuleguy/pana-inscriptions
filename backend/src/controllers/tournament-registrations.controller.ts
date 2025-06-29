@@ -17,7 +17,7 @@ import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 @ApiTags('tournament-registrations')
 @ApiBearerAuth()
 @UseGuards(CountryAuthGuard)
-@Controller('api/v1/tournaments/:tournamentId/registrations')
+@Controller('tournaments/:tournamentId/registrations')
 export class TournamentRegistrationsController {
   private readonly logger = new Logger(TournamentRegistrationsController.name);
 

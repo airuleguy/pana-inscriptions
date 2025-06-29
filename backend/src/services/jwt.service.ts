@@ -25,17 +25,14 @@ export class JwtService {
   async generateToken(user: User): Promise<{ token: string; jwtId: string; expiresIn: number }> {
     try {
       const jwtId = uuidv4();
-      const now = Math.floor(Date.now() / 1000);
       const expiresIn = this.parseExpirationTime(this.jwtExpiresIn);
 
-      const payload: JwtPayload = {
+      const payload = {
         sub: user.id,
         username: user.username,
         country: user.country,
         role: user.role,
         jti: jwtId,
-        iat: now,
-        exp: now + expiresIn,
       };
 
       const token = await this.nestJwtService.signAsync(payload, {

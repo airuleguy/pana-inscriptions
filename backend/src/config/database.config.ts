@@ -25,7 +25,7 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('POSTGRES_DB'),
       entities: [Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession],
       synchronize: !isProduction, // Auto-create tables in development
-      dropSchema: !isProduction, // Drop schema in development
+      dropSchema: false, // Don't drop schema to preserve seeded data
       logging: !isProduction,
       ssl: isProduction ? { rejectUnauthorized: false } : false,
       retryAttempts: 3,

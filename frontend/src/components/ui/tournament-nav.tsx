@@ -5,8 +5,13 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { LogOut, User as UserIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useRegistration } from '@/contexts/registration-context';
+import { useAuth } from '@/contexts/auth-context';
 import { Trophy, Users, UserCheck, ClipboardList, ChevronLeft, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
@@ -23,6 +28,7 @@ export function TournamentNav({
   const router = useRouter();
   const pathname = usePathname();
   const { state, getTotalCount } = useRegistration();
+  const { state: authState, logout } = useAuth();
   const totalCount = getTotalCount();
 
   // Extract tournament ID from current path
@@ -60,6 +66,28 @@ export function TournamentNav({
     if (onToggleRegistrationSummary) {
       onToggleRegistrationSummary();
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast.success('Logged out successfully');
+  };
+
+  // Generate initials from username (take first letter and first letter after underscore if exists)
+  const getInitials = (username: string) => {
+    const parts = username.split('_');
+    if (parts.length > 1) {
+      return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+    }
+    return username.substring(0, 2).toUpperCase();
+  };
+
+  // Format username for display (replace underscores with spaces and capitalize)
+  const formatDisplayName = (username: string) => {
+    return username
+      .split('_')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
   };
 
   return (
@@ -154,8 +182,9 @@ export function TournamentNav({
             </div>
           </div>
 
-          {/* Right side - Summary button */}
+          {/* Right side - Summary button and Auth info */}
           <div className="flex items-center gap-4">
+            {/* Summary Button */}
             {showRegistrationSummary && (
               <Button
                 variant="outline"
@@ -175,6 +204,54 @@ export function TournamentNav({
                 )}
               </Button>
             )}
+
+            {/* Authentication Info */}
+            {authState.isAuthenticated && authState.user && (
+              <>
+                <div className="hidden sm:block text-sm text-gray-600">
+                  <span className="font-medium">{authState.user.country}</span> Delegate
+                </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(authState.user.username)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {formatDisplayName(authState.user.username)}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {authState.user.country} • {authState.user.role}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem disabled>
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
         </div>
 
@@ -185,9 +262,9 @@ export function TournamentNav({
               <Trophy className="w-4 h-4" />
               <span>Registration Portal</span>
             </div>
-            {state.country && (
+            {authState.user?.country && (
               <div className="flex items-center gap-1 text-muted-foreground">
-                <span>{state.country}</span>
+                <span>{authState.user.country} Delegate</span>
               </div>
             )}
           </div>

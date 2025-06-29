@@ -83,16 +83,23 @@ export class FigApiService {
       }
 
       // Transform the data
-      const gymnasts: GymnastDto[] = response.data.map(athlete => ({
-        figId: athlete.gymnastid,
-        firstName: athlete.preferredfirstname,
-        lastName: athlete.preferredlastname,
-        gender: athlete.gender === 'male' ? 'M' : 'F',
-        country: athlete.country,
-        birthDate: athlete.birth,
-        discipline: athlete.discipline,
-        isLicensed: true, // All gymnasts in the API have valid licenses
-      }));
+      const gymnasts: GymnastDto[] = response.data.map(athlete => {
+        // Parse license expiry date and check validity
+        const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
+        const isLicenseValid = licenseExpiryDate > new Date();
+        
+        return {
+          figId: athlete.gymnastid,
+          firstName: athlete.preferredfirstname,
+          lastName: athlete.preferredlastname,
+          gender: athlete.gender === 'male' ? 'M' : 'F',
+          country: athlete.country,
+          birthDate: athlete.birth,
+          discipline: athlete.discipline,
+          isLicensed: isLicenseValid,
+          licenseExpiryDate: athlete.validto,
+        };
+      });
 
       // Cache the result
       await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
@@ -137,16 +144,23 @@ export class FigApiService {
       }
 
       // Transform the data
-      const gymnasts: GymnastDto[] = response.data.map(athlete => ({
-        figId: athlete.gymnastid,
-        firstName: athlete.preferredfirstname,
-        lastName: athlete.preferredlastname,
-        gender: athlete.gender === 'male' ? 'M' : 'F',
-        country: athlete.country,
-        birthDate: athlete.birth,
-        discipline: athlete.discipline,
-        isLicensed: true,
-      }));
+      const gymnasts: GymnastDto[] = response.data.map(athlete => {
+        // Parse license expiry date and check validity
+        const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
+        const isLicenseValid = licenseExpiryDate > new Date();
+        
+        return {
+          figId: athlete.gymnastid,
+          firstName: athlete.preferredfirstname,
+          lastName: athlete.preferredlastname,
+          gender: athlete.gender === 'male' ? 'M' : 'F',
+          country: athlete.country,
+          birthDate: athlete.birth,
+          discipline: athlete.discipline,
+          isLicensed: isLicenseValid,
+          licenseExpiryDate: athlete.validto,
+        };
+      });
 
       // Cache the country-specific result
       await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);

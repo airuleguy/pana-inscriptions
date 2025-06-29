@@ -49,6 +49,20 @@ export function formatDateShort(date: Date): string {
 }
 
 /**
+ * Format date to DD/MM/YYYY format
+ */
+export function formatDateDDMMYYYY(date: Date): string {
+  if (!date || isNaN(date.getTime())) return 'N/A';
+  
+  // Use UTC methods to avoid timezone issues since dates come from backend as UTC
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+  const year = date.getUTCFullYear();
+  
+  return `${day}/${month}/${year}`;
+}
+
+/**
  * Calculate age from date of birth
  */
 export function calculateAge(dateOfBirth: Date): number {

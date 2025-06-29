@@ -34,7 +34,7 @@ let DatabaseConfig = class DatabaseConfig {
             database: this.configService.get('POSTGRES_DB'),
             entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge, user_entity_1.User, user_session_entity_1.UserSession],
             synchronize: !isProduction,
-            dropSchema: !isProduction,
+            dropSchema: false,
             logging: !isProduction,
             ssl: isProduction ? { rejectUnauthorized: false } : false,
             retryAttempts: 3,

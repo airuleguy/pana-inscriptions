@@ -3,6 +3,7 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../entities/user.entity';
+import { UserSession } from '../entities/user-session.entity';
 import { ConfigService } from '@nestjs/config';
 
 interface TestUser {
@@ -49,6 +50,12 @@ const testUsers: TestUser[] = [
     country: 'ADMIN',
     role: UserRole.ADMIN,
   },
+  {
+    username: 'uruguay',
+    password: '1234',
+    country: 'URU',
+    role: UserRole.DELEGATE,
+  },
 ];
 
 async function createDataSource(): Promise<DataSource> {
@@ -59,7 +66,7 @@ async function createDataSource(): Promise<DataSource> {
     username: process.env.DATABASE_USERNAME || 'postgres',
     password: process.env.DATABASE_PASSWORD || 'postgres',
     database: process.env.DATABASE_NAME || 'pana-inscriptions-db',
-    entities: [User],
+    entities: [User, UserSession],
     synchronize: false, // Don't auto-sync in production
     logging: false,
   });

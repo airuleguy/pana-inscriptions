@@ -8,12 +8,20 @@ import { AuthHeader } from '@/components/auth-header';
 // Routes that shouldn't show the header
 const HEADER_EXCLUDED_ROUTES = ['/login', '/unauthorized'];
 
+// Route patterns that shouldn't show the header (using startsWith)
+const HEADER_EXCLUDED_ROUTE_PATTERNS = ['/registration/tournament/'];
+
 export function AppHeader() {
   const pathname = usePathname();
   const { state } = useAuth();
 
   // Don't show header on login or unauthorized pages
   if (HEADER_EXCLUDED_ROUTES.includes(pathname)) {
+    return null;
+  }
+
+  // Don't show header on registration pages (they have their own nav)
+  if (HEADER_EXCLUDED_ROUTE_PATTERNS.some(pattern => pathname.startsWith(pattern))) {
     return null;
   }
 

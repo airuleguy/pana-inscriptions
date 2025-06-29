@@ -16,12 +16,15 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false, // Temporarily disabled for debugging
       transformOptions: {
         enableImplicitConversion: true,
       },
     }),
   );
+
+  // Global prefix for API routes
+  app.setGlobalPrefix('api/v1');
 
   // CORS configuration
   app.enableCors({
@@ -44,7 +47,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
+  SwaggerModule.setup('api-docs', app, document, {
     customSiteTitle: 'Tournament Registration API',
     customCss: '.swagger-ui .topbar { display: none }',
   });
@@ -62,8 +65,8 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`🚀 Application running on: http://localhost:${port}`);
-  logger.log(`📚 API Documentation: http://localhost:${port}/api`);
-  logger.log(`🏥 Health Check: http://localhost:${port}/health`);
+  logger.log(`📚 API Documentation: http://localhost:${port}/api-docs`);
+  logger.log(`🏥 Health Check: http://localhost:${port}/api/v1/health`);
 }
 
 bootstrap().catch((error) => {
