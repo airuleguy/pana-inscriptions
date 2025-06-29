@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { AppHeader } from "../components/app-header";
+import { UnifiedNav } from "../components/unified-nav";
+import { RegistrationSummaryManager } from "../components/registration-summary-manager";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,7 +31,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <div className="relative flex min-h-screen flex-col">
-            <AppHeader />
+            <UnifiedNav />
             <div className="flex-1">
               {children}
             </div>
@@ -50,6 +51,9 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
+
+            {/* Registration Summary Sidebar */}
+            <RegistrationSummaryManager />
           </div>
         </Providers>
       </body>

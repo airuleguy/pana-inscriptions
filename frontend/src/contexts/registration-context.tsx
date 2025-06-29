@@ -39,6 +39,7 @@ interface RegistrationState {
   judges: RegisteredJudge[];
   tournament: Tournament | null;
   country: string | null;
+  isSidebarOpen: boolean;
 }
 
 interface RegistrationContextType {
@@ -53,6 +54,8 @@ interface RegistrationContextType {
   getTotalCount: () => number;
   canConfirmRegistration: () => boolean;
   loadExistingRegistrations: () => Promise<void>;
+  toggleSidebar: () => void;
+  closeSidebar: () => void;
   isLoading: boolean;
 }
 
@@ -67,6 +70,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     judges: [],
     tournament: null,
     country: null,
+    isSidebarOpen: false,
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -189,6 +193,20 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     return getTotalCount() > 0;
   };
 
+  const toggleSidebar = () => {
+    setState(prev => ({
+      ...prev,
+      isSidebarOpen: !prev.isSidebarOpen,
+    }));
+  };
+
+  const closeSidebar = () => {
+    setState(prev => ({
+      ...prev,
+      isSidebarOpen: false,
+    }));
+  };
+
   const loadExistingRegistrations = useCallback(async () => {
     if (!state.tournament || !state.country) {
       console.log('Cannot load existing registrations: missing tournament or country');
@@ -254,6 +272,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     getTotalCount,
     canConfirmRegistration,
     loadExistingRegistrations,
+    toggleSidebar,
+    closeSidebar,
     isLoading,
   };
 
