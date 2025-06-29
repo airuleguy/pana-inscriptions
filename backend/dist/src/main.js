@@ -48,7 +48,7 @@ async function bootstrap() {
     catch (error) {
         console.error('Failed to seed tournaments:', error);
     }
-    const port = configService.get('PORT') || 3001;
+    const port = configService.get('port');
     await app.listen(port);
     logger.log(`🚀 Application running on: http://localhost:${port}`);
     logger.log(`📚 API Documentation: http://localhost:${port}/api-docs`);

@@ -26,10 +26,13 @@ let FigApiService = FigApiService_1 = class FigApiService {
         this.CACHE_KEY = 'fig-gymnasts';
         this.COACH_CACHE_KEY = 'fig-coaches';
         this.JUDGE_CACHE_KEY = 'fig-judges';
-        this.CACHE_TTL = 3600;
-        this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
-        this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
-        this.figJudgeApiUrl = 'https://www.gymnastics.sport/api/judges.php';
+        const figApiConfig = this.configService.get('figApi');
+        const cacheConfig = this.configService.get('cache');
+        this.figApiUrl = `${figApiConfig.baseUrl}${figApiConfig.athletesEndpoint}`;
+        this.figCoachApiUrl = `${figApiConfig.baseUrl}${figApiConfig.coachesEndpoint}`;
+        this.figJudgeApiUrl = `${figApiConfig.baseUrl}${figApiConfig.judgesEndpoint}`;
+        this.CACHE_TTL = cacheConfig.ttl;
+        this.API_TIMEOUT = figApiConfig.timeout;
     }
     async getGymnasts() {
         try {
@@ -41,7 +44,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log('Fetching gymnast data from FIG API');
             const apiUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=`;
             const response = await axios_1.default.get(apiUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
@@ -87,7 +90,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log(`Fetching gymnast data from FIG API for country: ${country}`);
             const countrySpecificUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&idlicense=&lastname=`;
             const response = await axios_1.default.get(countrySpecificUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
@@ -142,7 +145,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log('Fetching coach data from FIG API');
             const apiUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=&id=&level=&lastname=&firstname=`;
             const response = await axios_1.default.get(apiUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG Coach API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
@@ -182,7 +185,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log(`Fetching coach data from FIG API for country: ${country}`);
             const countrySpecificUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&level=&lastname=&firstname=`;
             const response = await axios_1.default.get(countrySpecificUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG Coach API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
@@ -231,7 +234,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log('Fetching judge data from FIG API');
             const apiUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=&id=&category=&lastname=`;
             const response = await axios_1.default.get(apiUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG Judge API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
@@ -272,7 +275,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             this.logger.log(`Fetching judge data from FIG API for country: ${country}`);
             const countrySpecificUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&category=&lastname=`;
             const response = await axios_1.default.get(countrySpecificUrl, {
-                timeout: 30000,
+                timeout: this.API_TIMEOUT,
             });
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG Judge API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);

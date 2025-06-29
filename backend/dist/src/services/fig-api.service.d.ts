@@ -14,6 +14,7 @@ export declare class FigApiService {
     private readonly COACH_CACHE_KEY;
     private readonly JUDGE_CACHE_KEY;
     private readonly CACHE_TTL;
+    private readonly API_TIMEOUT;
     constructor(configService: ConfigService, cacheManager: Cache);
     getGymnasts(): Promise<GymnastDto[]>;
     getGymnastsByCountry(country: string): Promise<GymnastDto[]>;

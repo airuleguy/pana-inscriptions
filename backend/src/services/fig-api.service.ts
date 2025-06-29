@@ -50,16 +50,23 @@ export class FigApiService {
   private readonly CACHE_KEY = 'fig-gymnasts';
   private readonly COACH_CACHE_KEY = 'fig-coaches';
   private readonly JUDGE_CACHE_KEY = 'fig-judges';
-  private readonly CACHE_TTL = 3600; // 1 hour in seconds
+  private readonly CACHE_TTL: number;
+  private readonly API_TIMEOUT: number;
 
   constructor(
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    // Base URLs for FIG APIs
-    this.figApiUrl = 'https://www.gymnastics.sport/api/athletes.php';
-    this.figCoachApiUrl = 'https://www.gymnastics.sport/api/coaches.php';
-    this.figJudgeApiUrl = 'https://www.gymnastics.sport/api/judges.php';
+    const figApiConfig = this.configService.get('figApi');
+    const cacheConfig = this.configService.get('cache');
+    
+    // Build URLs from configuration
+    this.figApiUrl = `${figApiConfig.baseUrl}${figApiConfig.athletesEndpoint}`;
+    this.figCoachApiUrl = `${figApiConfig.baseUrl}${figApiConfig.coachesEndpoint}`;
+    this.figJudgeApiUrl = `${figApiConfig.baseUrl}${figApiConfig.judgesEndpoint}`;
+    
+    this.CACHE_TTL = cacheConfig.ttl;
+    this.API_TIMEOUT = figApiConfig.timeout;
   }
 
   async getGymnasts(): Promise<GymnastDto[]> {
@@ -75,7 +82,7 @@ export class FigApiService {
       this.logger.log('Fetching gymnast data from FIG API');
       const apiUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=&idlicense=&lastname=`;
       const response: AxiosResponse<FigApiGymnast[]> = await axios.get(apiUrl, {
-        timeout: 30000, // Increased timeout since API returns large dataset
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {
@@ -136,7 +143,7 @@ export class FigApiService {
       const countrySpecificUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&idlicense=&lastname=`;
       
       const response: AxiosResponse<FigApiGymnast[]> = await axios.get(countrySpecificUrl, {
-        timeout: 30000,
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {
@@ -212,7 +219,7 @@ export class FigApiService {
       this.logger.log('Fetching coach data from FIG API');
       const apiUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=&id=&level=&lastname=&firstname=`;
       const response: AxiosResponse<FigApiCoach[]> = await axios.get(apiUrl, {
-        timeout: 30000, // Increased timeout since API returns large dataset
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {
@@ -265,7 +272,7 @@ export class FigApiService {
       const countrySpecificUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&level=&lastname=&firstname=`;
       
       const response: AxiosResponse<FigApiCoach[]> = await axios.get(countrySpecificUrl, {
-        timeout: 30000,
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {
@@ -333,7 +340,7 @@ export class FigApiService {
       this.logger.log('Fetching judge data from FIG API');
       const apiUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=&id=&category=&lastname=`;
       const response: AxiosResponse<FigApiJudge[]> = await axios.get(apiUrl, {
-        timeout: 30000, // Increased timeout since API returns large dataset
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {
@@ -387,7 +394,7 @@ export class FigApiService {
       const countrySpecificUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&category=&lastname=`;
       
       const response: AxiosResponse<FigApiJudge[]> = await axios.get(countrySpecificUrl, {
-        timeout: 30000,
+        timeout: this.API_TIMEOUT,
       });
 
       if (!Array.isArray(response.data)) {

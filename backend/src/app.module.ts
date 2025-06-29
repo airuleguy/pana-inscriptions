@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { JwtModule } from '@nestjs/jwt';
+import { configuration } from './config/config';
 import { DatabaseConfig } from './config/database.config';
 import { Gymnast } from './entities/gymnast.entity';
 import { Choreography } from './entities/choreography.entity';
@@ -36,6 +37,7 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [configuration],
       envFilePath: ['.env.local', '.env'],
     }),
     
@@ -51,20 +53,16 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     // JWT Module
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'default-secret-key-change-in-production',
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '30d',
-        },
-      }),
+      useFactory: async (configService: ConfigService) => configService.get('jwt'),
       inject: [ConfigService],
     }),
     
     // Cache for FIG API
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 3600, // 1 hour
-      max: 100, // maximum number of items in cache
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => configService.get('cache'),
+      inject: [ConfigService],
     }),
   ],
   controllers: [

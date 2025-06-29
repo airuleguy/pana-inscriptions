@@ -12,34 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.databaseConfig = exports.DatabaseConfig = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
-const gymnast_entity_1 = require("../entities/gymnast.entity");
-const choreography_entity_1 = require("../entities/choreography.entity");
-const tournament_entity_1 = require("../entities/tournament.entity");
-const coach_entity_1 = require("../entities/coach.entity");
-const judge_entity_1 = require("../entities/judge.entity");
-const user_entity_1 = require("../entities/user.entity");
-const user_session_entity_1 = require("../entities/user-session.entity");
 let DatabaseConfig = class DatabaseConfig {
     constructor(configService) {
         this.configService = configService;
     }
     createTypeOrmOptions() {
-        const isProduction = this.configService.get('NODE_ENV') === 'production';
-        return {
-            type: 'postgres',
-            host: this.configService.get('POSTGRES_HOST') || 'localhost',
-            port: this.configService.get('POSTGRES_PORT') || 5432,
-            username: this.configService.get('POSTGRES_USER'),
-            password: this.configService.get('POSTGRES_PASSWORD'),
-            database: this.configService.get('POSTGRES_DB'),
-            entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge, user_entity_1.User, user_session_entity_1.UserSession],
-            synchronize: !isProduction,
-            dropSchema: false,
-            logging: !isProduction,
-            ssl: isProduction ? { rejectUnauthorized: false } : false,
-            retryAttempts: 3,
-            retryDelay: 3000,
-        };
+        return this.configService.get('database');
     }
 };
 exports.DatabaseConfig = DatabaseConfig;

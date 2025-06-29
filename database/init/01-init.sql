@@ -98,13 +98,9 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_jwt_id ON user_sessions(jwt_id);
 CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
 
--- Insert sample delegate users for testing
--- Password for all users is '1234'
-INSERT INTO users (username, password_hash, country, role, is_active) VALUES 
-    ('admin', '$2b$12$lmISP37hIARUfBnknLbNi.loe77lgNnhrgqEtg7sZ7qbkgKuhexiO', 'ADMIN', 'ADMIN', true),
-    ('argentina', '$2b$12$lmISP37hIARUfBnknLbNi.loe77lgNnhrgqEtg7sZ7qbkgKuhexiO', 'ARG', 'DELEGATE', true),
-    ('uruguay', '$2b$12$lmISP37hIARUfBnknLbNi.loe77lgNnhrgqEtg7sZ7qbkgKuhexiO', 'URU', 'DELEGATE', true)
-ON CONFLICT (username) DO NOTHING;
+-- Production database initialization
+-- No default users are created for security reasons
+-- Users should be created through the application's admin interface or proper user management procedures
 
 -- Tables will be created automatically by TypeORM synchronization in development
 -- In production, migrations will be used instead of synchronization 

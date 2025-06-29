@@ -12,6 +12,7 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const cache_manager_1 = require("@nestjs/cache-manager");
 const jwt_1 = require("@nestjs/jwt");
+const config_2 = require("./config/config");
 const database_config_1 = require("./config/database.config");
 const gymnast_entity_1 = require("./entities/gymnast.entity");
 const choreography_entity_1 = require("./entities/choreography.entity");
@@ -47,6 +48,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
+                load: [config_2.configuration],
                 envFilePath: ['.env.local', '.env'],
             }),
             typeorm_1.TypeOrmModule.forRootAsync({
@@ -56,18 +58,14 @@ exports.AppModule = AppModule = __decorate([
             typeorm_1.TypeOrmModule.forFeature([gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge, user_entity_1.User, user_session_entity_1.UserSession]),
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
-                useFactory: async (configService) => ({
-                    secret: configService.get('JWT_SECRET') || 'default-secret-key-change-in-production',
-                    signOptions: {
-                        expiresIn: configService.get('JWT_EXPIRES_IN') || '30d',
-                    },
-                }),
+                useFactory: async (configService) => configService.get('jwt'),
                 inject: [config_1.ConfigService],
             }),
-            cache_manager_1.CacheModule.register({
+            cache_manager_1.CacheModule.registerAsync({
                 isGlobal: true,
-                ttl: 3600,
-                max: 100,
+                imports: [config_1.ConfigModule],
+                useFactory: async (configService) => configService.get('cache'),
+                inject: [config_1.ConfigService],
             }),
         ],
         controllers: [
