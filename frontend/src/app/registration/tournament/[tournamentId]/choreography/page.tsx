@@ -146,13 +146,19 @@ export default function ChoreographyRegistrationPage() {
 
   // Handle form submission
   const handleSubmit = async () => {
-    if (!isFormValid || !selectedTournament) return;
+    if (!selectedTournament || !selectedCountry) {
+      setRegistrationResult({
+        success: false,
+        message: 'Missing tournament or country selection',
+      });
+      return;
+    }
 
     setSubmitting(true);
     setRegistrationResult(null);
 
     try {
-      // Create full choreography data for API
+      // Create choreography data object for API call
       const choreographyData: Omit<Choreography, 'id' | 'createdAt' | 'updatedAt'> = {
         name: choreographyName,
         category: category as ChoreographyCategory,
@@ -165,34 +171,51 @@ export default function ChoreographyRegistrationPage() {
         notes: '',
       };
 
-      // Save to database using API
-      const result = await APIService.createChoreography(choreographyData, tournamentId);
+      // Register choreography with backend API immediately
+      const response = await APIService.registerChoreographyForTournament(choreographyData, selectedTournament.id);
 
-      // Create registration entry for local state
-      const registrationData: RegisteredChoreography = {
-        id: result.id,
-        name: result.name,
-        category: result.category,
-        type: result.type,
-        gymnastsCount: result.gymnasts.length,
-        gymnasts: result.gymnasts,
-        registeredAt: new Date(),
-        choreographyData: result, // Use the full choreography object returned from the API
-      };
+      if (response.success && response.results.length > 0) {
+        const registeredChoreography = response.results[0];
+        
+        // Create registration entry for local state with actual backend data
+        const registrationData: RegisteredChoreography = {
+          id: registeredChoreography.id,
+          name: registeredChoreography.name,
+          category: registeredChoreography.category,
+          type: registeredChoreography.type,
+          gymnastsCount: registeredChoreography.gymnasts.length,
+          gymnasts: registeredChoreography.gymnasts,
+          registeredAt: new Date(registeredChoreography.createdAt),
+          status: 'PENDING',
+          choreographyData: registeredChoreography,
+        };
 
-      // Add to registration summary
-      addChoreography(registrationData);
+        // Add to registration summary
+        addChoreography(registrationData);
 
-      setRegistrationResult({
-        success: true,
-        message: 'Choreography registered successfully and saved to summary!',
-        choreography: result,
-      });
+        setRegistrationResult({
+          success: true,
+          message: 'Choreography successfully registered in PENDING status!',
+          choreography: registeredChoreography,
+        });
 
-      toast.success('Choreography registered successfully!', {
-        description: 'Your choreography has been saved to the database and added to your summary.',
-        duration: 3000,
-      });
+        toast.success('Choreography registered!', {
+          description: 'Your choreography has been registered with PENDING status in the backend.',
+          duration: 3000,
+        });
+      } else {
+        // Handle API errors
+        const errorMessage = response.errors?.join(', ') || 'Failed to register choreography';
+        setRegistrationResult({
+          success: false,
+          message: errorMessage,
+        });
+
+        toast.error('Registration failed', {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
 
       // Reset form
       setChoreographyName('');
@@ -202,10 +225,15 @@ export default function ChoreographyRegistrationPage() {
       
     } catch (err) {
       console.error('Choreography registration failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to register choreography. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to register choreography with backend. Please try again.';
       setRegistrationResult({
         success: false,
         message: errorMessage,
+      });
+      
+      toast.error('Registration error', {
+        description: errorMessage,
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
@@ -367,7 +395,7 @@ export default function ChoreographyRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Registering...' : 'Register Choreography'}
+              {submitting ? 'Adding to summary...' : 'Add to Summary'}
             </Button>
             
             {!isValidGymnastCount && gymnasts.length > 0 && (
@@ -375,14 +403,6 @@ export default function ChoreographyRegistrationPage() {
                 Select 1, 2, 3, 5, or 8 gymnasts to enable registration
               </p>
             )}
-            
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/coaches`)}
-            >
-              Continue to Coach Registration
-            </Button>
             
             <Button 
               variant="secondary" 

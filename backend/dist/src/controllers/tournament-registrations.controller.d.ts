@@ -7,9 +7,11 @@ import { CreateCoachRegistrationDto } from '../dto/create-coach-registration.dto
 import { CreateJudgeRegistrationDto } from '../dto/create-judge-registration.dto';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { BatchRegistrationDto, BatchRegistrationResponseDto } from '../dto/batch-registration.dto';
+import { BatchStatusUpdateDto } from '../dto/update-registration-status.dto';
 import { Coach } from '../entities/coach.entity';
 import { Judge } from '../entities/judge.entity';
 import { Choreography } from '../entities/choreography.entity';
+import { RegistrationStatus } from '../constants/registration-status';
 export declare class TournamentRegistrationsController {
     private readonly coachRegistrationService;
     private readonly judgeRegistrationService;
@@ -64,5 +66,33 @@ export declare class TournamentRegistrationsController {
         coaches: number;
         judges: number;
         total: number;
+    }>;
+    getRegistrationsByStatus(tournamentId: string, status: RegistrationStatus, request: Request): Promise<{
+        choreographies: Choreography[];
+        coaches: Coach[];
+        judges: Judge[];
+        totals: {
+            choreographies: number;
+            coaches: number;
+            judges: number;
+            total: number;
+        };
+    }>;
+    submitAllPendingRegistrations(tournamentId: string, body: {
+        notes?: string;
+    }, request: Request): Promise<{
+        success: boolean;
+        updated: {
+            choreographies: number;
+            coaches: number;
+            judges: number;
+            total: number;
+        };
+        errors?: string[];
+    }>;
+    updateRegistrationsStatus(tournamentId: string, batchStatusUpdate: BatchStatusUpdateDto): Promise<{
+        success: boolean;
+        updated: number;
+        errors?: string[];
     }>;
 }

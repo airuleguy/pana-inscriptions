@@ -35,7 +35,7 @@ export function RegistrationSummarySidebar({
   onConfirmRegistration,
   isSubmitting = false
 }: RegistrationSummarySidebarProps) {
-  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration } = useRegistration();
+  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
   const [expandedSections, setExpandedSections] = useState({
     choreographies: true,
     coaches: true,
@@ -64,6 +64,9 @@ export function RegistrationSummarySidebar({
   };
 
   const totalCount = getTotalCount();
+  const pendingCount = getPendingCount();
+  const pendingRegistrations = getRegistrationsByStatus('PENDING');
+  const submittedRegistrations = getRegistrationsByStatus('SUBMITTED');
 
   return (
     <>
@@ -79,12 +82,22 @@ export function RegistrationSummarySidebar({
                     Registration Summary
                   </SheetTitle>
                 </div>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                  {totalCount} items
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    {totalCount} total
+                  </Badge>
+                  {pendingCount > 0 && (
+                    <Badge variant="default" className="bg-orange-100 text-orange-800">
+                      {pendingCount} pending
+                    </Badge>
+                  )}
+                </div>
               </div>
               <SheetDescription className="text-sm text-gray-600">
-                Review your selections, then submit your complete registration
+                {pendingCount > 0 
+                  ? `Review your ${pendingCount} pending registrations, then submit for approval`
+                  : 'Review your registrations and their current status'
+                }
               </SheetDescription>
               {state.tournament && state.country && (
                 <div className="mt-2 text-sm text-gray-600 space-y-1">
@@ -138,7 +151,19 @@ export function RegistrationSummarySidebar({
                             <div key={choreo.id} className="border rounded-lg p-3 bg-purple-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-sm truncate">{choreo.name}</h4>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-medium text-sm truncate">{choreo.name}</h4>
+                                    <Badge 
+                                      variant={choreo.status === 'PENDING' ? 'default' : choreo.status === 'SUBMITTED' ? 'secondary' : 'outline'}
+                                      className={
+                                        choreo.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
+                                        choreo.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
+                                        'bg-blue-100 text-blue-800'
+                                      }
+                                    >
+                                      {choreo.status}
+                                    </Badge>
+                                  </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge className="bg-purple-100 text-purple-800">
                                       {choreo.category}
@@ -166,14 +191,16 @@ export function RegistrationSummarySidebar({
                                     </div>
                                   )}
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => removeChoreography(choreo.id)}
-                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                {choreo.status === 'PENDING' && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeChoreography(choreo.id)}
+                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -210,7 +237,19 @@ export function RegistrationSummarySidebar({
                             <div key={coach.id} className="border rounded-lg p-3 bg-green-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-sm truncate">{coach.name}</h4>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-medium text-sm truncate">{coach.name}</h4>
+                                    <Badge 
+                                      variant={coach.status === 'PENDING' ? 'default' : coach.status === 'SUBMITTED' ? 'secondary' : 'outline'}
+                                      className={
+                                        coach.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
+                                        coach.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
+                                        'bg-blue-100 text-blue-800'
+                                      }
+                                    >
+                                      {coach.status}
+                                    </Badge>
+                                  </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge className="bg-green-100 text-green-800">
                                       {coach.level}
@@ -224,14 +263,16 @@ export function RegistrationSummarySidebar({
                                     <span>{formatDate(coach.registeredAt)}</span>
                                   </div>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => removeCoach(coach.id)}
-                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                {coach.status === 'PENDING' && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeCoach(coach.id)}
+                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -268,7 +309,19 @@ export function RegistrationSummarySidebar({
                             <div key={judge.id} className="border rounded-lg p-3 bg-blue-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-sm truncate">{judge.name}</h4>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h4 className="font-medium text-sm truncate">{judge.name}</h4>
+                                    <Badge 
+                                      variant={judge.status === 'PENDING' ? 'default' : judge.status === 'SUBMITTED' ? 'secondary' : 'outline'}
+                                      className={
+                                        judge.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
+                                        judge.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
+                                        'bg-blue-100 text-blue-800'
+                                      }
+                                    >
+                                      {judge.status}
+                                    </Badge>
+                                  </div>
                                   <div className="flex items-center gap-2 mt-1">
                                     <Badge className="bg-blue-100 text-blue-800">
                                       Category {judge.category}
@@ -282,14 +335,16 @@ export function RegistrationSummarySidebar({
                                     <span>{formatDate(judge.registeredAt)}</span>
                                   </div>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => removeJudge(judge.id)}
-                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                {judge.status === 'PENDING' && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeJudge(judge.id)}
+                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           ))}
@@ -303,7 +358,7 @@ export function RegistrationSummarySidebar({
 
             {/* Footer */}
             <div className="p-4 border-t bg-gray-50">
-              {canConfirmRegistration() ? (
+              {pendingCount > 0 ? (
                 <Button 
                   onClick={onConfirmRegistration}
                   disabled={isSubmitting}
@@ -315,8 +370,18 @@ export function RegistrationSummarySidebar({
                   ) : (
                     <CheckCircle className="w-5 h-5 mr-2" />
                   )}
-                  {isSubmitting ? 'Processing...' : `Review & Submit (${totalCount} items)`}
+                  {isSubmitting ? 'Submitting...' : `Submit ${pendingCount} Pending Registration${pendingCount > 1 ? 's' : ''}`}
                 </Button>
+              ) : totalCount > 0 ? (
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">All registrations submitted</span>
+                  </div>
+                  <Button disabled className="w-full" size="lg">
+                    No pending registrations
+                  </Button>
+                </div>
               ) : (
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-orange-600 mb-2">
@@ -324,7 +389,7 @@ export function RegistrationSummarySidebar({
                     <span className="text-sm font-medium">No items to register</span>
                   </div>
                   <Button disabled className="w-full" size="lg">
-                    Confirm Registration
+                    Add registrations first
                   </Button>
                 </div>
               )}

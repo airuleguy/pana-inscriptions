@@ -18,7 +18,7 @@ export const configuration = () => ({
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
     entities: [Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession],
-    synchronize: process.env.NODE_ENV !== 'production',
+    synchronize: false, // Disabled to use migrations instead - prevents enum conflicts
     dropSchema: false,
     logging: process.env.NODE_ENV !== 'production',
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,

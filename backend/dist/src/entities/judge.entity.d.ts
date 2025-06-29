@@ -1,4 +1,5 @@
 import { Tournament } from './tournament.entity';
+import { RegistrationStatus } from '../constants/registration-status';
 export declare class Judge {
     id: string;
     figId: string;
@@ -11,7 +12,7 @@ export declare class Judge {
     category: string;
     categoryDescription: string;
     tournament: Tournament;
-    status: string;
+    status: RegistrationStatus;
     notes?: string;
     createdAt: Date;
     updatedAt: Date;

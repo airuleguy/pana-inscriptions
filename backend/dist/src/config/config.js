@@ -19,7 +19,7 @@ const configuration = () => ({
         password: process.env.POSTGRES_PASSWORD,
         database: process.env.POSTGRES_DB,
         entities: [gymnast_entity_1.Gymnast, choreography_entity_1.Choreography, tournament_entity_1.Tournament, coach_entity_1.Coach, judge_entity_1.Judge, user_entity_1.User, user_session_entity_1.UserSession],
-        synchronize: process.env.NODE_ENV !== 'production',
+        synchronize: false,
         dropSchema: false,
         logging: process.env.NODE_ENV !== 'production',
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,

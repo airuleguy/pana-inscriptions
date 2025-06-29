@@ -21,9 +21,11 @@ const judge_registration_service_1 = require("../services/judge-registration.ser
 const choreography_service_1 = require("../services/choreography.service");
 const batch_registration_service_1 = require("../services/batch-registration.service");
 const batch_registration_dto_1 = require("../dto/batch-registration.dto");
+const update_registration_status_dto_1 = require("../dto/update-registration-status.dto");
 const coach_entity_1 = require("../entities/coach.entity");
 const judge_entity_1 = require("../entities/judge.entity");
 const choreography_entity_1 = require("../entities/choreography.entity");
+const registration_status_1 = require("../constants/registration-status");
 const country_auth_guard_1 = require("../guards/country-auth.guard");
 let TournamentRegistrationsController = TournamentRegistrationsController_1 = class TournamentRegistrationsController {
     constructor(coachRegistrationService, judgeRegistrationService, choreographyService, batchRegistrationService) {
@@ -198,6 +200,28 @@ let TournamentRegistrationsController = TournamentRegistrationsController_1 = cl
     async getTournamentRegistrationStats(tournamentId) {
         this.logger.log(`Getting registration statistics for tournament: ${tournamentId}`);
         return this.batchRegistrationService.getTournamentStats(tournamentId);
+    }
+    async getRegistrationsByStatus(tournamentId, status, request) {
+        const country = request.userCountry;
+        this.logger.log(`Getting ${status} registrations for tournament: ${tournamentId}, country: ${country}`);
+        return this.batchRegistrationService.getRegistrationsByStatus(country, tournamentId, status);
+    }
+    async submitAllPendingRegistrations(tournamentId, body, request) {
+        const country = request.userCountry;
+        this.logger.log(`Submitting all pending registrations for tournament: ${tournamentId}, country: ${country}`);
+        const result = await this.batchRegistrationService.submitAllPendingRegistrations(country, tournamentId, body.notes);
+        if (!result.success) {
+            this.logger.error(`Failed to submit some registrations: ${result.errors?.join(', ')}`);
+        }
+        return result;
+    }
+    async updateRegistrationsStatus(tournamentId, batchStatusUpdate) {
+        this.logger.log(`Updating ${batchStatusUpdate.registrationIds.length} registrations to status: ${batchStatusUpdate.status}`);
+        const result = await this.batchRegistrationService.updateRegistrationsStatus(batchStatusUpdate.registrationIds, batchStatusUpdate.status, batchStatusUpdate.notes);
+        if (!result.success) {
+            this.logger.error(`Failed to update some registration statuses: ${result.errors?.join(', ')}`);
+        }
+        return result;
     }
 };
 exports.TournamentRegistrationsController = TournamentRegistrationsController;
@@ -510,6 +534,70 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], TournamentRegistrationsController.prototype, "getTournamentRegistrationStats", null);
+__decorate([
+    (0, common_1.Get)('status/:status'),
+    (0, country_auth_guard_1.CountryScoped)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get registrations by status',
+        description: 'Get all registrations from your country for a specific tournament filtered by status'
+    }),
+    (0, swagger_1.ApiParam)({ name: 'tournamentId', description: 'Tournament UUID' }),
+    (0, swagger_1.ApiParam)({ name: 'status', enum: registration_status_1.RegistrationStatus, description: 'Registration status to filter by' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Registrations retrieved successfully'
+    }),
+    __param(0, (0, common_1.Param)('tournamentId')),
+    __param(1, (0, common_1.Param)('status')),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], TournamentRegistrationsController.prototype, "getRegistrationsByStatus", null);
+__decorate([
+    (0, common_1.Post)('submit'),
+    (0, country_auth_guard_1.CountryScoped)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Submit all pending registrations',
+        description: 'Submit all pending registrations from your country for final review'
+    }),
+    (0, swagger_1.ApiParam)({ name: 'tournamentId', description: 'Tournament UUID' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Registrations submitted successfully'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Failed to submit some or all registrations'
+    }),
+    __param(0, (0, common_1.Param)('tournamentId')),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], TournamentRegistrationsController.prototype, "submitAllPendingRegistrations", null);
+__decorate([
+    (0, common_1.Put)('status/batch'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update multiple registrations status (Admin only)',
+        description: 'Update the status of multiple registrations - typically used by admins to approve submissions'
+    }),
+    (0, swagger_1.ApiParam)({ name: 'tournamentId', description: 'Tournament UUID' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Registration statuses updated successfully'
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.BAD_REQUEST,
+        description: 'Failed to update some or all registration statuses'
+    }),
+    __param(0, (0, common_1.Param)('tournamentId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, update_registration_status_dto_1.BatchStatusUpdateDto]),
+    __metadata("design:returntype", Promise)
+], TournamentRegistrationsController.prototype, "updateRegistrationsStatus", null);
 exports.TournamentRegistrationsController = TournamentRegistrationsController = TournamentRegistrationsController_1 = __decorate([
     (0, swagger_1.ApiTags)('tournament-registrations'),
     (0, swagger_1.ApiBearerAuth)(),

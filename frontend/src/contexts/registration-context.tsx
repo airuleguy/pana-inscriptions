@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Gymnast, Coach, Judge, Tournament, Choreography } from '@/types';
+import type { Gymnast, Coach, Judge, Tournament, Choreography, RegistrationStatus } from '@/types';
 import { APIService } from '@/lib/api';
 
 export interface RegisteredChoreography {
@@ -12,6 +12,7 @@ export interface RegisteredChoreography {
   gymnastsCount: number;
   gymnasts: Gymnast[];
   registeredAt: Date;
+  status: RegistrationStatus;
   choreographyData?: Choreography;
 }
 
@@ -21,6 +22,7 @@ export interface RegisteredCoach {
   level: string;
   country: string;
   registeredAt: Date;
+  status: RegistrationStatus;
   coachData?: Coach;
 }
 
@@ -30,6 +32,7 @@ export interface RegisteredJudge {
   category: string;
   country: string;
   registeredAt: Date;
+  status: RegistrationStatus;
   judgeData?: Judge;
 }
 
@@ -57,6 +60,14 @@ interface RegistrationContextType {
   toggleSidebar: () => void;
   closeSidebar: () => void;
   isLoading: boolean;
+  // Status management methods
+  submitRegistrations: () => Promise<void>;
+  getRegistrationsByStatus: (status: RegistrationStatus) => {
+    choreographies: RegisteredChoreography[];
+    coaches: RegisteredCoach[];
+    judges: RegisteredJudge[];
+  };
+  getPendingCount: () => number;
 }
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);
@@ -88,18 +99,21 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
           parsedState.choreographies = parsedState.choreographies.map((c: RegisteredChoreography) => ({
             ...c,
             registeredAt: new Date(c.registeredAt),
+            status: c.status || 'PENDING', // Default to PENDING for backward compatibility
           }));
         }
         if (parsedState.coaches) {
           parsedState.coaches = parsedState.coaches.map((c: RegisteredCoach) => ({
             ...c,
             registeredAt: new Date(c.registeredAt),
+            status: c.status || 'PENDING', // Default to PENDING for backward compatibility
           }));
         }
         if (parsedState.judges) {
           parsedState.judges = parsedState.judges.map((j: RegisteredJudge) => ({
             ...j,
             registeredAt: new Date(j.registeredAt),
+            status: j.status || 'PENDING', // Default to PENDING for backward compatibility
           }));
         }
         
@@ -188,9 +202,62 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     return state.choreographies.length + state.coaches.length + state.judges.length;
   };
 
+  const submitRegistrations = async () => {
+    if (!state.tournament || !state.country) {
+      throw new Error('Cannot submit registrations: missing tournament or country');
+    }
+
+    setIsLoading(true);
+    try {
+      // Get only PENDING registrations
+      const pendingRegistrations = getRegistrationsByStatus('PENDING');
+      
+      if (pendingRegistrations.choreographies.length === 0 && 
+          pendingRegistrations.coaches.length === 0 && 
+          pendingRegistrations.judges.length === 0) {
+        throw new Error('No pending registrations to submit');
+      }
+
+      // Submit pending registrations using the new API endpoint
+      await APIService.submitPendingRegistrations(state.tournament.id);
+
+      // Update local state - change PENDING to SUBMITTED
+      setState(prev => ({
+        ...prev,
+        choreographies: prev.choreographies.map(c => 
+          c.status === 'PENDING' ? { ...c, status: 'SUBMITTED' as RegistrationStatus } : c
+        ),
+        coaches: prev.coaches.map(c => 
+          c.status === 'PENDING' ? { ...c, status: 'SUBMITTED' as RegistrationStatus } : c
+        ),
+        judges: prev.judges.map(j => 
+          j.status === 'PENDING' ? { ...j, status: 'SUBMITTED' as RegistrationStatus } : j
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to submit registrations:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getRegistrationsByStatus = (status: RegistrationStatus) => {
+    return {
+      choreographies: state.choreographies.filter(c => c.status === status),
+      coaches: state.coaches.filter(c => c.status === status),
+      judges: state.judges.filter(j => j.status === status),
+    };
+  };
+
+  const getPendingCount = () => {
+    const pending = getRegistrationsByStatus('PENDING');
+    return pending.choreographies.length + pending.coaches.length + pending.judges.length;
+  };
+
   const canConfirmRegistration = () => {
-    // At least one item must be registered
-    return getTotalCount() > 0;
+    // At least one PENDING item must be available for submission
+    return getPendingCount() > 0;
   };
 
   const toggleSidebar = () => {
@@ -226,6 +293,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         gymnastsCount: choreo.gymnasts.length,
         gymnasts: choreo.gymnasts,
         registeredAt: new Date(choreo.createdAt),
+        status: 'SUBMITTED' as RegistrationStatus,
         choreographyData: choreo,
       }));
 
@@ -235,6 +303,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         level: coach.level,
         country: coach.country,
         registeredAt: new Date(), // Use current date since backend might not have this
+        status: 'SUBMITTED' as RegistrationStatus,
         coachData: coach,
       }));
 
@@ -244,6 +313,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         category: judge.category,
         country: judge.country,
         registeredAt: new Date(), // Use current date since backend might not have this
+        status: 'SUBMITTED' as RegistrationStatus,
         judgeData: judge,
       }));
 
@@ -275,6 +345,10 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     toggleSidebar,
     closeSidebar,
     isLoading,
+    // Status management methods
+    submitRegistrations,
+    getRegistrationsByStatus,
+    getPendingCount,
   };
 
   return (

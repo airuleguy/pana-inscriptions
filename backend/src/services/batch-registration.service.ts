@@ -5,6 +5,8 @@ import { JudgeRegistrationService } from './judge-registration.service';
 import { BatchRegistrationDto, BatchRegistrationResponseDto } from '../dto/batch-registration.dto';
 import { CreateCoachRegistrationDto } from '../dto/create-coach-registration.dto';
 import { CreateJudgeRegistrationDto } from '../dto/create-judge-registration.dto';
+import { UpdateRegistrationStatusDto, BatchStatusUpdateDto } from '../dto/update-registration-status.dto';
+import { RegistrationStatus } from '../constants/registration-status';
 
 @Injectable()
 export class BatchRegistrationService {
@@ -194,5 +196,166 @@ export class BatchRegistrationService {
       judges,
       total: choreographies + coaches + judges,
     };
+  }
+
+  /**
+   * Get registrations filtered by status
+   */
+  async getRegistrationsByStatus(
+    country: string, 
+    tournamentId: string, 
+    status: RegistrationStatus
+  ) {
+    this.logger.log(`Getting ${status} registrations for country: ${country}, tournament: ${tournamentId}`);
+
+    try {
+      const [choreographies, coaches, judges] = await Promise.all([
+        this.choreographyService.findByStatus(status, country, tournamentId),
+        this.coachRegistrationService.findByStatus(status, country, tournamentId),
+        this.judgeRegistrationService.findByStatus(status, country, tournamentId),
+      ]);
+
+      return {
+        choreographies,
+        coaches,
+        judges,
+        totals: {
+          choreographies: choreographies.length,
+          coaches: coaches.length,
+          judges: judges.length,
+          total: choreographies.length + coaches.length + judges.length,
+        }
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get registrations by status: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Submit all pending registrations for a country and tournament
+   */
+  async submitAllPendingRegistrations(
+    country: string, 
+    tournamentId: string, 
+    notes?: string
+  ): Promise<{
+    success: boolean;
+    updated: {
+      choreographies: number;
+      coaches: number;
+      judges: number;
+      total: number;
+    };
+    errors?: string[];
+  }> {
+    this.logger.log(`Submitting all pending registrations for country: ${country}, tournament: ${tournamentId}`);
+
+    const errors: string[] = [];
+    let updatedCounts = {
+      choreographies: 0,
+      coaches: 0,
+      judges: 0,
+      total: 0,
+    };
+
+    try {
+      // Update choreographies
+      const choreographyCount = await this.choreographyService.updateStatusBatch(
+        RegistrationStatus.PENDING,
+        RegistrationStatus.SUBMITTED,
+        country,
+        tournamentId,
+        notes
+      );
+      updatedCounts.choreographies = choreographyCount;
+
+      // Update coaches
+      const coachCount = await this.coachRegistrationService.updateStatusBatch(
+        RegistrationStatus.PENDING,
+        RegistrationStatus.SUBMITTED,
+        country,
+        tournamentId,
+        notes
+      );
+      updatedCounts.coaches = coachCount;
+
+      // Update judges
+      const judgeCount = await this.judgeRegistrationService.updateStatusBatch(
+        RegistrationStatus.PENDING,
+        RegistrationStatus.SUBMITTED,
+        country,
+        tournamentId,
+        notes
+      );
+      updatedCounts.judges = judgeCount;
+
+      updatedCounts.total = updatedCounts.choreographies + updatedCounts.coaches + updatedCounts.judges;
+
+      this.logger.log(`Successfully submitted ${updatedCounts.total} registrations`);
+
+      return {
+        success: errors.length === 0,
+        updated: updatedCounts,
+        errors: errors.length > 0 ? errors : undefined
+      };
+    } catch (error) {
+      this.logger.error(`Failed to submit pending registrations: ${error.message}`);
+      errors.push(`Failed to submit registrations: ${error.message}`);
+      
+      return {
+        success: false,
+        updated: updatedCounts,
+        errors
+      };
+    }
+  }
+
+  /**
+   * Update specific registrations status (for admin approval)
+   */
+  async updateRegistrationsStatus(
+    registrationIds: string[],
+    status: RegistrationStatus,
+    notes?: string
+  ): Promise<{
+    success: boolean;
+    updated: number;
+    errors?: string[];
+  }> {
+    this.logger.log(`Updating ${registrationIds.length} registrations to status: ${status}`);
+
+    const errors: string[] = [];
+    let updatedCount = 0;
+
+    try {
+      // Note: This is a simplified approach. In a production system, you might want
+      // to batch update by type (choreography, coach, judge) more efficiently
+      for (const id of registrationIds) {
+        try {
+          // Try updating in each service (one will succeed, others will silently fail)
+          const choreographyUpdated = await this.choreographyService.updateStatus(id, status, notes);
+          const coachUpdated = await this.coachRegistrationService.updateStatus(id, status, notes);
+          const judgeUpdated = await this.judgeRegistrationService.updateStatus(id, status, notes);
+          
+          if (choreographyUpdated || coachUpdated || judgeUpdated) {
+            updatedCount++;
+          }
+        } catch (error) {
+          errors.push(`Failed to update registration ${id}: ${error.message}`);
+        }
+      }
+
+      this.logger.log(`Successfully updated ${updatedCount}/${registrationIds.length} registrations`);
+
+      return {
+        success: errors.length === 0,
+        updated: updatedCount,
+        errors: errors.length > 0 ? errors : undefined
+      };
+    } catch (error) {
+      this.logger.error(`Failed to update registrations status: ${error.message}`);
+      throw error;
+    }
   }
 } 

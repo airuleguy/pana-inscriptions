@@ -9,9 +9,11 @@ import { CreateCoachRegistrationDto } from '../dto/create-coach-registration.dto
 import { CreateJudgeRegistrationDto } from '../dto/create-judge-registration.dto';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { BatchRegistrationDto, BatchRegistrationResponseDto } from '../dto/batch-registration.dto';
+import { UpdateRegistrationStatusDto, BatchStatusUpdateDto } from '../dto/update-registration-status.dto';
 import { Coach } from '../entities/coach.entity';
 import { Judge } from '../entities/judge.entity';
 import { Choreography } from '../entities/choreography.entity';
+import { RegistrationStatus } from '../constants/registration-status';
 import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 
 @ApiTags('tournament-registrations')
@@ -499,5 +501,97 @@ export class TournamentRegistrationsController {
   ) {
     this.logger.log(`Getting registration statistics for tournament: ${tournamentId}`);
     return this.batchRegistrationService.getTournamentStats(tournamentId);
+  }
+
+  // === STATUS MANAGEMENT ENDPOINTS ===
+  @Get('status/:status')
+  @CountryScoped()
+  @ApiOperation({ 
+    summary: 'Get registrations by status',
+    description: 'Get all registrations from your country for a specific tournament filtered by status'
+  })
+  @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
+  @ApiParam({ name: 'status', enum: RegistrationStatus, description: 'Registration status to filter by' })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Registrations retrieved successfully'
+  })
+  async getRegistrationsByStatus(
+    @Param('tournamentId') tournamentId: string,
+    @Param('status') status: RegistrationStatus,
+    @Req() request: Request
+  ) {
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting ${status} registrations for tournament: ${tournamentId}, country: ${country}`);
+    return this.batchRegistrationService.getRegistrationsByStatus(country, tournamentId, status);
+  }
+
+  @Post('submit')
+  @CountryScoped()
+  @ApiOperation({ 
+    summary: 'Submit all pending registrations',
+    description: 'Submit all pending registrations from your country for final review'
+  })
+  @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Registrations submitted successfully'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Failed to submit some or all registrations'
+  })
+  async submitAllPendingRegistrations(
+    @Param('tournamentId') tournamentId: string,
+    @Body() body: { notes?: string },
+    @Req() request: Request
+  ) {
+    const country = (request as any).userCountry;
+    this.logger.log(`Submitting all pending registrations for tournament: ${tournamentId}, country: ${country}`);
+    
+    const result = await this.batchRegistrationService.submitAllPendingRegistrations(
+      country, 
+      tournamentId, 
+      body.notes
+    );
+
+    if (!result.success) {
+      this.logger.error(`Failed to submit some registrations: ${result.errors?.join(', ')}`);
+    }
+
+    return result;
+  }
+
+  @Put('status/batch')
+  @ApiOperation({ 
+    summary: 'Update multiple registrations status (Admin only)',
+    description: 'Update the status of multiple registrations - typically used by admins to approve submissions'
+  })
+  @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Registration statuses updated successfully'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Failed to update some or all registration statuses'
+  })
+  async updateRegistrationsStatus(
+    @Param('tournamentId') tournamentId: string,
+    @Body() batchStatusUpdate: BatchStatusUpdateDto
+  ) {
+    this.logger.log(`Updating ${batchStatusUpdate.registrationIds.length} registrations to status: ${batchStatusUpdate.status}`);
+    
+    const result = await this.batchRegistrationService.updateRegistrationsStatus(
+      batchStatusUpdate.registrationIds,
+      batchStatusUpdate.status,
+      batchStatusUpdate.notes
+    );
+
+    if (!result.success) {
+      this.logger.error(`Failed to update some registration statuses: ${result.errors?.join(', ')}`);
+    }
+
+    return result;
   }
 } 

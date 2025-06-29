@@ -176,6 +176,56 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         });
         return stats;
     }
+    async findByStatus(status, country, tournamentId) {
+        const queryBuilder = this.choreographyRepository.createQueryBuilder('choreography')
+            .leftJoinAndSelect('choreography.tournament', 'tournament')
+            .leftJoinAndSelect('choreography.gymnasts', 'gymnasts')
+            .where('choreography.status = :status', { status });
+        if (country) {
+            queryBuilder.andWhere('choreography.country = :country', { country: country.toUpperCase() });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        return await queryBuilder.getMany();
+    }
+    async updateStatus(id, status, notes) {
+        try {
+            const choreography = await this.choreographyRepository.findOne({ where: { id } });
+            if (!choreography) {
+                return false;
+            }
+            choreography.status = status;
+            if (notes) {
+                choreography.notes = notes;
+            }
+            await this.choreographyRepository.save(choreography);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
+    }
+    async updateStatusBatch(fromStatus, toStatus, country, tournamentId, notes) {
+        const queryBuilder = this.choreographyRepository.createQueryBuilder('choreography')
+            .leftJoinAndSelect('choreography.tournament', 'tournament')
+            .where('choreography.status = :fromStatus', { fromStatus });
+        if (country) {
+            queryBuilder.andWhere('choreography.country = :country', { country: country.toUpperCase() });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        const choreographies = await queryBuilder.getMany();
+        for (const choreography of choreographies) {
+            choreography.status = toStatus;
+            if (notes) {
+                choreography.notes = notes;
+            }
+        }
+        await this.choreographyRepository.save(choreographies);
+        return choreographies.length;
+    }
 };
 exports.ChoreographyService = ChoreographyService;
 exports.ChoreographyService = ChoreographyService = ChoreographyService_1 = __decorate([

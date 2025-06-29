@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Judge } from '../entities/judge.entity';
 import { Tournament } from '../entities/tournament.entity';
 import { CreateJudgeRegistrationDto } from '../dto/create-judge-registration.dto';
+import { RegistrationStatus } from '../constants/registration-status';
 
 @Injectable()
 export class JudgeRegistrationService {
@@ -139,5 +140,90 @@ export class JudgeRegistrationService {
       byTournament,
       byCategory,
     };
+  }
+
+  /**
+   * Find judges by status
+   */
+  async findByStatus(
+    status: RegistrationStatus, 
+    country?: string, 
+    tournamentId?: string
+  ): Promise<Judge[]> {
+    const queryBuilder = this.judgeRepository.createQueryBuilder('judge')
+      .leftJoinAndSelect('judge.tournament', 'tournament')
+      .where('judge.status = :status', { status });
+
+    if (country) {
+      queryBuilder.andWhere('judge.country = :country', { country });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    return await queryBuilder.getMany();
+  }
+
+  /**
+   * Update judge registration status
+   */
+  async updateStatus(
+    id: string, 
+    status: RegistrationStatus, 
+    notes?: string
+  ): Promise<boolean> {
+    try {
+      const judge = await this.judgeRepository.findOne({ where: { id } });
+      
+      if (!judge) {
+        return false; // Judge not found, return false instead of throwing
+      }
+
+      judge.status = status;
+      if (notes) {
+        judge.notes = notes;
+      }
+
+      await this.judgeRepository.save(judge);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Batch update judge registrations status
+   */
+  async updateStatusBatch(
+    fromStatus: RegistrationStatus,
+    toStatus: RegistrationStatus,
+    country?: string,
+    tournamentId?: string,
+    notes?: string
+  ): Promise<number> {
+    const queryBuilder = this.judgeRepository.createQueryBuilder('judge')
+      .leftJoinAndSelect('judge.tournament', 'tournament')
+      .where('judge.status = :fromStatus', { fromStatus });
+
+    if (country) {
+      queryBuilder.andWhere('judge.country = :country', { country });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    const judges = await queryBuilder.getMany();
+    
+    for (const judge of judges) {
+      judge.status = toStatus;
+      if (notes) {
+        judge.notes = notes;
+      }
+    }
+
+    await this.judgeRepository.save(judges);
+    return judges.length;
   }
 } 

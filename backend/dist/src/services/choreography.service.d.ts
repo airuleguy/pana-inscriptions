@@ -6,6 +6,7 @@ import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
 import { BusinessRulesFactory } from '../utils/business-rules/business-rules-factory';
+import { RegistrationStatus } from '../constants/registration-status';
 export declare class ChoreographyService {
     private choreographyRepository;
     private gymnastRepository;
@@ -28,4 +29,7 @@ export declare class ChoreographyService {
         totalChoreographies: number;
         byCategory: Record<ChoreographyCategory, number>;
     }>;
+    findByStatus(status: RegistrationStatus, country?: string, tournamentId?: string): Promise<Choreography[]>;
+    updateStatus(id: string, status: RegistrationStatus, notes?: string): Promise<boolean>;
+    updateStatusBatch(fromStatus: RegistrationStatus, toStatus: RegistrationStatus, country?: string, tournamentId?: string, notes?: string): Promise<number>;
 }

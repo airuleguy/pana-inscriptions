@@ -11,22 +11,27 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Choreography = exports.ChoreographyType = exports.ChoreographyCategory = void 0;
 const typeorm_1 = require("typeorm");
+const swagger_1 = require("@nestjs/swagger");
 const gymnast_entity_1 = require("./gymnast.entity");
 const categories_1 = require("../constants/categories");
 Object.defineProperty(exports, "ChoreographyCategory", { enumerable: true, get: function () { return categories_1.ChoreographyCategory; } });
 Object.defineProperty(exports, "ChoreographyType", { enumerable: true, get: function () { return categories_1.ChoreographyType; } });
+const registration_status_1 = require("../constants/registration-status");
 let Choreography = class Choreography {
 };
 exports.Choreography = Choreography;
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Unique choreography ID' }),
     (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
     __metadata("design:type", String)
 ], Choreography.prototype, "id", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Choreography name', example: 'Elite Team Routine' }),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Choreography.prototype, "name", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Country code (ISO 3166-1 alpha-3)', example: 'USA' }),
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], Choreography.prototype, "country", void 0);
@@ -56,6 +61,19 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Choreography.prototype, "notes", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'Registration status',
+        example: 'PENDING',
+        enum: registration_status_1.RegistrationStatus
+    }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: registration_status_1.RegistrationStatus,
+        default: registration_status_1.RegistrationStatus.PENDING
+    }),
+    __metadata("design:type", String)
+], Choreography.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('Tournament', 'choreographies', {
         nullable: false,

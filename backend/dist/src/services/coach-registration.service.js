@@ -96,6 +96,55 @@ let CoachRegistrationService = class CoachRegistrationService {
             byTournament,
         };
     }
+    async findByStatus(status, country, tournamentId) {
+        const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+            .leftJoinAndSelect('coach.tournament', 'tournament')
+            .where('coach.status = :status', { status });
+        if (country) {
+            queryBuilder.andWhere('coach.country = :country', { country });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        return await queryBuilder.getMany();
+    }
+    async updateStatus(id, status, notes) {
+        try {
+            const coach = await this.coachRepository.findOne({ where: { id } });
+            if (!coach) {
+                return false;
+            }
+            coach.status = status;
+            if (notes) {
+                coach.notes = notes;
+            }
+            await this.coachRepository.save(coach);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
+    }
+    async updateStatusBatch(fromStatus, toStatus, country, tournamentId, notes) {
+        const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+            .leftJoinAndSelect('coach.tournament', 'tournament')
+            .where('coach.status = :fromStatus', { fromStatus });
+        if (country) {
+            queryBuilder.andWhere('coach.country = :country', { country });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        const coaches = await queryBuilder.getMany();
+        for (const coach of coaches) {
+            coach.status = toStatus;
+            if (notes) {
+                coach.notes = notes;
+            }
+        }
+        await this.coachRepository.save(coaches);
+        return coaches.length;
+    }
 };
 exports.CoachRegistrationService = CoachRegistrationService;
 exports.CoachRegistrationService = CoachRegistrationService = __decorate([

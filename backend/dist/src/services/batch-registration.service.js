@@ -15,6 +15,7 @@ const common_1 = require("@nestjs/common");
 const choreography_service_1 = require("./choreography.service");
 const coach_registration_service_1 = require("./coach-registration.service");
 const judge_registration_service_1 = require("./judge-registration.service");
+const registration_status_1 = require("../constants/registration-status");
 let BatchRegistrationService = BatchRegistrationService_1 = class BatchRegistrationService {
     constructor(choreographyService, coachRegistrationService, judgeRegistrationService) {
         this.choreographyService = choreographyService;
@@ -160,6 +161,95 @@ let BatchRegistrationService = BatchRegistrationService_1 = class BatchRegistrat
             judges,
             total: choreographies + coaches + judges,
         };
+    }
+    async getRegistrationsByStatus(country, tournamentId, status) {
+        this.logger.log(`Getting ${status} registrations for country: ${country}, tournament: ${tournamentId}`);
+        try {
+            const [choreographies, coaches, judges] = await Promise.all([
+                this.choreographyService.findByStatus(status, country, tournamentId),
+                this.coachRegistrationService.findByStatus(status, country, tournamentId),
+                this.judgeRegistrationService.findByStatus(status, country, tournamentId),
+            ]);
+            return {
+                choreographies,
+                coaches,
+                judges,
+                totals: {
+                    choreographies: choreographies.length,
+                    coaches: coaches.length,
+                    judges: judges.length,
+                    total: choreographies.length + coaches.length + judges.length,
+                }
+            };
+        }
+        catch (error) {
+            this.logger.error(`Failed to get registrations by status: ${error.message}`);
+            throw error;
+        }
+    }
+    async submitAllPendingRegistrations(country, tournamentId, notes) {
+        this.logger.log(`Submitting all pending registrations for country: ${country}, tournament: ${tournamentId}`);
+        const errors = [];
+        let updatedCounts = {
+            choreographies: 0,
+            coaches: 0,
+            judges: 0,
+            total: 0,
+        };
+        try {
+            const choreographyCount = await this.choreographyService.updateStatusBatch(registration_status_1.RegistrationStatus.PENDING, registration_status_1.RegistrationStatus.SUBMITTED, country, tournamentId, notes);
+            updatedCounts.choreographies = choreographyCount;
+            const coachCount = await this.coachRegistrationService.updateStatusBatch(registration_status_1.RegistrationStatus.PENDING, registration_status_1.RegistrationStatus.SUBMITTED, country, tournamentId, notes);
+            updatedCounts.coaches = coachCount;
+            const judgeCount = await this.judgeRegistrationService.updateStatusBatch(registration_status_1.RegistrationStatus.PENDING, registration_status_1.RegistrationStatus.SUBMITTED, country, tournamentId, notes);
+            updatedCounts.judges = judgeCount;
+            updatedCounts.total = updatedCounts.choreographies + updatedCounts.coaches + updatedCounts.judges;
+            this.logger.log(`Successfully submitted ${updatedCounts.total} registrations`);
+            return {
+                success: errors.length === 0,
+                updated: updatedCounts,
+                errors: errors.length > 0 ? errors : undefined
+            };
+        }
+        catch (error) {
+            this.logger.error(`Failed to submit pending registrations: ${error.message}`);
+            errors.push(`Failed to submit registrations: ${error.message}`);
+            return {
+                success: false,
+                updated: updatedCounts,
+                errors
+            };
+        }
+    }
+    async updateRegistrationsStatus(registrationIds, status, notes) {
+        this.logger.log(`Updating ${registrationIds.length} registrations to status: ${status}`);
+        const errors = [];
+        let updatedCount = 0;
+        try {
+            for (const id of registrationIds) {
+                try {
+                    const choreographyUpdated = await this.choreographyService.updateStatus(id, status, notes);
+                    const coachUpdated = await this.coachRegistrationService.updateStatus(id, status, notes);
+                    const judgeUpdated = await this.judgeRegistrationService.updateStatus(id, status, notes);
+                    if (choreographyUpdated || coachUpdated || judgeUpdated) {
+                        updatedCount++;
+                    }
+                }
+                catch (error) {
+                    errors.push(`Failed to update registration ${id}: ${error.message}`);
+                }
+            }
+            this.logger.log(`Successfully updated ${updatedCount}/${registrationIds.length} registrations`);
+            return {
+                success: errors.length === 0,
+                updated: updatedCount,
+                errors: errors.length > 0 ? errors : undefined
+            };
+        }
+        catch (error) {
+            this.logger.error(`Failed to update registrations status: ${error.message}`);
+            throw error;
+        }
     }
 };
 exports.BatchRegistrationService = BatchRegistrationService;

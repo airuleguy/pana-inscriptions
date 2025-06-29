@@ -13,6 +13,7 @@ exports.Judge = void 0;
 const typeorm_1 = require("typeorm");
 const swagger_1 = require("@nestjs/swagger");
 const tournament_entity_1 = require("./tournament.entity");
+const registration_status_1 = require("../constants/registration-status");
 let Judge = class Judge {
 };
 exports.Judge = Judge;
@@ -73,8 +74,16 @@ __decorate([
     __metadata("design:type", tournament_entity_1.Tournament)
 ], Judge.prototype, "tournament", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Registration status', example: 'REGISTERED' }),
-    (0, typeorm_1.Column)({ default: 'REGISTERED' }),
+    (0, swagger_1.ApiProperty)({
+        description: 'Registration status',
+        example: 'PENDING',
+        enum: registration_status_1.RegistrationStatus
+    }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: registration_status_1.RegistrationStatus,
+        default: registration_status_1.RegistrationStatus.PENDING
+    }),
     __metadata("design:type", String)
 ], Judge.prototype, "status", void 0);
 __decorate([

@@ -74,58 +74,61 @@ export default function JudgeRegistrationPage() {
     selectedJudges.length > 0;
 
   // Handle registration submission
-  const handleSubmit = async () => {
-    if (!isFormValid || !selectedTournament) return;
+  const handleSaveSelected = async () => {
+    if (selectedJudges.length === 0) {
+      toast.error('Please select at least one judge to register.');
+      return;
+    }
+
+    if (!selectedTournament || !selectedCountry) {
+      toast.error('Missing tournament or country selection.');
+      return;
+    }
 
     setSubmitting(true);
-    setRegistrationResult(null);
-
     try {
-      // Save selections to database using tournament-centric API
-      const saveResult = await APIService.saveJudgeSelections(
-        selectedJudges,
-        tournamentId // Use tournament ID from URL
-      );
+      // Register judges with backend API immediately
+      const response = await APIService.saveJudgeSelections(selectedJudges, selectedTournament.id);
 
-      if (!saveResult.success) {
-        throw new Error(saveResult.errors?.join(', ') || 'Failed to save judge selections');
-      }
-
-      // Save judges to registration summary
-      selectedJudges.forEach(judge => {
-        const selectedJudge: RegisteredJudge = {
+      if (response.success && response.results.length > 0) {
+        // Create registration entries for local state with actual backend data
+        const registrationData: RegisteredJudge[] = response.results.map(judge => ({
           id: judge.id,
           name: judge.fullName,
-          category: judge.categoryDescription,
+          category: judge.category,
           country: judge.country,
-          registeredAt: new Date(),
+          registeredAt: judge.createdAt ? new Date(judge.createdAt) : new Date(),
+          status: 'PENDING',
           judgeData: judge,
-        };
-        addJudge(selectedJudge);
-      });
+        }));
 
-      setRegistrationResult({
-        success: true,
-        message: `Successfully registered ${selectedJudges.length} judge(s) to the database and saved to summary!`,
-        judges: selectedJudges,
-      });
+        // Add to registration summary
+        registrationData.forEach(judgeReg => addJudge(judgeReg));
 
-      // Show success toast
-      toast.success(`${selectedJudges.length} judge${selectedJudges.length > 1 ? 's' : ''} saved and added to summary!`, {
-        description: 'Judges have been registered in the database and saved to your summary.',
-        duration: 3000,
-      });
+        toast.success('Judges registered!', {
+          description: `Successfully registered ${response.results.length} judge(s) with PENDING status in the backend.`,
+          duration: 5000,
+        });
 
-      // Reset form
-      setSelectedJudges([]);
-      setAdditionalNotes('');
+        // Reset form
+        setSelectedJudges([]);
+      } else {
+        // Handle API errors
+        const errorMessage = response.errors?.join(', ') || 'Failed to register judges';
+        
+        toast.error('Registration failed', {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
       
-    } catch (error: unknown) {
-      console.error('Judge registration failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register judges. Please try again.';
-      setRegistrationResult({
-        success: false,
-        message: errorMessage,
+    } catch (error) {
+      console.error('Failed to register judges:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to register judges with backend. Please try again.';
+      
+      toast.error('Registration error', {
+        description: errorMessage,
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
@@ -246,7 +249,7 @@ export default function JudgeRegistrationPage() {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4 pt-6">
             <Button
-              onClick={handleSubmit}
+              onClick={handleSaveSelected}
               disabled={!isFormValid || submitting}
               size="lg"
               className="flex items-center gap-2"
@@ -256,7 +259,7 @@ export default function JudgeRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Registering...' : 'Save Judge Selections'}
+              {submitting ? 'Adding to summary...' : 'Add to Summary'}
             </Button>
             
             <Button 

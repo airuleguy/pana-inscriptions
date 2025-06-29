@@ -10,6 +10,7 @@ import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
 import { BusinessRulesFactory } from '../utils/business-rules/business-rules-factory';
 import { CreateChoreographyRequest } from '../utils/business-rules/base-business-rules.interface';
+import { RegistrationStatus } from '../constants/registration-status';
 
 @Injectable()
 export class ChoreographyService {
@@ -228,5 +229,91 @@ export class ChoreographyService {
     });
 
     return stats;
+  }
+
+  /**
+   * Find choreographies by status
+   */
+  async findByStatus(
+    status: RegistrationStatus, 
+    country?: string, 
+    tournamentId?: string
+  ): Promise<Choreography[]> {
+    const queryBuilder = this.choreographyRepository.createQueryBuilder('choreography')
+      .leftJoinAndSelect('choreography.tournament', 'tournament')
+      .leftJoinAndSelect('choreography.gymnasts', 'gymnasts')
+      .where('choreography.status = :status', { status });
+
+    if (country) {
+      queryBuilder.andWhere('choreography.country = :country', { country: country.toUpperCase() });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    return await queryBuilder.getMany();
+  }
+
+  /**
+   * Update choreography registration status
+   */
+  async updateStatus(
+    id: string, 
+    status: RegistrationStatus, 
+    notes?: string
+  ): Promise<boolean> {
+    try {
+      const choreography = await this.choreographyRepository.findOne({ where: { id } });
+      
+      if (!choreography) {
+        return false; // Choreography not found, return false instead of throwing
+      }
+
+      choreography.status = status;
+      if (notes) {
+        choreography.notes = notes;
+      }
+
+      await this.choreographyRepository.save(choreography);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Batch update choreography registrations status
+   */
+  async updateStatusBatch(
+    fromStatus: RegistrationStatus,
+    toStatus: RegistrationStatus,
+    country?: string,
+    tournamentId?: string,
+    notes?: string
+  ): Promise<number> {
+    const queryBuilder = this.choreographyRepository.createQueryBuilder('choreography')
+      .leftJoinAndSelect('choreography.tournament', 'tournament')
+      .where('choreography.status = :fromStatus', { fromStatus });
+
+    if (country) {
+      queryBuilder.andWhere('choreography.country = :country', { country: country.toUpperCase() });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    const choreographies = await queryBuilder.getMany();
+    
+    for (const choreography of choreographies) {
+      choreography.status = toStatus;
+      if (notes) {
+        choreography.notes = notes;
+      }
+    }
+
+    await this.choreographyRepository.save(choreographies);
+    return choreographies.length;
   }
 } 

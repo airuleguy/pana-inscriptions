@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Coach } from '../entities/coach.entity';
 import { Tournament } from '../entities/tournament.entity';
 import { CreateCoachRegistrationDto } from '../dto/create-coach-registration.dto';
+import { RegistrationStatus } from '../constants/registration-status';
 
 @Injectable()
 export class CoachRegistrationService {
@@ -131,5 +132,90 @@ export class CoachRegistrationService {
       totalCoaches: coaches.length,
       byTournament,
     };
+  }
+
+  /**
+   * Find coaches by status
+   */
+  async findByStatus(
+    status: RegistrationStatus, 
+    country?: string, 
+    tournamentId?: string
+  ): Promise<Coach[]> {
+    const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+      .leftJoinAndSelect('coach.tournament', 'tournament')
+      .where('coach.status = :status', { status });
+
+    if (country) {
+      queryBuilder.andWhere('coach.country = :country', { country });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    return await queryBuilder.getMany();
+  }
+
+  /**
+   * Update coach registration status
+   */
+  async updateStatus(
+    id: string, 
+    status: RegistrationStatus, 
+    notes?: string
+  ): Promise<boolean> {
+    try {
+      const coach = await this.coachRepository.findOne({ where: { id } });
+      
+      if (!coach) {
+        return false; // Coach not found, return false instead of throwing
+      }
+
+      coach.status = status;
+      if (notes) {
+        coach.notes = notes;
+      }
+
+      await this.coachRepository.save(coach);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Batch update coach registrations status
+   */
+  async updateStatusBatch(
+    fromStatus: RegistrationStatus,
+    toStatus: RegistrationStatus,
+    country?: string,
+    tournamentId?: string,
+    notes?: string
+  ): Promise<number> {
+    const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+      .leftJoinAndSelect('coach.tournament', 'tournament')
+      .where('coach.status = :fromStatus', { fromStatus });
+
+    if (country) {
+      queryBuilder.andWhere('coach.country = :country', { country });
+    }
+
+    if (tournamentId) {
+      queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+    }
+
+    const coaches = await queryBuilder.getMany();
+    
+    for (const coach of coaches) {
+      coach.status = toStatus;
+      if (notes) {
+        coach.notes = notes;
+      }
+    }
+
+    await this.coachRepository.save(coaches);
+    return coaches.length;
   }
 } 

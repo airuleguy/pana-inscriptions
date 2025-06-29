@@ -1,4 +1,5 @@
 import { Tournament } from './tournament.entity';
+import { RegistrationStatus } from '../constants/registration-status';
 export declare class Coach {
     id: string;
     figId: string;
@@ -10,7 +11,7 @@ export declare class Coach {
     level: string;
     levelDescription: string;
     tournament: Tournament;
-    status: string;
+    status: RegistrationStatus;
     notes?: string;
     createdAt: Date;
     updatedAt: Date;

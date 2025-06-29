@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Tournament } from './tournament.entity';
+import { RegistrationStatus } from '../constants/registration-status';
 
 @Entity('coaches')
 export class Coach {
@@ -45,9 +46,17 @@ export class Coach {
   @JoinColumn({ name: 'tournament_id' })
   tournament: Tournament;
 
-  @ApiProperty({ description: 'Registration status', example: 'REGISTERED' })
-  @Column({ default: 'REGISTERED' })
-  status: string;
+  @ApiProperty({ 
+    description: 'Registration status', 
+    example: 'PENDING',
+    enum: RegistrationStatus 
+  })
+  @Column({ 
+    type: 'enum',
+    enum: RegistrationStatus,
+    default: RegistrationStatus.PENDING 
+  })
+  status: RegistrationStatus;
 
   @ApiProperty({ description: 'Additional notes' })
   @Column({ type: 'text', nullable: true })

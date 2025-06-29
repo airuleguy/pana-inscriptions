@@ -102,6 +102,55 @@ let JudgeRegistrationService = class JudgeRegistrationService {
             byCategory,
         };
     }
+    async findByStatus(status, country, tournamentId) {
+        const queryBuilder = this.judgeRepository.createQueryBuilder('judge')
+            .leftJoinAndSelect('judge.tournament', 'tournament')
+            .where('judge.status = :status', { status });
+        if (country) {
+            queryBuilder.andWhere('judge.country = :country', { country });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        return await queryBuilder.getMany();
+    }
+    async updateStatus(id, status, notes) {
+        try {
+            const judge = await this.judgeRepository.findOne({ where: { id } });
+            if (!judge) {
+                return false;
+            }
+            judge.status = status;
+            if (notes) {
+                judge.notes = notes;
+            }
+            await this.judgeRepository.save(judge);
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
+    }
+    async updateStatusBatch(fromStatus, toStatus, country, tournamentId, notes) {
+        const queryBuilder = this.judgeRepository.createQueryBuilder('judge')
+            .leftJoinAndSelect('judge.tournament', 'tournament')
+            .where('judge.status = :fromStatus', { fromStatus });
+        if (country) {
+            queryBuilder.andWhere('judge.country = :country', { country });
+        }
+        if (tournamentId) {
+            queryBuilder.andWhere('tournament.id = :tournamentId', { tournamentId });
+        }
+        const judges = await queryBuilder.getMany();
+        for (const judge of judges) {
+            judge.status = toStatus;
+            if (notes) {
+                judge.notes = notes;
+            }
+        }
+        await this.judgeRepository.save(judges);
+        return judges.length;
+    }
 };
 exports.JudgeRegistrationService = JudgeRegistrationService;
 exports.JudgeRegistrationService = JudgeRegistrationService = __decorate([

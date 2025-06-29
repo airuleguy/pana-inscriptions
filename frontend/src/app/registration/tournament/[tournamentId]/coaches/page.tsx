@@ -76,58 +76,61 @@ export default function CoachRegistrationPage() {
     selectedCoaches.length > 0;
 
   // Handle registration submission
-  const handleSubmit = async () => {
-    if (!isFormValid || !selectedTournament) return;
+  const handleSaveSelected = async () => {
+    if (selectedCoaches.length === 0) {
+      toast.error('Please select at least one coach to register.');
+      return;
+    }
+
+    if (!selectedTournament || !selectedCountry) {
+      toast.error('Missing tournament or country selection.');
+      return;
+    }
 
     setSubmitting(true);
-    setRegistrationResult(null);
-
     try {
-      // Save selections to database using tournament-centric API
-      const saveResult = await APIService.saveCoachSelections(
-        selectedCoaches,
-        tournamentId // Use tournament ID from URL
-      );
+      // Register coaches with backend API immediately
+      const response = await APIService.saveCoachSelections(selectedCoaches, selectedTournament.id);
 
-      if (!saveResult.success) {
-        throw new Error(saveResult.errors?.join(', ') || 'Failed to save coach selections');
-      }
-
-      // Save coaches to registration summary
-      selectedCoaches.forEach(coach => {
-        const selectedCoach: RegisteredCoach = {
+      if (response.success && response.results.length > 0) {
+        // Create registration entries for local state with actual backend data
+        const registrationData: RegisteredCoach[] = response.results.map(coach => ({
           id: coach.id,
           name: coach.fullName,
-          level: coach.levelDescription,
+          level: coach.level,
           country: coach.country,
-          registeredAt: new Date(),
-          coachData: coach, // Store original coach data for final submission
-        };
-        addCoach(selectedCoach);
-      });
+          registeredAt: coach.createdAt ? new Date(coach.createdAt) : new Date(),
+          status: 'PENDING',
+          coachData: coach,
+        }));
 
-      setRegistrationResult({
-        success: true,
-        message: `Successfully registered ${selectedCoaches.length} coach(es) to the database and saved to summary!`,
-        coaches: selectedCoaches,
-      });
+        // Add to registration summary
+        registrationData.forEach(coachReg => addCoach(coachReg));
 
-      // Show success toast
-      toast.success(`${selectedCoaches.length} coach${selectedCoaches.length > 1 ? 'es' : ''} saved and added to summary!`, {
-        description: 'Coaches have been registered in the database and saved to your summary.',
-        duration: 3000,
-      });
+        toast.success('Coaches registered!', {
+          description: `Successfully registered ${response.results.length} coach(es) with PENDING status in the backend.`,
+          duration: 5000,
+        });
 
-      // Reset form
-      setSelectedCoaches([]);
-      setAdditionalNotes('');
+        // Reset form
+        setSelectedCoaches([]);
+      } else {
+        // Handle API errors
+        const errorMessage = response.errors?.join(', ') || 'Failed to register coaches';
+        
+        toast.error('Registration failed', {
+          description: errorMessage,
+          duration: 5000,
+        });
+      }
       
-    } catch (error: unknown) {
-      console.error('Coach registration failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register coaches. Please try again.';
-      setRegistrationResult({
-        success: false,
-        message: errorMessage,
+    } catch (error) {
+      console.error('Failed to register coaches:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to register coaches with backend. Please try again.';
+      
+      toast.error('Registration error', {
+        description: errorMessage,
+        duration: 5000,
       });
     } finally {
       setSubmitting(false);
@@ -248,7 +251,7 @@ export default function CoachRegistrationPage() {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4 pt-6">
             <Button
-              onClick={handleSubmit}
+              onClick={handleSaveSelected}
               disabled={!isFormValid || submitting}
               size="lg"
               className="flex items-center gap-2"
@@ -258,7 +261,7 @@ export default function CoachRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Registering...' : 'Save Coach Selections'}
+              {submitting ? 'Adding to summary...' : 'Add to Summary'}
             </Button>
             
             <Button 

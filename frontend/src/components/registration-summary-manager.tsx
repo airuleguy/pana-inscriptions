@@ -8,28 +8,27 @@ import { toast } from 'sonner';
 
 export function RegistrationSummaryManager() {
   const router = useRouter();
-  const { state, clearAll, getTotalCount, toggleSidebar, closeSidebar } = useRegistration();
+  const { state, clearAll, getPendingCount, toggleSidebar, closeSidebar, submitRegistrations } = useRegistration();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmRegistration = async () => {
     setIsSubmitting(true);
     try {
-      // Here you could make API calls to confirm the registration
-      // For now, we'll just show a success message and clear the summary
+      const pendingCount = getPendingCount();
       
-      const totalItems = getTotalCount();
+      if (pendingCount === 0) {
+        toast.error('No pending registrations to submit.');
+        return;
+      }
+
+      // Submit pending registrations to backend
+      await submitRegistrations();
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success(`Registration confirmed! ${totalItems} items successfully registered.`, {
-        description: 'You will receive a confirmation email shortly.',
+      toast.success(`Registration submitted successfully! ${pendingCount} items have been submitted.`, {
+        description: 'Your registrations are now in SUBMITTED status and will be reviewed by administrators.',
         duration: 5000,
       });
 
-      // Clear the registration summary
-      clearAll();
-      
       // Close the sidebar
       closeSidebar();
       
@@ -48,8 +47,9 @@ export function RegistrationSummaryManager() {
       }
       
     } catch (error) {
-      console.error('Registration confirmation failed:', error);
-      toast.error('Failed to confirm registration. Please try again.');
+      console.error('Registration submission failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit registrations. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

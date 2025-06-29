@@ -345,6 +345,32 @@ export class APIService {
   }
 
   /**
+   * Register choreography for a specific tournament
+   */
+  static async registerChoreographyForTournament(choreography: Omit<Choreography, 'id' | 'createdAt' | 'updatedAt'>, tournamentId: string): Promise<{
+    success: boolean;
+    results: Choreography[];
+    errors?: string[];
+  }> {
+    const createData = {
+      name: choreography.name,
+      country: choreography.country,
+      category: choreography.category,
+      type: choreography.type,
+      gymnastCount: choreography.gymnastCount,
+      oldestGymnastAge: this.getOldestGymnastAge(choreography.gymnasts),
+      gymnastFigIds: choreography.gymnasts.map((g: Gymnast) => g.id),
+      notes: choreography.notes,
+      tournamentId: tournamentId,
+    };
+
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/choreographies`, {
+      method: 'POST',
+      body: JSON.stringify(createData),
+    });
+  }
+
+  /**
    * Update choreography
    */
   static async updateChoreography(id: string, updates: Partial<Choreography>): Promise<Choreography> {
@@ -447,7 +473,7 @@ export class APIService {
     };
   }> {
     return await this.fetchAPI(
-      `/api/v1/registrations/existing?country=${encodeURIComponent(country)}&tournamentId=${encodeURIComponent(tournamentId)}`
+      `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations?country=${encodeURIComponent(country)}`
     );
   }
 
@@ -472,9 +498,74 @@ export class APIService {
     };
   }> {
     return await this.fetchAPI(
-      `/api/v1/registrations/summary?country=${encodeURIComponent(country)}&tournamentId=${encodeURIComponent(tournamentId)}`
+      `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/summary?country=${encodeURIComponent(country)}`
     );
   }
+
+  // ==================== REGISTRATION STATUS MANAGEMENT ====================
+
+  /**
+   * Submit all pending registrations for a tournament
+   */
+  static async submitPendingRegistrations(tournamentId: string, notes?: string): Promise<{
+    success: boolean;
+    results: {
+      choreographies: Choreography[];
+      coaches: Coach[];
+      judges: Judge[];
+    };
+    errors?: string[];
+  }> {
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/submit`, {
+      method: 'POST',
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  /**
+   * Get registrations by status for a tournament
+   */
+  static async getRegistrationsByStatus(
+    tournamentId: string, 
+    status: 'PENDING' | 'SUBMITTED' | 'REGISTERED'
+  ): Promise<{
+    choreographies: Choreography[];
+    coaches: Coach[];
+    judges: Judge[];
+    totals: {
+      choreographies: number;
+      coaches: number;
+      judges: number;
+      total: number;
+    };
+  }> {
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/status/${status}`);
+  }
+
+  /**
+   * Update batch registration status (Admin only)
+   */
+  static async updateRegistrationsStatus(
+    tournamentId: string,
+    registrationIds: string[],
+    status: 'PENDING' | 'SUBMITTED' | 'REGISTERED',
+    notes?: string
+  ): Promise<{
+    success: boolean;
+    updatedCount: number;
+    errors?: string[];
+  }> {
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/status/batch`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        registrationIds,
+        status,
+        notes,
+      }),
+    });
+  }
+
+  // ==================== EXISTING BATCH SUBMISSION ====================
 
   // ==================== HEALTH ====================
 

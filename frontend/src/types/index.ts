@@ -26,6 +26,8 @@ export interface Coach {
   country: string;
   level: string; // L1, L2, L3, LHB, LBR
   levelDescription: string; // Human-readable level description
+  createdAt?: Date; // Registration date
+  updatedAt?: Date; // Last modification date
 }
 
 export interface Judge {
@@ -40,6 +42,8 @@ export interface Judge {
   category: string; // 1, 2, 3, 4
   categoryDescription: string; // Human-readable category description
   age: number; // Calculated age
+  createdAt?: Date; // Registration date
+  updatedAt?: Date; // Last modification date
 }
 
 export interface Country {
@@ -219,3 +223,8 @@ export const CACHE_CONFIG = {
 } as const;
 
 // Coach level information moved to APIService since it's only used for data transformation from backend 
+
+// Registration Status Types
+export type RegistrationStatus = 'PENDING' | 'SUBMITTED' | 'REGISTERED';
+
+export const REGISTRATION_STATUS = ['PENDING', 'SUBMITTED', 'REGISTERED'] as const; 
