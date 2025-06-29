@@ -1,4 +1,5 @@
 import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament } from '@/types';
+import { ChoreographyCategory } from '@/constants/categories';
 
 /**
  * API service for communicating with the backend
@@ -130,9 +131,9 @@ export class APIService {
       tournamentId: tournamentId,
     }));
 
-    return await this.fetchAPI('/api/v1/coaches/register-batch', {
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/coaches`, {
       method: 'POST',
-      body: JSON.stringify({ coaches: registrationData, country, tournamentId }),
+      body: JSON.stringify(registrationData),
     });
   }
 
@@ -189,9 +190,9 @@ export class APIService {
       tournamentId: tournamentId,
     }));
 
-    return await this.fetchAPI('/api/v1/judges/register-batch', {
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/judges`, {
       method: 'POST',
-      body: JSON.stringify({ judges: registrationData, country, tournamentId }),
+      body: JSON.stringify(registrationData),
     });
   }
 
@@ -220,10 +221,10 @@ export class APIService {
   /**
    * Create a new choreography
    */
-  static async createChoreography(choreography: Omit<Choreography, 'id' | 'registrationDate' | 'lastModified'>): Promise<Choreography> {
+  static async createChoreography(choreography: Omit<Choreography, 'id' | 'registrationDate' | 'lastModified'>, tournamentId: string): Promise<Choreography> {
     const createDto = this.transformToCreateDto(choreography);
     
-    const backendChoreography = await this.fetchAPI<any>('/api/v1/choreographies', {
+    const backendChoreography = await this.fetchAPI<any>(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/choreographies`, {
       method: 'POST',
       body: JSON.stringify(createDto),
     });
@@ -302,7 +303,8 @@ export class APIService {
     };
     errors?: any[];
   }> {
-    return this.fetchAPI('/api/v1/registrations/batch', {
+    const tournamentId = registrationData.tournament.id;
+    return this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/batch`, {
       method: 'POST',
       body: JSON.stringify(registrationData),
     });
@@ -322,7 +324,7 @@ export class APIService {
       total: number;
     };
   }> {
-    return await this.fetchAPI(`/api/v1/batch-registration/existing/${encodeURIComponent(country)}/${encodeURIComponent(tournamentId)}`);
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations?country=${encodeURIComponent(country)}`);
   }
 
   /**
@@ -345,7 +347,7 @@ export class APIService {
       registrationStatus: string;
     };
   }> {
-    return await this.fetchAPI(`/api/v1/batch-registration/summary/${encodeURIComponent(country)}/${encodeURIComponent(tournamentId)}`);
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/summary?country=${encodeURIComponent(country)}`);
   }
 
   // ==================== HEALTH ====================
@@ -432,7 +434,7 @@ export class APIService {
     return {
       id: backend.id,
       name: backend.name,
-      category: backend.category as 'YOUTH' | 'JUNIOR' | 'SENIOR',
+      category: backend.category as ChoreographyCategory,
       type: backend.type as ChoreographyType,
       countryCode: backend.country,
       tournament: this.transformBackendToTournament(backend.tournament),
@@ -543,10 +545,10 @@ export class APIService {
     return age;
   }
 
-  private static determineCategory(age: number): 'YOUTH' | 'JUNIOR' | 'SENIOR' {
-    if (age <= 15) return 'YOUTH';
-    if (age <= 17) return 'JUNIOR';
-    return 'SENIOR';
+  private static determineCategory(age: number): ChoreographyCategory {
+    if (age <= 15) return ChoreographyCategory.YOUTH;
+    if (age <= 17) return ChoreographyCategory.JUNIOR;
+    return ChoreographyCategory.SENIOR;
   }
 
   /**
