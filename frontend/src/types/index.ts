@@ -116,18 +116,18 @@ export interface Choreography {
   name: string; // Auto-generated from gymnast surnames
   category: ChoreographyCategory;
   type: ChoreographyType; // Auto-determined from gymnast count and gender
-  countryCode: string;
+  country: string; // Changed from countryCode to match backend
   tournament: Tournament;
-  selectedGymnasts: Gymnast[];
+  gymnasts: Gymnast[]; // Changed from selectedGymnasts to match backend
   gymnastCount: 1 | 2 | 3 | 5 | 8;
+  oldestGymnastAge: number; // Added to match backend
   musicFile?: File;
   musicFileName?: string;
-  routineDescription?: string;
-  registrationDate: Date;
-  lastModified: Date;
-  status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+  notes?: string; // Changed from routineDescription to match backend
+  createdAt: Date; // Changed from registrationDate to match backend
+  updatedAt: Date; // Changed from lastModified to match backend
+  status?: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'; // Made optional since backend doesn't have it yet
   submittedBy?: string;
-  notes?: string;
 }
 
 export interface ChoreographyFormData {
@@ -135,9 +135,9 @@ export interface ChoreographyFormData {
   type: ChoreographyType;
   gymnastCount: 1 | 2 | 3 | 5 | 8;
   tournamentId: string;
-  selectedGymnasts: Gymnast[];
+  gymnasts: Gymnast[]; // Changed from selectedGymnasts to match backend
   musicFile?: File;
-  routineDescription?: string;
+  notes?: string; // Changed from routineDescription to match backend
 }
 
 // API Response Types

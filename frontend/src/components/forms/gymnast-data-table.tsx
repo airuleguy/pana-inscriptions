@@ -7,26 +7,29 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, RefreshCw, AlertCircle, Users } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, Users, Search } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials, getCategoryColor } from '@/lib/utils';
+import { ChoreographyCategory } from '@/constants/categories';
 import type { Gymnast } from '@/types';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 interface GymnastDataTableProps {
   countryCode: string;
-  selectedGymnasts: Gymnast[];
+  gymnasts: Gymnast[];
   onSelectionChange: (gymnasts: Gymnast[]) => void;
-  maxSelection: 1 | 2 | 3 | 5 | 8;
+  maxSelection?: 1 | 2 | 3 | 5 | 8;
   requiredCategory?: 'YOUTH' | 'JUNIOR' | 'SENIOR';
   disabled?: boolean;
 }
 
 export function GymnastDataTable({
   countryCode,
-  selectedGymnasts,
+  gymnasts,
   onSelectionChange,
-  maxSelection,
+  maxSelection = 8,
   requiredCategory,
   disabled = false
 }: GymnastDataTableProps) {
@@ -34,6 +37,8 @@ export function GymnastDataTable({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
 
   // Load gymnasts on component mount and country change
   useEffect(() => {
@@ -66,8 +71,12 @@ export function GymnastDataTable({
       filtered = filtered.filter(g => g.category === requiredCategory);
     }
 
-    // Sort by last name
-    return filtered.sort((a, b) => a.lastName.localeCompare(b.lastName));
+    // Sort by last name with null safety
+    return filtered.sort((a, b) => {
+      const lastNameA = a.lastName || '';
+      const lastNameB = b.lastName || '';
+      return lastNameA.localeCompare(lastNameB);
+    });
   }, [availableGymnasts, requiredCategory]);
 
   // Handle refresh
@@ -90,8 +99,6 @@ export function GymnastDataTable({
     }
   }, [countryCode]);
 
-
-
   // Define columns for the data table
   const columns: ColumnDef<Gymnast>[] = useMemo(
     () => [
@@ -112,22 +119,24 @@ export function GymnastDataTable({
           />
         ),
         cell: ({ row }) => {
-          const isSelected = selectedGymnasts.some(g => g.id === row.original.id);
-          const canSelect = selectedGymnasts.length < maxSelection || isSelected;
+          const isSelected = gymnasts.some(g => g.id === row.original.id);
+          const canSelect = gymnasts.length < maxSelection || isSelected;
           
+          const handleToggle = () => {
+            if (disabled) return;
+            
+            const gymnast = row.original;
+            if (isSelected) {
+              onSelectionChange(gymnasts.filter(g => g.id !== gymnast.id));
+            } else {
+              onSelectionChange([...gymnasts, gymnast]);
+            }
+          };
+
           return (
             <Checkbox
               checked={isSelected}
-              onCheckedChange={(value) => {
-                if (disabled) return;
-                
-                const gymnast = row.original;
-                if (value && !isSelected && canSelect) {
-                  onSelectionChange([...selectedGymnasts, gymnast]);
-                } else if (!value && isSelected) {
-                  onSelectionChange(selectedGymnasts.filter(g => g.id !== gymnast.id));
-                }
-              }}
+              onCheckedChange={handleToggle}
               aria-label="Select row"
               disabled={disabled || (!isSelected && !canSelect)}
             />
@@ -148,12 +157,12 @@ export function GymnastDataTable({
             <div className="flex items-center gap-3">
               <Avatar className="w-8 h-8">
                 <AvatarFallback className="text-xs">
-                  {getInitials(gymnast.fullName)}
+                  {getInitials(gymnast.fullName || 'Unknown')}
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <span className="font-medium">
-                  {gymnast.lastName}, {gymnast.firstName}
+                  {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   ID: {gymnast.id}
@@ -172,7 +181,7 @@ export function GymnastDataTable({
           const gender = row.getValue("gender") as string;
           return (
             <Badge variant={gender === 'MALE' ? 'default' : 'secondary'}>
-              {gender === 'MALE' ? 'Male' : 'Female'}
+              {gender === 'MALE' ? 'Male' : gender === 'FEMALE' ? 'Female' : 'Unknown'}
             </Badge>
           );
         },
@@ -184,7 +193,7 @@ export function GymnastDataTable({
         ),
         cell: ({ row }) => {
           const age = row.getValue("age") as number;
-          return <span>{age}</span>;
+          return <span>{age || 'N/A'}</span>;
         },
       },
       {
@@ -195,8 +204,8 @@ export function GymnastDataTable({
         cell: ({ row }) => {
           const category = row.getValue("category") as string;
           return (
-            <Badge variant="outline" className={getCategoryColor(category as 'YOUTH' | 'JUNIOR' | 'SENIOR')}>
-              {category}
+            <Badge variant="outline" className={getCategoryColor(category as ChoreographyCategory)}>
+              {category || 'Unknown'}
             </Badge>
           );
         },
@@ -208,7 +217,7 @@ export function GymnastDataTable({
         ),
         cell: ({ row }) => {
           const date = row.getValue("dateOfBirth") as Date;
-          return <span>{date.toLocaleDateString()}</span>;
+          return <span>{date ? date.toLocaleDateString() : 'N/A'}</span>;
         },
       },
       {
@@ -222,14 +231,14 @@ export function GymnastDataTable({
                 {gymnast.licenseValid ? 'Valid' : 'Expired'}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                Expires: {gymnast.licenseExpiryDate.toLocaleDateString()}
+                Expires: {gymnast.licenseExpiryDate ? gymnast.licenseExpiryDate.toLocaleDateString() : 'N/A'}
               </span>
             </div>
           );
         },
       },
     ],
-    [selectedGymnasts, onSelectionChange, maxSelection, disabled]
+    [gymnasts, onSelectionChange, maxSelection, disabled]
   );
 
   if (loading) {
@@ -260,48 +269,78 @@ export function GymnastDataTable({
 
   return (
     <div className="space-y-4">
-      {/* Selection Summary */}
-      {selectedGymnasts.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Selected Gymnasts ({selectedGymnasts.length}/{maxSelection})
-                </h4>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRefresh}
-                  disabled={refreshing || disabled}
-                  className="h-8 w-8"
-                >
-                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {selectedGymnasts.map((gymnast) => (
-                  <div key={gymnast.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                    <Avatar className="w-6 h-6">
-                                           <AvatarFallback className="text-xs">
-                       {getInitials(gymnast.fullName)}
-                     </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">
-                      {gymnast.lastName}, {gymnast.firstName}
-                    </span>
-                    <Badge variant="outline" className={getCategoryColor(gymnast.category)}>
-                      {gymnast.category}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Search gymnasts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-64"
+                disabled={disabled}
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            
+            <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={disabled}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="YOUTH">Youth</SelectItem>
+                <SelectItem value="JUNIOR">Junior</SelectItem>
+                <SelectItem value="SENIOR">Senior</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing || disabled}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            {gymnasts.length} selected
+          </div>
+        </div>
+
+        {gymnasts.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Users className="w-4 h-4 text-blue-600" />
+              <span className="font-medium text-blue-900">
+                Selected Gymnasts ({gymnasts.length})
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {gymnasts.map((gymnast) => (
+                <div key={gymnast.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                  <Avatar className="w-6 h-6">
+                    <AvatarFallback className="text-xs">
+                      {getInitials(gymnast.fullName || 'Unknown')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">
+                    {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
+                  </span>
+                  <Badge variant="outline" className={getCategoryColor(gymnast.category as ChoreographyCategory)}>
+                    {gymnast.category}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Data Table */}
       <Card>

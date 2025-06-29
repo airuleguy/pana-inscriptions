@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,16 +17,16 @@ interface JudgeDataTableProps {
   countryCode: string;
   selectedJudges: Judge[];
   onSelectionChange: (judges: Judge[]) => void;
-  maxSelection: 1 | 2 | 3 | 5;
+  maxSelection?: number;
   requiredCategory?: string;
   disabled?: boolean;
 }
 
 export function JudgeDataTable({
-  countryCode,
+  countryCode: country,
   selectedJudges,
   onSelectionChange,
-  maxSelection,
+  maxSelection = 10,
   requiredCategory,
   disabled = false
 }: JudgeDataTableProps) {
@@ -37,25 +37,23 @@ export function JudgeDataTable({
 
   // Load judges on component mount and country change
   useEffect(() => {
-    async function loadJudges() {
-      if (!countryCode) return;
-      
-      setLoading(true);
-      setError(null);
-      
+    if (!country) return;
+
+    const loadJudges = async () => {
       try {
-        const judges = await APIService.getJudges(countryCode);
+        setLoading(true);
+        const judges = await APIService.getJudges(country);
         setAvailableJudges(judges);
-      } catch (err: unknown) {
-        console.error('Failed to load judges:', err);
-        setError('Failed to load judges from FIG database');
+      } catch (error) {
+        console.error('Error loading judges:', error);
+        setError('Failed to load judges');
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     loadJudges();
-  }, [countryCode]);
+  }, [country]);
 
   // Filter judges based on requirements
   const filteredJudges = useMemo(() => {
@@ -71,24 +69,22 @@ export function JudgeDataTable({
   }, [availableJudges, requiredCategory]);
 
   // Handle refresh
-  const handleRefresh = useCallback(async () => {
-    if (!countryCode) return;
-    
-    setRefreshing(true);
-    setError(null);
+  const handleRefresh = async () => {
+    if (!country) return;
     
     try {
-      // Clear cache and refetch
+      setRefreshing(true);
       await APIService.clearJudgeCache();
-      const judges = await APIService.getJudges(countryCode);
+      const judges = await APIService.getJudges(country);
       setAvailableJudges(judges);
-    } catch (err: unknown) {
-      console.error('Refresh error:', err);
-      setError('Failed to refresh judge data');
+      setError(null);
+    } catch (error) {
+      console.error('Error refreshing judges:', error);
+      setError('Failed to refresh judges');
     } finally {
       setRefreshing(false);
     }
-  }, [countryCode]);
+  };
 
   // Define columns for the data table
   const columns: ColumnDef<Judge>[] = useMemo(

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useRegistration } from '@/contexts/registration-context';
 import { 
   UserPlus, 
@@ -18,24 +18,23 @@ import {
   Calendar,
   CheckCircle,
   AlertTriangle,
-  X,
   Loader2
 } from 'lucide-react';
 import { countries } from '@/lib/countries';
 
-interface RegistrationCartSidebarProps {
+interface RegistrationSummarySidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onConfirmRegistration: () => void;
   isSubmitting?: boolean;
 }
 
-export function RegistrationCartSidebar({ 
+export function RegistrationSummarySidebar({ 
   isOpen, 
   onToggle, 
   onConfirmRegistration,
   isSubmitting = false
-}: RegistrationCartSidebarProps) {
+}: RegistrationSummarySidebarProps) {
   const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration } = useRegistration();
   const [expandedSections, setExpandedSections] = useState({
     choreographies: true,

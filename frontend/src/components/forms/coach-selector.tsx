@@ -1,31 +1,44 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Circle, Search, Loader2, RefreshCw, AlertCircle, GraduationCap } from 'lucide-react';
+import { CheckCircle, Circle, Search, Loader2, RefreshCw, AlertCircle, GraduationCap, Users } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { APIService } from '@/lib/api';
-import { getInitials, debounce } from '@/lib/utils';
+import { getInitials } from '@/lib/utils';
 import type { Coach } from '@/types';
+
+// Simple debounce implementation
+function debounce<T extends (...args: unknown[]) => void>(
+  func: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+}
 
 interface CoachSelectorProps {
   countryCode: string;
   selectedCoaches: Coach[];
   onSelectionChange: (coaches: Coach[]) => void;
-  maxSelection: 1 | 2 | 3 | 5;
+  maxSelection?: number;
   requiredLevel?: string;
   disabled?: boolean;
 }
 
 export function CoachSelector({
-  countryCode,
+  countryCode: country,
   selectedCoaches,
   onSelectionChange,
-  maxSelection,
+  maxSelection = 10,
   requiredLevel,
   disabled = false
 }: CoachSelectorProps) {
@@ -38,33 +51,33 @@ export function CoachSelector({
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
-      if (!countryCode) return;
+      if (!country) return;
       
       try {
-        const allCoaches = await APIService.getCoaches(countryCode);
+        const allCoaches = await APIService.getCoaches(country);
         const results = APIService.searchCoachesLocal(allCoaches, query);
         setAvailableCoaches(results);
-      } catch (err: any) {
-        console.error('Search error:', err);
+      } catch (error) {
+        console.error('Search error:', error);
         setError('Failed to search coaches');
       }
     }, 300),
-    [countryCode]
+    [country]
   );
 
   // Load coaches on component mount and country change
   useEffect(() => {
     async function loadCoaches() {
-      if (!countryCode) return;
+      if (!country) return;
       
       setLoading(true);
       setError(null);
       
       try {
-        const coaches = await APIService.getCoaches(countryCode);
+        const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
-      } catch (err: any) {
-        console.error('Failed to load coaches:', err);
+      } catch (error) {
+        console.error('Failed to load coaches:', error);
         setError('Failed to load coaches from FIG database');
       } finally {
         setLoading(false);
@@ -72,22 +85,22 @@ export function CoachSelector({
     }
 
     loadCoaches();
-  }, [countryCode]);
+  }, [country]);
 
   // Handle search query changes
   useEffect(() => {
     if (searchQuery.trim()) {
       debouncedSearch(searchQuery);
-    } else if (countryCode) {
+    } else if (country) {
       // Reset to all coaches for the country
-      APIService.getCoaches(countryCode)
+      APIService.getCoaches(country)
         .then(setAvailableCoaches)
-        .catch((err: any) => {
-          console.error('Failed to reset coach list:', err);
+        .catch((error) => {
+          console.error('Error loading coaches:', error);
           setError('Failed to load coaches');
         });
     }
-  }, [searchQuery, countryCode, debouncedSearch]);
+  }, [searchQuery, country, debouncedSearch]);
 
   // Filter coaches based on requirements
   const filteredCoaches = useMemo(() => {
@@ -119,7 +132,7 @@ export function CoachSelector({
 
   // Handle refresh
   const handleRefresh = useCallback(async () => {
-    if (!countryCode) return;
+    if (!country) return;
     
     setRefreshing(true);
     setError(null);
@@ -127,15 +140,15 @@ export function CoachSelector({
     try {
       // Clear cache and refetch
       await APIService.clearCoachCache();
-      const coaches = await APIService.getCoaches(countryCode);
+      const coaches = await APIService.getCoaches(country);
       setAvailableCoaches(coaches);
-    } catch (err: any) {
-      console.error('Refresh error:', err);
+    } catch (error) {
+      console.error('Refresh error:', error);
       setError('Failed to refresh coach data');
     } finally {
       setRefreshing(false);
     }
-  }, [countryCode]);
+  }, [country]);
 
   if (loading) {
     return (

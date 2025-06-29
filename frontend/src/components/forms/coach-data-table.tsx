@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,16 +17,16 @@ interface CoachDataTableProps {
   countryCode: string;
   selectedCoaches: Coach[];
   onSelectionChange: (coaches: Coach[]) => void;
-  maxSelection: 1 | 2 | 3 | 5;
+  maxSelection?: number;
   requiredLevel?: string;
   disabled?: boolean;
 }
 
 export function CoachDataTable({
-  countryCode,
+  countryCode: country,
   selectedCoaches,
   onSelectionChange,
-  maxSelection,
+  maxSelection = 10,
   requiredLevel,
   disabled = false
 }: CoachDataTableProps) {
@@ -37,25 +37,23 @@ export function CoachDataTable({
 
   // Load coaches on component mount and country change
   useEffect(() => {
-    async function loadCoaches() {
-      if (!countryCode) return;
-      
-      setLoading(true);
-      setError(null);
-      
+    if (!country) return;
+
+    const loadCoaches = async () => {
       try {
-        const coaches = await APIService.getCoaches(countryCode);
+        setLoading(true);
+        const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
-      } catch (err: unknown) {
-        console.error('Failed to load coaches:', err);
-        setError('Failed to load coaches from FIG database');
+      } catch (error) {
+        console.error('Error loading coaches:', error);
+        setError('Failed to load coaches');
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     loadCoaches();
-  }, [countryCode]);
+  }, [country]);
 
   // Filter coaches based on requirements
   const filteredCoaches = useMemo(() => {
@@ -71,24 +69,22 @@ export function CoachDataTable({
   }, [availableCoaches, requiredLevel]);
 
   // Handle refresh
-  const handleRefresh = useCallback(async () => {
-    if (!countryCode) return;
-    
-    setRefreshing(true);
-    setError(null);
+  const handleRefresh = async () => {
+    if (!country) return;
     
     try {
-      // Clear cache and refetch
+      setRefreshing(true);
       await APIService.clearCoachCache();
-      const coaches = await APIService.getCoaches(countryCode);
+      const coaches = await APIService.getCoaches(country);
       setAvailableCoaches(coaches);
-    } catch (err: unknown) {
-      console.error('Refresh error:', err);
-      setError('Failed to refresh coach data');
+      setError(null);
+    } catch (error) {
+      console.error('Error refreshing coaches:', error);
+      setError('Failed to refresh coaches');
     } finally {
       setRefreshing(false);
     }
-  }, [countryCode]);
+  };
 
   // Define columns for the data table
   const columns: ColumnDef<Coach>[] = useMemo(

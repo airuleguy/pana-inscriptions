@@ -64,6 +64,19 @@ export function calculateAge(dateOfBirth: Date): number {
 }
 
 /**
+ * Calculate category based on the oldest gymnast's age
+ */
+export function calculateCategory(oldestAge: number): ChoreographyCategory {
+  if (oldestAge <= 15) {
+    return ChoreographyCategory.YOUTH;
+  } else if (oldestAge <= 17) {
+    return ChoreographyCategory.JUNIOR;
+  } else {
+    return ChoreographyCategory.SENIOR;
+  }
+}
+
+/**
  * Get country flag emoji from country code
  */
 export function getCountryFlag(countryCode: string): string {

@@ -114,9 +114,9 @@ export class APIService {
   /**
    * Save coach selections (persist to database)
    */
-  static async saveCoachSelections(coaches: Coach[], tournamentId: string, country: string): Promise<{
+  static async saveCoachSelections(coaches: Coach[], tournamentId: string): Promise<{
     success: boolean;
-    results: any[];
+    results: Coach[];
     errors?: string[];
   }> {
     const registrationData = coaches.map(coach => ({
@@ -147,7 +147,15 @@ export class APIService {
       ? `/api/v1/judges?country=${encodeURIComponent(country)}`
       : '/api/v1/judges';
     
-    const figJudges = await this.fetchAPI<any[]>(endpoint);
+    const figJudges = await this.fetchAPI<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      birth: string;
+      gender: string;
+      country: string;
+      category: string;
+    }[]>(endpoint);
     
     // Transform FIG backend data to frontend format
     return figJudges.map(fig => this.transformFigToJudge(fig));
@@ -172,9 +180,9 @@ export class APIService {
   /**
    * Save judge selections (persist to database)
    */
-  static async saveJudgeSelections(judges: Judge[], tournamentId: string, country: string): Promise<{
+  static async saveJudgeSelections(judges: Judge[], tournamentId: string): Promise<{
     success: boolean;
-    results: any[];
+    results: Judge[];
     errors?: string[];
   }> {
     const registrationData = judges.map(judge => ({
@@ -206,44 +214,65 @@ export class APIService {
       ? `/api/v1/choreographies?country=${encodeURIComponent(country)}`
       : '/api/v1/choreographies';
     
-    const backendChoreographies = await this.fetchAPI<any[]>(endpoint);
-    return backendChoreographies.map(this.transformBackendToChoreography);
+    const choreographies = await this.fetchAPI<Choreography[]>(endpoint);
+    return choreographies;
   }
 
   /**
    * Get choreography by ID
    */
   static async getChoreography(id: string): Promise<Choreography> {
-    const backendChoreography = await this.fetchAPI<any>(`/api/v1/choreographies/${encodeURIComponent(id)}`);
-    return this.transformBackendToChoreography(backendChoreography);
+    const choreography = await this.fetchAPI<Choreography>(`/api/v1/choreographies/${encodeURIComponent(id)}`);
+    return choreography;
   }
 
   /**
-   * Create a new choreography
+   * Create new choreography
    */
-  static async createChoreography(choreography: Omit<Choreography, 'id' | 'registrationDate' | 'lastModified'>, tournamentId: string): Promise<Choreography> {
-    const createDto = this.transformToCreateDto(choreography);
-    
-    const backendChoreography = await this.fetchAPI<any>(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/choreographies`, {
+  static async createChoreography(choreography: Omit<Choreography, 'id' | 'createdAt' | 'updatedAt'>, tournamentId: string): Promise<Choreography> {
+    const createData = {
+      name: choreography.name,
+      country: choreography.country,
+      category: choreography.category,
+      type: choreography.type,
+      gymnastCount: choreography.gymnastCount,
+      oldestGymnastAge: this.getOldestGymnastAge(choreography.gymnasts),
+      gymnastFigIds: choreography.gymnasts.map((g: Gymnast) => g.id),
+      notes: choreography.notes,
+      tournamentId: tournamentId,
+    };
+
+    const newChoreography = await this.fetchAPI<Choreography>('/api/v1/choreographies', {
       method: 'POST',
-      body: JSON.stringify(createDto),
+      body: JSON.stringify(createData),
     });
-    
-    return this.transformBackendToChoreography(backendChoreography);
+
+    return newChoreography;
   }
 
   /**
    * Update choreography
    */
   static async updateChoreography(id: string, updates: Partial<Choreography>): Promise<Choreography> {
-    const updateDto = this.transformToUpdateDto(updates);
+    const updateData: any = {};
     
-    const backendChoreography = await this.fetchAPI<any>(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
+    if (updates.name) updateData.name = updates.name;
+    if (updates.country) updateData.country = updates.country;
+    if (updates.category) updateData.category = updates.category;
+    if (updates.type) updateData.type = updates.type;
+    if (updates.gymnastCount) updateData.gymnastCount = updates.gymnastCount;
+    if (updates.gymnasts) {
+      updateData.gymnastFigIds = updates.gymnasts.map((g: Gymnast) => g.id);
+      updateData.oldestGymnastAge = this.getOldestGymnastAge(updates.gymnasts);
+    }
+    if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+    const updatedChoreography = await this.fetchAPI<Choreography>(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
       method: 'PATCH',
-      body: JSON.stringify(updateDto),
+      body: JSON.stringify(updateData),
     });
-    
-    return this.transformBackendToChoreography(backendChoreography);
+
+    return updatedChoreography;
   }
 
   /**
@@ -268,43 +297,42 @@ export class APIService {
   // ==================== TOURNAMENTS ====================
 
   /**
-   * Get all active tournaments
+   * Get all tournaments
    */
   static async getTournaments(): Promise<Tournament[]> {
-    const backendTournaments = await this.fetchAPI<any[]>('/api/v1/tournaments');
-    return backendTournaments.map(this.transformBackendToTournament);
+    const tournaments = await this.fetchAPI<Tournament[]>('/api/v1/tournaments');
+    return tournaments;
   }
 
   /**
    * Get tournament by ID
    */
   static async getTournament(id: string): Promise<Tournament> {
-    const backendTournament = await this.fetchAPI<any>(`/api/v1/tournaments/${encodeURIComponent(id)}`);
-    return this.transformBackendToTournament(backendTournament);
+    const tournament = await this.fetchAPI<Tournament>(`/api/v1/tournaments/${encodeURIComponent(id)}`);
+    return tournament;
   }
 
   // ==================== BATCH REGISTRATION ====================
 
   /**
-   * Submit batch registration with all choreographies, coaches, and judges
+   * Submit batch registration for choreographies, coaches, and judges
    */
   static async submitBatchRegistration(registrationData: {
-    choreographies: any[];
-    coaches: any[];
-    judges: any[];
-    tournament: any;
+    choreographies: Choreography[];
+    coaches: Coach[];
+    judges: Judge[];
+    tournament: Tournament;
     country: string;
   }): Promise<{
     success: boolean;
     results: {
-      choreographies: any[];
-      coaches: any[];
-      judges: any[];
+      choreographies: Choreography[];
+      coaches: Coach[];
+      judges: Judge[];
     };
-    errors?: any[];
+    errors?: string[];
   }> {
-    const tournamentId = registrationData.tournament.id;
-    return this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/batch`, {
+    return await this.fetchAPI('/api/v1/registrations/batch', {
       method: 'POST',
       body: JSON.stringify(registrationData),
     });
@@ -314,9 +342,9 @@ export class APIService {
    * Get existing registrations for a country and tournament
    */
   static async getExistingRegistrations(country: string, tournamentId: string): Promise<{
-    choreographies: any[];
-    coaches: any[];
-    judges: any[];
+    choreographies: Choreography[];
+    coaches: Coach[];
+    judges: Judge[];
     totals: {
       choreographies: number;
       coaches: number;
@@ -324,16 +352,18 @@ export class APIService {
       total: number;
     };
   }> {
-    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations?country=${encodeURIComponent(country)}`);
+    return await this.fetchAPI(
+      `/api/v1/registrations/existing?country=${encodeURIComponent(country)}&tournamentId=${encodeURIComponent(tournamentId)}`
+    );
   }
 
   /**
-   * Get registration summary for a country and tournament
+   * Get registration summary with totals and metadata
    */
   static async getRegistrationSummary(country: string, tournamentId: string): Promise<{
-    choreographies: any[];
-    coaches: any[];
-    judges: any[];
+    choreographies: Choreography[];
+    coaches: Coach[];
+    judges: Judge[];
     totals: {
       choreographies: number;
       coaches: number;
@@ -347,7 +377,9 @@ export class APIService {
       registrationStatus: string;
     };
   }> {
-    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/summary?country=${encodeURIComponent(country)}`);
+    return await this.fetchAPI(
+      `/api/v1/registrations/summary?country=${encodeURIComponent(country)}&tournamentId=${encodeURIComponent(tournamentId)}`
+    );
   }
 
   // ==================== HEALTH ====================
@@ -367,152 +399,102 @@ export class APIService {
   // ==================== TRANSFORMATION HELPERS ====================
 
   /**
-   * Transform backend FIG gymnast data to frontend format
+   * Transform FIG gymnast data to application format
    */
-  private static transformFigToGymnast(fig: any): Gymnast {
-    const dateOfBirth = new Date(fig.birthDate);
+  private static transformFigToGymnast(dto: {
+    figId: string;
+    firstName: string;
+    lastName: string;
+    gender: string; // 'M' or 'F' from backend
+    country: string;
+    birthDate: string; // ISO date string
+    discipline: string;
+    isLicensed: boolean;
+  }): Gymnast {
+    const dateOfBirth = new Date(dto.birthDate);
     const age = this.calculateAge(dateOfBirth);
     const category = this.determineCategory(age);
-    
+
     return {
-      id: fig.figId,
-      firstName: fig.firstName,
-      lastName: fig.lastName,
-      fullName: `${fig.firstName} ${fig.lastName}`,
+      id: dto.figId,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      fullName: `${dto.firstName} ${dto.lastName}`,
       dateOfBirth,
-      gender: fig.gender === 'M' ? 'MALE' : 'FEMALE',
-      country: fig.country,
-      licenseValid: fig.isLicensed,
-      licenseExpiryDate: new Date(), // Backend doesn't provide this yet
+      gender: dto.gender === 'M' ? 'MALE' : 'FEMALE',
+      country: dto.country.toUpperCase(),
+      licenseValid: dto.isLicensed,
+      licenseExpiryDate: new Date(), // Backend doesn't provide expiry date, use current date as placeholder
       age,
       category,
     };
   }
 
   /**
-   * Transform backend FIG coach data to frontend format
+   * Transform FIG coach data to application format
    */
-  private static transformFigToCoach(fig: any): Coach {
+  private static transformFigToCoach(dto: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    gender: string; // 'Male' or 'Female' from backend
+    country: string;
+    level: string;
+  }): Coach {
     return {
-      id: fig.id,
-      firstName: fig.firstName,
-      lastName: fig.lastName,
-      fullName: `${fig.firstName} ${fig.lastName}`,
-      gender: fig.gender.toUpperCase() as 'MALE' | 'FEMALE',
-      country: fig.country,
-      level: fig.level,
-      levelDescription: this.getCoachLevelDescription(fig.level),
+      id: dto.id,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      fullName: `${dto.firstName} ${dto.lastName}`,
+      gender: dto.gender.toUpperCase() as 'MALE' | 'FEMALE',
+      country: dto.country.toUpperCase(),
+      level: dto.level,
+      levelDescription: this.getCoachLevelDescription(dto.level),
     };
   }
 
   /**
-   * Transform backend FIG judge data to frontend format
+   * Transform FIG judge data to application format
    */
-  private static transformFigToJudge(fig: any): Judge {
-    const dateOfBirth = new Date(fig.birth);
+  private static transformFigToJudge(dto: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    birth: string;
+    gender: string; // 'Male' or 'Female' from backend
+    country: string;
+    category: string;
+  }): Judge {
+    const dateOfBirth = new Date(dto.birth);
     const age = this.calculateAge(dateOfBirth);
-    
+
     return {
-      id: fig.id,
-      firstName: fig.firstName,
-      lastName: fig.lastName,
-      fullName: `${fig.firstName} ${fig.lastName}`,
-      birth: fig.birth,
+      id: dto.id,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      fullName: `${dto.firstName} ${dto.lastName}`,
+      birth: dto.birth,
       dateOfBirth,
-      gender: fig.gender.toUpperCase() as 'MALE' | 'FEMALE',
-      country: fig.country,
-      category: fig.category,
-      categoryDescription: this.getJudgeCategoryDescription(fig.category),
+      gender: dto.gender.toUpperCase() as 'MALE' | 'FEMALE',
+      country: dto.country.toUpperCase(),
+      category: dto.category,
+      categoryDescription: this.getJudgeCategoryDescription(dto.category),
       age,
     };
-  }
-
-  /**
-   * Transform backend choreography to frontend format
-   */
-  private static transformBackendToChoreography(backend: any): Choreography {
-    return {
-      id: backend.id,
-      name: backend.name,
-      category: backend.category as ChoreographyCategory,
-      type: backend.type as ChoreographyType,
-      countryCode: backend.country,
-      tournament: this.transformBackendToTournament(backend.tournament),
-      selectedGymnasts: backend.gymnasts.map((fig: any) => this.transformFigToGymnast(fig)),
-      gymnastCount: backend.gymnastCount,
-      musicFile: undefined, // Not stored in backend yet
-      musicFileName: undefined,
-      routineDescription: backend.notes,
-      registrationDate: new Date(backend.createdAt),
-      lastModified: new Date(backend.updatedAt),
-      status: 'SUBMITTED', // Backend doesn't have status yet
-      submittedBy: undefined,
-      notes: backend.notes,
-    };
-  }
-
-  /**
-   * Transform backend tournament to frontend format
-   */
-  private static transformBackendToTournament(backend: any): Tournament {
-    return {
-      id: backend.id,
-      name: backend.name,
-      shortName: backend.shortName,
-      type: backend.type as 'CAMPEONATO_PANAMERICANO' | 'COPA_PANAMERICANA',
-      description: backend.description,
-      startDate: backend.startDate,
-      endDate: backend.endDate,
-      location: backend.location,
-      isActive: backend.isActive,
-      choreographies: backend.choreographies || [],
-      createdAt: new Date(backend.createdAt),
-      updatedAt: new Date(backend.updatedAt),
-    };
-  }
-
-  /**
-   * Transform frontend choreography to backend create DTO
-   */
-  private static transformToCreateDto(choreography: any) {
-    return {
-      name: choreography.name,
-      country: choreography.countryCode,
-      category: choreography.category,
-      type: choreography.type, // Use the type determined by the frontend
-      gymnastCount: choreography.gymnastCount,
-      oldestGymnastAge: this.getOldestGymnastAge(choreography.selectedGymnasts),
-      gymnastFigIds: choreography.selectedGymnasts.map((g: Gymnast) => g.id),
-      notes: choreography.routineDescription,
-      tournamentId: choreography.tournament.id, // Add the tournament ID
-    };
-  }
-
-  /**
-   * Transform frontend updates to backend update DTO
-   */
-  private static transformToUpdateDto(updates: any) {
-    const dto: any = {};
-    
-    if (updates.name) dto.name = updates.name;
-    if (updates.countryCode) dto.country = updates.countryCode;
-    if (updates.category) dto.category = updates.category;
-    if (updates.type) dto.type = updates.type;
-    if (updates.gymnastCount) dto.gymnastCount = updates.gymnastCount;
-    if (updates.selectedGymnasts) {
-      dto.gymnastFigIds = updates.selectedGymnasts.map((g: Gymnast) => g.id);
-      dto.oldestGymnastAge = this.getOldestGymnastAge(updates.selectedGymnasts);
-    }
-    if (updates.routineDescription !== undefined) dto.notes = updates.routineDescription;
-    
-    return dto;
   }
 
   /**
    * Get human-readable description for coach level
    */
   private static getCoachLevelDescription(level: string): string {
-    const { COACH_LEVEL_INFO } = require('@/types');
+    const COACH_LEVEL_INFO = {
+      'L1': 'Level 1 Coach',
+      'L2': 'Level 2 Coach', 
+      'L3': 'Level 3 Coach',
+      'LHB': 'Level High Bronze Coach',
+      'LBR': 'Level Bronze Coach'
+    } as const;
+    
     const levels = level.split(', ');
     const descriptions = levels.map(l => COACH_LEVEL_INFO[l as keyof typeof COACH_LEVEL_INFO] || l);
     return descriptions.join(', ');

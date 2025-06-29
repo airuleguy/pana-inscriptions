@@ -48,25 +48,25 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         });
         const result = await this.choreographyRepository.save(choreography);
         this.logger.log(`Created choreography: ${result.name} for country: ${result.country} in tournament: ${tournament.name}`);
-        return result;
+        return this.findOne(result.id);
     }
     async findAll() {
         return this.choreographyRepository.find({
-            relations: ['gymnasts'],
+            relations: ['gymnasts', 'tournament'],
             order: { createdAt: 'DESC' },
         });
     }
     async findByCountry(country) {
         return this.choreographyRepository.find({
             where: { country: country.toUpperCase() },
-            relations: ['gymnasts'],
+            relations: ['gymnasts', 'tournament'],
             order: { createdAt: 'DESC' },
         });
     }
     async findOne(id) {
         const choreography = await this.choreographyRepository.findOne({
             where: { id },
-            relations: ['gymnasts'],
+            relations: ['gymnasts', 'tournament'],
         });
         if (!choreography) {
             throw new common_1.NotFoundException(`Choreography with ID ${id} not found`);
@@ -89,7 +89,7 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         Object.assign(choreography, updateChoreographyDto);
         const result = await this.choreographyRepository.save(choreography);
         this.logger.log(`Updated choreography: ${result.name}`);
-        return result;
+        return this.findOne(result.id);
     }
     async remove(id) {
         const choreography = await this.findOne(id);

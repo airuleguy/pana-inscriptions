@@ -45,14 +45,14 @@ export default function TournamentSelectionPage() {
     }
   };
 
-  const handleProceed = () => {
+  const navigate = () => {
     if (selectedTournament && selectedCountry) {
-      // Store selections in localStorage or state management
+      // Store the selections in localStorage for backward compatibility
       localStorage.setItem('selectedTournament', JSON.stringify(selectedTournament));
       localStorage.setItem('selectedCountry', selectedCountry);
       
-      // Navigate to registration dashboard
-      router.push('/registration/dashboard');
+      // Navigate to the tournament-centric registration URL
+      router.push(`/registration/tournament/${selectedTournament.id}/dashboard`);
     }
   };
 
@@ -260,7 +260,7 @@ export default function TournamentSelectionPage() {
           <div className="flex justify-center gap-4 pt-4">
             <Button
               size="lg"
-              onClick={handleProceed}
+              onClick={navigate}
               disabled={!selectedTournament || !selectedCountry}
               className="shadow-lg font-semibold px-8"
             >

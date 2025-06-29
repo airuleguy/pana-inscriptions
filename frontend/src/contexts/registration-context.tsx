@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { Gymnast, Coach, Judge, Choreography, Tournament } from '@/types';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import type { Gymnast, Coach, Judge, Tournament } from '@/types';
 import { APIService } from '@/lib/api';
 
 export interface RegisteredChoreography {
@@ -16,13 +16,12 @@ export interface RegisteredChoreography {
     name: string;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
     type: string;
-    countryCode: string;
+    country: string;
     tournament: Tournament;
-    selectedGymnasts: Gymnast[];
+    gymnasts: Gymnast[];
     gymnastCount: 1 | 2 | 3 | 5 | 8;
-    routineDescription: string;
-    status: 'SUBMITTED';
-    notes: string;
+    notes?: string;
+    status?: 'SUBMITTED';
     musicFile?: File;
     musicFileName?: string;
     submittedBy?: string;
@@ -72,7 +71,7 @@ interface RegistrationContextType {
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'pana-registration-cart';
+const STORAGE_KEY = 'pana-registration-summary';
 
 export function RegistrationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<RegistrationState>({
@@ -92,20 +91,26 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
 
     if (savedState) {
       try {
-        const parsedState = JSON.parse(savedState);
+        const parsedState: Partial<RegistrationState> = JSON.parse(savedState);
         // Convert date strings back to Date objects
-        parsedState.choreographies = parsedState.choreographies?.map((c: any) => ({
-          ...c,
-          registeredAt: new Date(c.registeredAt),
-        })) || [];
-        parsedState.coaches = parsedState.coaches?.map((c: any) => ({
-          ...c,
-          registeredAt: new Date(c.registeredAt),
-        })) || [];
-        parsedState.judges = parsedState.judges?.map((j: any) => ({
-          ...j,
-          registeredAt: new Date(j.registeredAt),
-        })) || [];
+        if (parsedState.choreographies) {
+          parsedState.choreographies = parsedState.choreographies.map((c: RegisteredChoreography) => ({
+            ...c,
+            registeredAt: new Date(c.registeredAt),
+          }));
+        }
+        if (parsedState.coaches) {
+          parsedState.coaches = parsedState.coaches.map((c: RegisteredCoach) => ({
+            ...c,
+            registeredAt: new Date(c.registeredAt),
+          }));
+        }
+        if (parsedState.judges) {
+          parsedState.judges = parsedState.judges.map((j: RegisteredJudge) => ({
+            ...j,
+            registeredAt: new Date(j.registeredAt),
+          }));
+        }
         
         setState(prev => ({ ...prev, ...parsedState }));
       } catch (error) {
@@ -118,7 +123,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       try {
         setState(prev => ({
           ...prev,
-          tournament: JSON.parse(tournamentData),
+          tournament: JSON.parse(tournamentData) as Tournament,
           country: countryData,
         }));
       } catch (error) {
@@ -197,7 +202,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     return getTotalCount() > 0;
   };
 
-  const loadExistingRegistrations = async () => {
+  const loadExistingRegistrations = useCallback(async () => {
     if (!state.tournament || !state.country) {
       console.log('Cannot load existing registrations: missing tournament or country');
       return;
@@ -205,79 +210,50 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
 
     setIsLoading(true);
     try {
-      const existingRegistrations = await APIService.getExistingRegistrations(
-        state.country,
-        state.tournament.id
-      );
-
-      // Transform backend data to local format and merge with existing local data
-      const existingChoreographies: RegisteredChoreography[] = existingRegistrations.choreographies.map(c => ({
-        id: c.id,
-        name: c.name,
-        category: c.category,
-        type: c.type,
-        gymnastsCount: c.gymnastCount,
-        gymnasts: c.gymnasts || [],
-        registeredAt: new Date(c.createdAt),
-        choreographyData: c
+      const data = await APIService.getExistingRegistrations(state.country, state.tournament.id);
+      
+      // Transform API data to registration format
+      const choreographies: RegisteredChoreography[] = data.choreographies.map(choreo => ({
+        id: choreo.id,
+        name: choreo.name,
+        category: choreo.category,
+        type: choreo.type,
+        gymnastsCount: choreo.gymnasts.length,
+        gymnasts: choreo.gymnasts,
+        registeredAt: new Date(choreo.createdAt),
+        choreographyData: choreo,
       }));
 
-      const existingCoaches: RegisteredCoach[] = existingRegistrations.coaches.map(c => ({
-        id: c.id,
-        name: c.fullName,
-        level: c.level,
-        country: c.country,
-        registeredAt: new Date(c.createdAt),
-        coachData: c
+      const coaches: RegisteredCoach[] = data.coaches.map(coach => ({
+        id: coach.id,
+        name: coach.fullName,
+        level: coach.level,
+        country: coach.country,
+        registeredAt: new Date(), // Use current date since backend might not have this
+        coachData: coach,
       }));
 
-      const existingJudges: RegisteredJudge[] = existingRegistrations.judges.map(j => ({
-        id: j.id,
-        name: j.fullName,
-        category: j.category,
-        country: j.country,
-        registeredAt: new Date(j.createdAt),
-        judgeData: j
+      const judges: RegisteredJudge[] = data.judges.map(judge => ({
+        id: judge.id,
+        name: judge.fullName,
+        category: judge.category,
+        country: judge.country,
+        registeredAt: new Date(), // Use current date since backend might not have this
+        judgeData: judge,
       }));
 
-      // Merge with existing local registrations (avoid duplicates)
-      setState(prev => {
-        const mergedChoreographies = [
-          ...prev.choreographies,
-          ...existingChoreographies.filter(ec => 
-            !prev.choreographies.some(pc => pc.id === ec.id)
-          )
-        ];
-
-        const mergedCoaches = [
-          ...prev.coaches,
-          ...existingCoaches.filter(ec =>
-            !prev.coaches.some(pc => pc.id === ec.id)
-          )
-        ];
-
-        const mergedJudges = [
-          ...prev.judges,
-          ...existingJudges.filter(ej =>
-            !prev.judges.some(pj => pj.id === ej.id)
-          )
-        ];
-
-        return {
-          ...prev,
-          choreographies: mergedChoreographies,
-          coaches: mergedCoaches,
-          judges: mergedJudges,
-        };
-      });
-
-      console.log('Existing registrations loaded successfully');
+      setState(prev => ({
+        ...prev,
+        choreographies,
+        coaches,
+        judges,
+      }));
     } catch (error) {
       console.error('Failed to load existing registrations:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [state.tournament, state.country]);
 
   const value: RegistrationContextType = {
     state,

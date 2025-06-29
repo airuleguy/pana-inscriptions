@@ -55,12 +55,13 @@ export class ChoreographyService {
     const result = await this.choreographyRepository.save(choreography);
     this.logger.log(`Created choreography: ${result.name} for country: ${result.country} in tournament: ${tournament.name}`);
     
-    return result;
+    // Return the saved choreography with all relations populated
+    return this.findOne(result.id);
   }
 
   async findAll(): Promise<Choreography[]> {
     return this.choreographyRepository.find({
-      relations: ['gymnasts'],
+      relations: ['gymnasts', 'tournament'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -68,7 +69,7 @@ export class ChoreographyService {
   async findByCountry(country: string): Promise<Choreography[]> {
     return this.choreographyRepository.find({
       where: { country: country.toUpperCase() },
-      relations: ['gymnasts'],
+      relations: ['gymnasts', 'tournament'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -76,7 +77,7 @@ export class ChoreographyService {
   async findOne(id: string): Promise<Choreography> {
     const choreography = await this.choreographyRepository.findOne({
       where: { id },
-      relations: ['gymnasts'],
+      relations: ['gymnasts', 'tournament'],
     });
 
     if (!choreography) {
@@ -109,7 +110,8 @@ export class ChoreographyService {
     const result = await this.choreographyRepository.save(choreography);
     this.logger.log(`Updated choreography: ${result.name}`);
     
-    return result;
+    // Return the updated choreography with all relations populated
+    return this.findOne(result.id);
   }
 
   async remove(id: string): Promise<void> {
