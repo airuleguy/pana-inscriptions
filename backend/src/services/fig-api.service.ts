@@ -90,7 +90,9 @@ export class FigApiService {
       }
 
       // Transform the data to match frontend expectations at ingestion point
-      const gymnasts: GymnastDto[] = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
+      const gymnasts: GymnastDto[] = response.data
+        .map(athlete => this.transformFigApiGymnastToDto(athlete))
+        .filter(gymnast => gymnast !== null);
 
       // Cache the result
       await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
@@ -135,7 +137,9 @@ export class FigApiService {
       }
 
       // Transform the data to match frontend expectations at ingestion point
-      const gymnasts: GymnastDto[] = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
+      const gymnasts: GymnastDto[] = response.data
+        .map(athlete => this.transformFigApiGymnastToDto(athlete))
+        .filter(gymnast => gymnast !== null);
 
       // Cache the country-specific result
       await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
@@ -481,8 +485,16 @@ export class FigApiService {
   /**
    * Transform FIG API gymnast data to match frontend expectations at ingestion point
    * This ensures data consistency and acts as a facade between FIG API and our system
+   * Returns null if the gymnast has invalid or missing FIG ID
    */
-  private transformFigApiGymnastToDto(athlete: FigApiGymnast): GymnastDto {
+  private transformFigApiGymnastToDto(athlete: FigApiGymnast): GymnastDto | null {
+    // Validate required fields from FIG API
+    if (!athlete.gymnastid || athlete.gymnastid.trim() === '') {
+      this.logger.warn(`Gymnast ${athlete.preferredfirstname} ${athlete.preferredlastname} has invalid or missing gymnastid:`, athlete.gymnastid);
+      // Skip gymnasts with missing FIG IDs as they cannot be used for registration
+      return null;
+    }
+    
     // Parse license expiry date and check validity
     const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
     const isLicenseValid = licenseExpiryDate > new Date();
@@ -511,7 +523,7 @@ export class FigApiService {
     
     return {
       id: '', // Will be set by database
-      figId: athlete.gymnastid,
+      figId: athlete.gymnastid.trim(),
       firstName: athlete.preferredfirstname,
       lastName: athlete.preferredlastname,
       fullName,

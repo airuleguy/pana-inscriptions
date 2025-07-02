@@ -46,6 +46,9 @@ export default function ChoreographyRegistrationPage() {
     choreography?: Choreography;
   } | null>(null);
 
+  // Get the first gymnast's category for filtering
+  const firstGymnastCategory = gymnasts.length > 0 ? gymnasts[0].category : undefined;
+
   // Load tournament and country from localStorage and URL
   useEffect(() => {
     const loadData = async () => {
@@ -86,6 +89,7 @@ export default function ChoreographyRegistrationPage() {
   const expectedGymnastCount = choreographyTypes.find(t => t.value === choreographyType)?.count || 1;
 
   // Automatic detection effect - runs when gymnasts are selected
+  // Note: First gymnast's category is used to filter subsequent gymnast selections
   useEffect(() => {
     if (gymnasts.length > 0) {
       // Auto-generate choreography name from gymnast surnames (always works)
@@ -212,8 +216,10 @@ export default function ChoreographyRegistrationPage() {
         });
 
         toast.error('Registration failed', {
-          description: errorMessage,
-          duration: 5000,
+          description: errorMessage.includes('FIG ID') 
+            ? 'Some gymnasts have missing FIG IDs. Try refreshing the gymnast data in the selection table.'
+            : errorMessage,
+          duration: 8000,
         });
       }
 
@@ -232,8 +238,10 @@ export default function ChoreographyRegistrationPage() {
       });
       
       toast.error('Registration error', {
-        description: errorMessage,
-        duration: 5000,
+        description: errorMessage.includes('FIG ID') 
+          ? 'Some gymnasts have missing FIG IDs. Try refreshing the gymnast data in the selection table.'
+          : errorMessage,
+        duration: 8000,
       });
     } finally {
       setSubmitting(false);
@@ -276,9 +284,16 @@ export default function ChoreographyRegistrationPage() {
               <CardDescription>
                 {gymnasts.length === 0 
                   ? `Select gymnasts from ${getCountryByCode(selectedCountry)?.name} to automatically detect choreography details`
-                  : `Selected ${gymnasts.length} gymnast${gymnasts.length > 1 ? 's' : ''} from ${getCountryByCode(selectedCountry)?.name}${choreographyType ? ` - Detected as ${choreographyType.toLowerCase()} routine` : ''}`
+                  : `Selected ${gymnasts.length} gymnast${gymnasts.length > 1 ? 's' : ''} from ${getCountryByCode(selectedCountry)?.name}${choreographyType ? ` - Detected as ${choreographyType.toLowerCase()} routine` : ''}${firstGymnastCategory ? ` - Filtered by ${firstGymnastCategory} category` : ''}`
                 }
               </CardDescription>
+              {firstGymnastCategory && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    🔒 <strong>Category Filter Active:</strong> Only showing <strong>{firstGymnastCategory}</strong> gymnasts. All gymnasts in a choreography must be from the same category.
+                  </p>
+                </div>
+              )}
               {gymnasts.length > 0 && ![1, 2, 3, 5, 8].includes(gymnasts.length) && (
                 <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
                   <p className="text-sm text-amber-800">
@@ -294,6 +309,7 @@ export default function ChoreographyRegistrationPage() {
                 gymnasts={gymnasts}
                 onSelectionChange={setGymnasts}
                 disabled={submitting}
+                requiredCategory={firstGymnastCategory}
               />
             </CardContent>
           </Card>

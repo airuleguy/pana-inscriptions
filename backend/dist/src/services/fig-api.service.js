@@ -49,7 +49,9 @@ let FigApiService = FigApiService_1 = class FigApiService {
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
             }
-            const gymnasts = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
+            const gymnasts = response.data
+                .map(athlete => this.transformFigApiGymnastToDto(athlete))
+                .filter(gymnast => gymnast !== null);
             await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
             this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API`);
             return gymnasts;
@@ -81,7 +83,9 @@ let FigApiService = FigApiService_1 = class FigApiService {
             if (!Array.isArray(response.data)) {
                 throw new common_1.HttpException('FIG API returned unexpected data format', common_1.HttpStatus.BAD_GATEWAY);
             }
-            const gymnasts = response.data.map(athlete => this.transformFigApiGymnastToDto(athlete));
+            const gymnasts = response.data
+                .map(athlete => this.transformFigApiGymnastToDto(athlete))
+                .filter(gymnast => gymnast !== null);
             await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
             this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API for country: ${country}`);
             return gymnasts;
@@ -317,6 +321,10 @@ let FigApiService = FigApiService_1 = class FigApiService {
         return categoryMap[category] || `Category ${category}`;
     }
     transformFigApiGymnastToDto(athlete) {
+        if (!athlete.gymnastid || athlete.gymnastid.trim() === '') {
+            this.logger.warn(`Gymnast ${athlete.preferredfirstname} ${athlete.preferredlastname} has invalid or missing gymnastid:`, athlete.gymnastid);
+            return null;
+        }
         const licenseExpiryDate = new Date(athlete.validto + 'T00:00:00Z');
         const isLicenseValid = licenseExpiryDate > new Date();
         const dateOfBirth = new Date(athlete.birth + 'T00:00:00Z');
@@ -335,7 +343,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
         const fullName = `${athlete.preferredfirstname} ${athlete.preferredlastname}`;
         return {
             id: '',
-            figId: athlete.gymnastid,
+            figId: athlete.gymnastid.trim(),
             firstName: athlete.preferredfirstname,
             lastName: athlete.preferredlastname,
             fullName,

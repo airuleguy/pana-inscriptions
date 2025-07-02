@@ -1,0 +1,51 @@
+{
+  "serviceName": "pana-inscriptions",
+  "containers": {
+    "backend": {
+      "image": "airuleguy/pana-inscriptions-backend:latest",
+      "ports": {
+        "3001": "HTTP"
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "PORT": "3001",
+        "POSTGRES_HOST": "YOUR_LIGHTSAIL_DATABASE_ENDPOINT",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_USER": "YOUR_DATABASE_USERNAME",
+        "POSTGRES_PASSWORD": "YOUR_DATABASE_PASSWORD",
+        "POSTGRES_DB": "pana_inscriptions",
+        "JWT_SECRET": "YOUR_SUPER_SECRET_JWT_KEY",
+        "JWT_EXPIRES_IN": "30d",
+        "FIG_API_BASE_URL": "https://www.gymnastics.sport/api",
+        "FIG_API_ATHLETES_ENDPOINT": "/athletes.php",
+        "FIG_API_COACHES_ENDPOINT": "/coaches.php",
+        "FIG_API_JUDGES_ENDPOINT": "/judges.php",
+        "FIG_API_TIMEOUT": "30000",
+        "CACHE_TTL": "3600",
+        "CACHE_MAX": "100"
+      }
+    },
+    "frontend": {
+      "image": "airuleguy/pana-inscriptions-frontend:latest",
+      "ports": {
+        "3000": "HTTP"
+      },
+      "environment": {
+        "NODE_ENV": "production",
+        "NEXT_PUBLIC_API_URL": "https://YOUR_CONTAINER_SERVICE_URL"
+      }
+    }
+  },
+  "publicEndpoint": {
+    "containerName": "frontend",
+    "containerPort": 3000,
+    "healthCheck": {
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 2,
+      "timeoutSeconds": 5,
+      "intervalSeconds": 30,
+      "path": "/",
+      "successCodes": "200-499"
+    }
+  }
+}

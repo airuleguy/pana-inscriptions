@@ -4,7 +4,8 @@
 import { ChoreographyCategory, VALID_CATEGORIES, AGE_LIMITS as CATEGORY_AGE_LIMITS } from '../constants/categories';
 
 export interface Gymnast {
-  id: string; // Maps to idgymnastlicense
+  id: string; // Database UUID primary key
+  figId: string; // FIG ID (idgymnastlicense)
   firstName: string;
   lastName: string;
   fullName: string;

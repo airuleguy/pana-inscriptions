@@ -23,6 +23,7 @@ export declare class ChoreographyService {
     remove(id: string): Promise<void>;
     private validateBusinessRules;
     private validateChoreographyType;
+    private validateGymnastFigIds;
     private fetchAndValidateGymnasts;
     private upsertGymnasts;
     getCountryStats(country: string): Promise<{

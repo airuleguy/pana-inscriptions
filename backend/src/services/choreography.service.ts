@@ -28,6 +28,9 @@ export class ChoreographyService {
   ) {}
 
   async create(createChoreographyDto: CreateChoreographyDto): Promise<Choreography> {
+    // Validate gymnast FIG IDs before processing
+    this.validateGymnastFigIds(createChoreographyDto.gymnastFigIds);
+
     // Get and validate tournament
     const tournament = await this.tournamentRepository.findOne({
       where: { id: createChoreographyDto.tournamentId }
@@ -164,6 +167,33 @@ export class ChoreographyService {
     if (!validCombinations[type].includes(gymnastCount)) {
       throw new BadRequestException(
         `Invalid gymnast count ${gymnastCount} for choreography type ${type}`
+      );
+    }
+  }
+
+  private validateGymnastFigIds(figIds: string[]): void {
+    // Check for empty or invalid FIG IDs
+    const invalidIds = figIds.filter(id => !id || typeof id !== 'string' || id.trim() === '');
+    
+    if (invalidIds.length > 0) {
+      throw new BadRequestException(
+        `Invalid gymnast FIG IDs provided. Found ${invalidIds.length} empty or invalid ID(s). All gymnasts must have valid FIG IDs.`
+      );
+    }
+
+    // Check for duplicates
+    const uniqueIds = new Set(figIds);
+    if (uniqueIds.size !== figIds.length) {
+      throw new BadRequestException('Duplicate gymnast FIG IDs are not allowed in the same choreography');
+    }
+
+    // Basic format validation for FIG IDs (they should not be UUIDs)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidIds = figIds.filter(id => uuidPattern.test(id));
+    
+    if (uuidIds.length > 0) {
+      throw new BadRequestException(
+        `Invalid FIG IDs detected. Found ${uuidIds.length} UUID format ID(s) instead of FIG IDs. Please ensure you are sending FIG IDs, not database IDs.`
       );
     }
   }

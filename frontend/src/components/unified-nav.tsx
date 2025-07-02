@@ -17,7 +17,7 @@ export function UnifiedNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { state: authState, logout } = useAuth();
-  const { state: registrationState, getTotalCount, toggleSidebar } = useRegistration();
+  const { state: registrationState, getPendingCount, toggleSidebar } = useRegistration();
 
   // Determine navigation type based on current path
   const getNavType = () => {
@@ -184,7 +184,7 @@ export function UnifiedNav() {
   // Registration navigation
   if (navType === 'registration') {
     const tournamentId = pathname?.split('/')[3];
-    const totalCount = getTotalCount();
+    const pendingCount = getPendingCount();
 
     const navigationItems = [
       {
@@ -317,12 +317,12 @@ export function UnifiedNav() {
               >
                 <ClipboardList className="w-4 h-4 mr-2" />
                 Summary
-                {totalCount > 0 && (
+                {pendingCount > 0 && (
                   <Badge 
                     variant="secondary" 
                     className="ml-2 bg-blue-100 text-blue-800 border-blue-200"
                   >
-                    {totalCount}
+                    {pendingCount}
                   </Badge>
                 )}
               </Button>

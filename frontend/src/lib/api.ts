@@ -72,7 +72,20 @@ export class APIService {
         );
       }
 
-      return await response.json();
+      // Handle responses with no content (204 No Content)
+      if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return undefined as T;
+      }
+
+      // Check if response has JSON content
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      }
+
+      // For non-JSON responses, try to parse as text and return as string
+      const text = await response.text();
+      return (text || undefined) as T;
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
       if (error instanceof Error) {
@@ -124,7 +137,7 @@ export class APIService {
    */
   static async logout(): Promise<void> {
     try {
-      await this.fetchAPI('/api/v1/auth/logout', {
+      await this.fetchAPI<void>('/api/v1/auth/logout', {
         method: 'POST',
       });
     } catch (error) {
@@ -170,7 +183,7 @@ export class APIService {
    * Clear gymnast cache on the backend
    */
   static async clearGymnastCache(): Promise<void> {
-    await this.fetchAPI('/api/v1/gymnasts/cache', { method: 'DELETE' });
+    await this.fetchAPI<void>('/api/v1/gymnasts/cache', { method: 'DELETE' });
   }
 
   // ==================== COACHES ====================
@@ -202,7 +215,7 @@ export class APIService {
    * Clear coach cache on the backend
    */
   static async clearCoachCache(): Promise<void> {
-    await this.fetchAPI('/api/v1/coaches/cache', { method: 'DELETE' });
+    await this.fetchAPI<void>('/api/v1/coaches/cache', { method: 'DELETE' });
   }
 
   /**
@@ -260,7 +273,7 @@ export class APIService {
    * Clear judge cache on the backend
    */
   static async clearJudgeCache(): Promise<void> {
-    await this.fetchAPI('/api/v1/judges/cache', { method: 'DELETE' });
+    await this.fetchAPI<void>('/api/v1/judges/cache', { method: 'DELETE' });
   }
 
   /**
@@ -316,6 +329,13 @@ export class APIService {
    * Create new choreography
    */
   static async createChoreography(choreography: Omit<Choreography, 'id' | 'createdAt' | 'updatedAt'>, tournamentId: string): Promise<Choreography> {
+    // Validate that all gymnasts have valid FIG IDs
+    const invalidGymnasts = choreography.gymnasts.filter(g => !g.id || g.id.trim() === '');
+    if (invalidGymnasts.length > 0) {
+      const names = invalidGymnasts.map(g => `${g.firstName} ${g.lastName}`).join(', ');
+      throw new Error(`The following gymnasts have missing or invalid FIG IDs: ${names}. Please refresh the gymnast data and try again.`);
+    }
+
     const createData = {
       name: choreography.name,
       country: choreography.country,
@@ -344,6 +364,13 @@ export class APIService {
     results: Choreography[];
     errors?: string[];
   }> {
+    // Validate that all gymnasts have valid FIG IDs
+    const invalidGymnasts = choreography.gymnasts.filter(g => !g.figId || g.figId.trim() === '');
+    if (invalidGymnasts.length > 0) {
+      const names = invalidGymnasts.map(g => `${g.firstName} ${g.lastName}`).join(', ');
+      throw new Error(`The following gymnasts have missing or invalid FIG IDs: ${names}. Please refresh the gymnast data and try again.`);
+    }
+
     const createData = {
       name: choreography.name,
       country: choreography.country,
@@ -351,7 +378,7 @@ export class APIService {
       type: choreography.type,
       gymnastCount: choreography.gymnastCount,
       oldestGymnastAge: this.getOldestGymnastAge(choreography.gymnasts),
-      gymnastFigIds: choreography.gymnasts.map((g: Gymnast) => g.id),
+      gymnastFigIds: choreography.gymnasts.map((g: Gymnast) => g.figId),
       notes: choreography.notes,
       tournamentId: tournamentId,
     };
@@ -374,7 +401,14 @@ export class APIService {
     if (updates.type) updateData.type = updates.type;
     if (updates.gymnastCount) updateData.gymnastCount = updates.gymnastCount;
     if (updates.gymnasts) {
-      updateData.gymnastFigIds = updates.gymnasts.map((g: Gymnast) => g.id);
+      // Validate that all gymnasts have valid FIG IDs
+      const invalidGymnasts = updates.gymnasts.filter(g => !g.figId || g.figId.trim() === '');
+      if (invalidGymnasts.length > 0) {
+        const names = invalidGymnasts.map(g => `${g.firstName} ${g.lastName}`).join(', ');
+        throw new Error(`The following gymnasts have missing or invalid FIG IDs: ${names}. Please refresh the gymnast data and try again.`);
+      }
+      
+      updateData.gymnastFigIds = updates.gymnasts.map((g: Gymnast) => g.figId);
       updateData.oldestGymnastAge = this.getOldestGymnastAge(updates.gymnasts);
     }
     if (updates.notes !== undefined) updateData.notes = updates.notes;
@@ -391,7 +425,7 @@ export class APIService {
    * Delete choreography
    */
   static async deleteChoreography(id: string): Promise<void> {
-    await this.fetchAPI(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
+    await this.fetchAPI<void>(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
   }
@@ -593,8 +627,14 @@ export class APIService {
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
   }): Gymnast {
+    // Validate that we have a valid figId
+    if (!dto.figId || dto.figId.trim() === '') {
+      console.warn(`Gymnast ${dto.firstName} ${dto.lastName} has invalid or missing figId:`, dto.figId);
+    }
+    
     return {
-      id: dto.figId, // Use figId as the external identifier
+      id: dto.id, // Database UUID primary key
+      figId: dto.figId, // FIG ID (idgymnastlicense)
       firstName: dto.firstName,
       lastName: dto.lastName,
       fullName: dto.fullName,

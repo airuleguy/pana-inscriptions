@@ -83,9 +83,6 @@ export function RegistrationSummarySidebar({
                   </SheetTitle>
                 </div>
                 <div className="flex gap-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                    {totalCount} total
-                  </Badge>
                   {pendingCount > 0 && (
                     <Badge variant="default" className="bg-orange-100 text-orange-800">
                       {pendingCount} pending
@@ -96,7 +93,7 @@ export function RegistrationSummarySidebar({
               <SheetDescription className="text-sm text-gray-600">
                 {pendingCount > 0 
                   ? `Review your ${pendingCount} pending registrations, then submit for approval`
-                  : 'Review your registrations and their current status'
+                  : 'All registrations have been submitted'
                 }
               </SheetDescription>
               {state.tournament && state.country && (
@@ -115,16 +112,16 @@ export function RegistrationSummarySidebar({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {totalCount === 0 ? (
+              {pendingCount === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <UserPlus className="w-12 h-12 mx-auto mb-3 opacity-40" />
-                  <p className="text-lg font-medium">No registrations yet</p>
-                  <p className="text-sm">Start registering choreographies, coaches, or judges</p>
+                  <p className="text-lg font-medium">No pending registrations</p>
+                  <p className="text-sm">All registrations have been submitted or no registrations created yet</p>
                 </div>
-              ) : (
+              ) :
                 <>
                   {/* Choreographies Section */}
-                  {state.choreographies.length > 0 && (
+                  {pendingRegistrations.choreographies.length > 0 && (
                     <Card>
                       <CardHeader 
                         className="cursor-pointer pb-3" 
@@ -135,7 +132,7 @@ export function RegistrationSummarySidebar({
                             <ClipboardList className="w-4 h-4 text-purple-600" />
                             <span>Choreographies</span>
                             <Badge variant="secondary" className="bg-purple-100 text-purple-800">
-                              {state.choreographies.length}
+                              {pendingRegistrations.choreographies.length}
                             </Badge>
                           </div>
                           {expandedSections.choreographies ? (
@@ -147,19 +144,15 @@ export function RegistrationSummarySidebar({
                       </CardHeader>
                       {expandedSections.choreographies && (
                         <CardContent className="space-y-3 pt-0">
-                          {state.choreographies.map((choreo) => (
+                          {pendingRegistrations.choreographies.map((choreo) => (
                             <div key={choreo.id} className="border rounded-lg p-3 bg-purple-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h4 className="font-medium text-sm truncate">{choreo.name}</h4>
                                     <Badge 
-                                      variant={choreo.status === 'PENDING' ? 'default' : choreo.status === 'SUBMITTED' ? 'secondary' : 'outline'}
-                                      className={
-                                        choreo.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
-                                        choreo.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
-                                        'bg-blue-100 text-blue-800'
-                                      }
+                                      variant="default"
+                                      className="bg-orange-100 text-orange-800"
                                     >
                                       {choreo.status}
                                     </Badge>
@@ -183,7 +176,7 @@ export function RegistrationSummarySidebar({
                                   {choreo.gymnasts && choreo.gymnasts.length > 0 && (
                                     <div className="mt-1 text-xs text-gray-500">
                                       {choreo.gymnasts.map((gymnast, index) => (
-                                        <span key={gymnast.id}>
+                                        <span key={gymnast.figId}>
                                           {gymnast.firstName} {gymnast.lastName}
                                           {index < choreo.gymnasts.length - 1 ? ', ' : ''}
                                         </span>
@@ -191,16 +184,14 @@ export function RegistrationSummarySidebar({
                                     </div>
                                   )}
                                 </div>
-                                {choreo.status === 'PENDING' && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => removeChoreography(choreo.id)}
-                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeChoreography(choreo.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </div>
                             </div>
                           ))}
@@ -210,7 +201,7 @@ export function RegistrationSummarySidebar({
                   )}
 
                   {/* Coaches Section */}
-                  {state.coaches.length > 0 && (
+                  {pendingRegistrations.coaches.length > 0 && (
                     <Card>
                       <CardHeader 
                         className="cursor-pointer pb-3" 
@@ -221,7 +212,7 @@ export function RegistrationSummarySidebar({
                             <UserCheck className="w-4 h-4 text-green-600" />
                             <span>Coaches</span>
                             <Badge variant="secondary" className="bg-green-100 text-green-800">
-                              {state.coaches.length}
+                              {pendingRegistrations.coaches.length}
                             </Badge>
                           </div>
                           {expandedSections.coaches ? (
@@ -233,19 +224,15 @@ export function RegistrationSummarySidebar({
                       </CardHeader>
                       {expandedSections.coaches && (
                         <CardContent className="space-y-3 pt-0">
-                          {state.coaches.map((coach) => (
+                          {pendingRegistrations.coaches.map((coach) => (
                             <div key={coach.id} className="border rounded-lg p-3 bg-green-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h4 className="font-medium text-sm truncate">{coach.name}</h4>
                                     <Badge 
-                                      variant={coach.status === 'PENDING' ? 'default' : coach.status === 'SUBMITTED' ? 'secondary' : 'outline'}
-                                      className={
-                                        coach.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
-                                        coach.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
-                                        'bg-blue-100 text-blue-800'
-                                      }
+                                      variant="default"
+                                      className="bg-orange-100 text-orange-800"
                                     >
                                       {coach.status}
                                     </Badge>
@@ -263,16 +250,14 @@ export function RegistrationSummarySidebar({
                                     <span>{formatDate(coach.registeredAt)}</span>
                                   </div>
                                 </div>
-                                {coach.status === 'PENDING' && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => removeCoach(coach.id)}
-                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeCoach(coach.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </div>
                             </div>
                           ))}
@@ -282,7 +267,7 @@ export function RegistrationSummarySidebar({
                   )}
 
                   {/* Judges Section */}
-                  {state.judges.length > 0 && (
+                  {pendingRegistrations.judges.length > 0 && (
                     <Card>
                       <CardHeader 
                         className="cursor-pointer pb-3" 
@@ -293,7 +278,7 @@ export function RegistrationSummarySidebar({
                             <Users className="w-4 h-4 text-blue-600" />
                             <span>Judges</span>
                             <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                              {state.judges.length}
+                              {pendingRegistrations.judges.length}
                             </Badge>
                           </div>
                           {expandedSections.judges ? (
@@ -305,19 +290,15 @@ export function RegistrationSummarySidebar({
                       </CardHeader>
                       {expandedSections.judges && (
                         <CardContent className="space-y-3 pt-0">
-                          {state.judges.map((judge) => (
+                          {pendingRegistrations.judges.map((judge) => (
                             <div key={judge.id} className="border rounded-lg p-3 bg-blue-50/50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h4 className="font-medium text-sm truncate">{judge.name}</h4>
                                     <Badge 
-                                      variant={judge.status === 'PENDING' ? 'default' : judge.status === 'SUBMITTED' ? 'secondary' : 'outline'}
-                                      className={
-                                        judge.status === 'PENDING' ? 'bg-orange-100 text-orange-800' :
-                                        judge.status === 'SUBMITTED' ? 'bg-green-100 text-green-800' :
-                                        'bg-blue-100 text-blue-800'
-                                      }
+                                      variant="default"
+                                      className="bg-orange-100 text-orange-800"
                                     >
                                       {judge.status}
                                     </Badge>
@@ -335,16 +316,14 @@ export function RegistrationSummarySidebar({
                                     <span>{formatDate(judge.registeredAt)}</span>
                                   </div>
                                 </div>
-                                {judge.status === 'PENDING' && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => removeJudge(judge.id)}
-                                    className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeJudge(judge.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
                               </div>
                             </div>
                           ))}
@@ -352,9 +331,9 @@ export function RegistrationSummarySidebar({
                       )}
                     </Card>
                   )}
-                </>
-              )}
-            </div>
+                                  </>
+                }
+              </div>
 
             {/* Footer */}
             <div className="p-4 border-t bg-gray-50">
@@ -372,7 +351,7 @@ export function RegistrationSummarySidebar({
                   )}
                   {isSubmitting ? 'Submitting...' : `Submit ${pendingCount} Pending Registration${pendingCount > 1 ? 's' : ''}`}
                 </Button>
-              ) : totalCount > 0 ? (
+              ) : (
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-green-600 mb-2">
                     <CheckCircle className="w-4 h-4" />
@@ -380,16 +359,6 @@ export function RegistrationSummarySidebar({
                   </div>
                   <Button disabled className="w-full" size="lg">
                     No pending registrations
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 text-orange-600 mb-2">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span className="text-sm font-medium">No items to register</span>
-                  </div>
-                  <Button disabled className="w-full" size="lg">
-                    Add registrations first
                   </Button>
                 </div>
               )}

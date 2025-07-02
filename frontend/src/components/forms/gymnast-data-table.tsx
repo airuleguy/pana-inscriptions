@@ -120,7 +120,7 @@ export function GymnastDataTable({
           />
         ),
         cell: ({ row }) => {
-          const isSelected = gymnasts.some(g => g.id === row.original.id);
+          const isSelected = gymnasts.some(g => g.figId === row.original.figId);
           const canSelect = gymnasts.length < maxSelection || isSelected;
           
           const handleToggle = () => {
@@ -128,7 +128,7 @@ export function GymnastDataTable({
             
             const gymnast = row.original;
             if (isSelected) {
-              onSelectionChange(gymnasts.filter(g => g.id !== gymnast.id));
+              onSelectionChange(gymnasts.filter(g => g.figId !== gymnast.figId));
             } else {
               onSelectionChange([...gymnasts, gymnast]);
             }
@@ -166,7 +166,7 @@ export function GymnastDataTable({
                   {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  ID: {gymnast.id}
+                  FIG ID: {gymnast.figId}
                 </span>
               </div>
             </div>
@@ -324,7 +324,7 @@ export function GymnastDataTable({
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {gymnasts.map((gymnast) => (
-                <div key={gymnast.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
                   <Avatar className="w-6 h-6">
                     <AvatarFallback className="text-xs">
                       {getInitials(gymnast.fullName || 'Unknown')}

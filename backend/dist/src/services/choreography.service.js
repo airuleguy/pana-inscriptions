@@ -32,6 +32,7 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         this.logger = new common_1.Logger(ChoreographyService_1.name);
     }
     async create(createChoreographyDto) {
+        this.validateGymnastFigIds(createChoreographyDto.gymnastFigIds);
         const tournament = await this.tournamentRepository.findOne({
             where: { id: createChoreographyDto.tournamentId }
         });
@@ -127,6 +128,21 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
         };
         if (!validCombinations[type].includes(gymnastCount)) {
             throw new common_1.BadRequestException(`Invalid gymnast count ${gymnastCount} for choreography type ${type}`);
+        }
+    }
+    validateGymnastFigIds(figIds) {
+        const invalidIds = figIds.filter(id => !id || typeof id !== 'string' || id.trim() === '');
+        if (invalidIds.length > 0) {
+            throw new common_1.BadRequestException(`Invalid gymnast FIG IDs provided. Found ${invalidIds.length} empty or invalid ID(s). All gymnasts must have valid FIG IDs.`);
+        }
+        const uniqueIds = new Set(figIds);
+        if (uniqueIds.size !== figIds.length) {
+            throw new common_1.BadRequestException('Duplicate gymnast FIG IDs are not allowed in the same choreography');
+        }
+        const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const uuidIds = figIds.filter(id => uuidPattern.test(id));
+        if (uuidIds.length > 0) {
+            throw new common_1.BadRequestException(`Invalid FIG IDs detected. Found ${uuidIds.length} UUID format ID(s) instead of FIG IDs. Please ensure you are sending FIG IDs, not database IDs.`);
         }
     }
     async fetchAndValidateGymnasts(figIds) {
