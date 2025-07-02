@@ -1,10 +1,10 @@
 # Multi-stage build for production optimization
-FROM node:18-alpine AS deps
+FROM --platform=linux/amd64 node:18-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-FROM node:18-alpine AS builder
+FROM --platform=linux/amd64 node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -13,7 +13,7 @@ COPY . .
 RUN mkdir -p public
 RUN npm run build
 
-FROM node:18-alpine AS runner
+FROM --platform=linux/amd64 node:18-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
