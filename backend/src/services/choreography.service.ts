@@ -8,6 +8,7 @@ import { ITournament } from '../entities/types/tournament.interface';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
+import { GymnastService } from './gymnast.service';
 import { BusinessRulesFactory } from '../utils/business-rules/business-rules-factory';
 import { CreateChoreographyRequest } from '../utils/business-rules/base-business-rules.interface';
 import { RegistrationStatus } from '../constants/registration-status';
@@ -24,6 +25,7 @@ export class ChoreographyService {
     @InjectRepository(Tournament)
     private tournamentRepository: Repository<Tournament>,
     private figApiService: FigApiService,
+    private gymnastService: GymnastService,
     private businessRulesFactory: BusinessRulesFactory,
   ) {}
 
@@ -202,13 +204,17 @@ export class ChoreographyService {
     const gymnasts = [];
     
     for (const figId of figIds) {
-      const gymnast = await this.figApiService.getGymnastByFigId(figId);
+      const gymnast = await this.gymnastService.findByFigId(figId);
       if (!gymnast) {
         throw new BadRequestException(`Gymnast with FIG ID ${figId} not found`);
       }
-      if (!gymnast.licenseValid) {
+      
+      // For local gymnasts, we'll allow them even if license is not valid
+      // as per the requirement: "mark it as 'to check' always"
+      if (!gymnast.isLocal && !gymnast.licenseValid) {
         throw new BadRequestException(`Gymnast ${gymnast.firstName} ${gymnast.lastName} is not licensed`);
       }
+      
       gymnasts.push(gymnast);
     }
 
@@ -226,11 +232,14 @@ export class ChoreographyService {
       if (!gymnast) {
         // Create a new gymnast entity from the single DTO object
         const newGymnast = new Gymnast();
-        Object.assign(newGymnast, dto);
+        // Exclude the id field to prevent empty string UUID issues
+        const { id, ...dtoWithoutId } = dto;
+        Object.assign(newGymnast, dtoWithoutId);
         gymnast = newGymnast;
       } else {
-        // Update existing gymnast data
-        Object.assign(gymnast, dto);
+        // Update existing gymnast data (excluding id to prevent overwriting existing UUID)
+        const { id, ...dtoWithoutId } = dto;
+        Object.assign(gymnast, dtoWithoutId);
       }
 
       savedGymnasts.push(await this.gymnastRepository.save(gymnast));

@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User } from '@/types';
+import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
 import { ChoreographyCategory } from '@/constants/categories';
 
 /**
@@ -177,6 +177,18 @@ export class APIService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Create a new local gymnast
+   */
+  static async createLocalGymnast(gymnastData: CreateGymnastRequest): Promise<Gymnast> {
+    const response = await this.fetchAPI<any>('/api/v1/gymnasts', {
+      method: 'POST',
+      body: JSON.stringify(gymnastData),
+    });
+    
+    return this.transformBackendToGymnast(response);
   }
 
   /**
@@ -626,6 +638,7 @@ export class APIService {
     licenseExpiryDate: string; // ISO timestamp from backend
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+    isLocal?: boolean;
   }): Gymnast {
     // Validate that we have a valid figId
     if (!dto.figId || dto.figId.trim() === '') {
@@ -645,6 +658,7 @@ export class APIService {
       licenseExpiryDate: new Date(dto.licenseExpiryDate),
       age: dto.age,
       category: dto.category as ChoreographyCategory,
+      isLocal: dto.isLocal || false,
     };
   }
 

@@ -36,6 +36,7 @@ const coach_registration_service_1 = require("./services/coach-registration.serv
 const judge_registration_service_1 = require("./services/judge-registration.service");
 const batch_registration_service_1 = require("./services/batch-registration.service");
 const fig_api_service_1 = require("./services/fig-api.service");
+const gymnast_service_1 = require("./services/gymnast.service");
 const auth_service_1 = require("./services/auth.service");
 const jwt_service_1 = require("./services/jwt.service");
 const auth_guard_1 = require("./guards/auth.guard");
@@ -86,6 +87,7 @@ exports.AppModule = AppModule = __decorate([
             judge_registration_service_1.JudgeRegistrationService,
             batch_registration_service_1.BatchRegistrationService,
             fig_api_service_1.FigApiService,
+            gymnast_service_1.GymnastService,
             auth_service_1.AuthService,
             jwt_service_1.JwtService,
             auth_guard_1.AuthGuard,

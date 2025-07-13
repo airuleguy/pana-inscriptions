@@ -82,6 +82,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: registration_status_1.RegistrationStatus,
+        enumName: 'registration_status_enum',
         default: registration_status_1.RegistrationStatus.PENDING
     }),
     __metadata("design:type", String)

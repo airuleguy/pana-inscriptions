@@ -21,13 +21,15 @@ const choreography_entity_1 = require("../entities/choreography.entity");
 const gymnast_entity_1 = require("../entities/gymnast.entity");
 const tournament_entity_1 = require("../entities/tournament.entity");
 const fig_api_service_1 = require("./fig-api.service");
+const gymnast_service_1 = require("./gymnast.service");
 const business_rules_factory_1 = require("../utils/business-rules/business-rules-factory");
 let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
-    constructor(choreographyRepository, gymnastRepository, tournamentRepository, figApiService, businessRulesFactory) {
+    constructor(choreographyRepository, gymnastRepository, tournamentRepository, figApiService, gymnastService, businessRulesFactory) {
         this.choreographyRepository = choreographyRepository;
         this.gymnastRepository = gymnastRepository;
         this.tournamentRepository = tournamentRepository;
         this.figApiService = figApiService;
+        this.gymnastService = gymnastService;
         this.businessRulesFactory = businessRulesFactory;
         this.logger = new common_1.Logger(ChoreographyService_1.name);
     }
@@ -148,11 +150,11 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
     async fetchAndValidateGymnasts(figIds) {
         const gymnasts = [];
         for (const figId of figIds) {
-            const gymnast = await this.figApiService.getGymnastByFigId(figId);
+            const gymnast = await this.gymnastService.findByFigId(figId);
             if (!gymnast) {
                 throw new common_1.BadRequestException(`Gymnast with FIG ID ${figId} not found`);
             }
-            if (!gymnast.licenseValid) {
+            if (!gymnast.isLocal && !gymnast.licenseValid) {
                 throw new common_1.BadRequestException(`Gymnast ${gymnast.firstName} ${gymnast.lastName} is not licensed`);
             }
             gymnasts.push(gymnast);
@@ -167,11 +169,13 @@ let ChoreographyService = ChoreographyService_1 = class ChoreographyService {
             });
             if (!gymnast) {
                 const newGymnast = new gymnast_entity_1.Gymnast();
-                Object.assign(newGymnast, dto);
+                const { id, ...dtoWithoutId } = dto;
+                Object.assign(newGymnast, dtoWithoutId);
                 gymnast = newGymnast;
             }
             else {
-                Object.assign(gymnast, dto);
+                const { id, ...dtoWithoutId } = dto;
+                Object.assign(gymnast, dtoWithoutId);
             }
             savedGymnasts.push(await this.gymnastRepository.save(gymnast));
         }
@@ -253,6 +257,7 @@ exports.ChoreographyService = ChoreographyService = ChoreographyService_1 = __de
         typeorm_2.Repository,
         typeorm_2.Repository,
         fig_api_service_1.FigApiService,
+        gymnast_service_1.GymnastService,
         business_rules_factory_1.BusinessRulesFactory])
 ], ChoreographyService);
 //# sourceMappingURL=choreography.service.js.map

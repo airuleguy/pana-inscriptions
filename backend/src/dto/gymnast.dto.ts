@@ -39,4 +39,7 @@ export class GymnastDto {
 
   @ApiProperty({ description: 'Age category', example: 'SENIOR', enum: ['YOUTH', 'JUNIOR', 'SENIOR'] })
   category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+
+  @ApiProperty({ description: 'Whether this gymnast was created locally', example: false })
+  isLocal?: boolean;
 } 

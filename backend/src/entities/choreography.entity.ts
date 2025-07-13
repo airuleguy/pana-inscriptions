@@ -51,6 +51,7 @@ export class Choreography {
   @Column({ 
     type: 'enum',
     enum: RegistrationStatus,
+    enumName: 'registration_status_enum',
     default: RegistrationStatus.PENDING 
   })
   status: RegistrationStatus;

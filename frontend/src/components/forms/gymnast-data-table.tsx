@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, RefreshCw, AlertCircle, Users, Search } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, Users, Search, UserPlus } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials, getCategoryColor, formatDateDDMMYYYY } from '@/lib/utils';
@@ -15,6 +15,7 @@ import { ChoreographyCategory } from '@/constants/categories';
 import type { Gymnast } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { CreateGymnastForm } from './create-gymnast-form';
 
 interface GymnastDataTableProps {
   countryCode: string;
@@ -39,6 +40,7 @@ export function GymnastDataTable({
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   // Load gymnasts on component mount and country change
   useEffect(() => {
@@ -99,6 +101,17 @@ export function GymnastDataTable({
       setRefreshing(false);
     }
   }, [countryCode]);
+
+  // Handle new gymnast created
+  const handleGymnastCreated = useCallback((newGymnast: Gymnast) => {
+    // Add the new gymnast to the list
+    setAvailableGymnasts(prev => [...prev, newGymnast]);
+    
+    // Automatically select the new gymnast if there's room
+    if (gymnasts.length < maxSelection) {
+      onSelectionChange([...gymnasts, newGymnast]);
+    }
+  }, [gymnasts, maxSelection, onSelectionChange]);
 
   // Define columns for the data table
   const columns: ColumnDef<Gymnast>[] = useMemo(
@@ -162,9 +175,16 @@ export function GymnastDataTable({
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="font-medium">
-                  {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
+                  </span>
+                  {gymnast.isLocal && (
+                    <Badge variant="outline" className="text-xs text-blue-700 border-blue-300 bg-blue-50">
+                      Local
+                    </Badge>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">
                   FIG ID: {gymnast.figId}
                 </span>
@@ -226,6 +246,22 @@ export function GymnastDataTable({
         header: "License",
         cell: ({ row }) => {
           const gymnast = row.original;
+          
+          // Handle local gymnasts differently
+          if (gymnast.isLocal) {
+            return (
+              <div className="flex flex-col gap-1">
+                <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
+                  To Check
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  Local gymnast
+                </span>
+              </div>
+            );
+          }
+          
+          // Handle FIG API gymnasts
           return (
             <div className="flex flex-col gap-1">
               <Badge variant={gymnast.licenseValid ? 'default' : 'destructive'}>
@@ -306,6 +342,17 @@ export function GymnastDataTable({
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
+            
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => setShowCreateForm(true)}
+              disabled={disabled}
+              className="flex items-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" />
+              Create New Gymnast
+            </Button>
           </div>
           
           <div className="text-sm text-gray-600">
@@ -354,6 +401,14 @@ export function GymnastDataTable({
           />
         </CardContent>
       </Card>
+
+      {/* Create Gymnast Form */}
+      <CreateGymnastForm
+        open={showCreateForm}
+        onOpenChange={setShowCreateForm}
+        countryCode={countryCode}
+        onGymnastCreated={handleGymnastCreated}
+      />
     </div>
   );
 } 

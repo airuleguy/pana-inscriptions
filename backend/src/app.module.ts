@@ -27,6 +27,7 @@ import { CoachRegistrationService } from './services/coach-registration.service'
 import { JudgeRegistrationService } from './services/judge-registration.service';
 import { BatchRegistrationService } from './services/batch-registration.service';
 import { FigApiService } from './services/fig-api.service';
+import { GymnastService } from './services/gymnast.service';
 import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
 import { AuthGuard } from './guards/auth.guard';
@@ -92,6 +93,7 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     JudgeRegistrationService,
     BatchRegistrationService,
     FigApiService,
+    GymnastService,
     AuthService,
     JwtService,
     AuthGuard,

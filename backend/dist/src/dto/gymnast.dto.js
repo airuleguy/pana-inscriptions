@@ -66,4 +66,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Age category', example: 'SENIOR', enum: ['YOUTH', 'JUNIOR', 'SENIOR'] }),
     __metadata("design:type", String)
 ], GymnastDto.prototype, "category", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'Whether this gymnast was created locally', example: false }),
+    __metadata("design:type", Boolean)
+], GymnastDto.prototype, "isLocal", void 0);
 //# sourceMappingURL=gymnast.dto.js.map

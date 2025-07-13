@@ -16,6 +16,16 @@ export interface Gymnast {
   licenseExpiryDate: Date;
   age: number;
   category: ChoreographyCategory;
+  isLocal?: boolean; // Whether this gymnast was created locally
+}
+
+export interface CreateGymnastRequest {
+  figId: string;
+  firstName: string;
+  lastName: string;
+  gender: 'MALE' | 'FEMALE';
+  country: string;
+  dateOfBirth: string; // ISO date string
 }
 
 export interface Coach {

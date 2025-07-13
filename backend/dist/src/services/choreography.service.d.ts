@@ -5,6 +5,7 @@ import { Tournament } from '../entities/tournament.entity';
 import { CreateChoreographyDto } from '../dto/create-choreography.dto';
 import { UpdateChoreographyDto } from '../dto/update-choreography.dto';
 import { FigApiService } from './fig-api.service';
+import { GymnastService } from './gymnast.service';
 import { BusinessRulesFactory } from '../utils/business-rules/business-rules-factory';
 import { RegistrationStatus } from '../constants/registration-status';
 export declare class ChoreographyService {
@@ -12,9 +13,10 @@ export declare class ChoreographyService {
     private gymnastRepository;
     private tournamentRepository;
     private figApiService;
+    private gymnastService;
     private businessRulesFactory;
     private readonly logger;
-    constructor(choreographyRepository: Repository<Choreography>, gymnastRepository: Repository<Gymnast>, tournamentRepository: Repository<Tournament>, figApiService: FigApiService, businessRulesFactory: BusinessRulesFactory);
+    constructor(choreographyRepository: Repository<Choreography>, gymnastRepository: Repository<Gymnast>, tournamentRepository: Repository<Tournament>, figApiService: FigApiService, gymnastService: GymnastService, businessRulesFactory: BusinessRulesFactory);
     create(createChoreographyDto: CreateChoreographyDto): Promise<Choreography>;
     findAll(): Promise<Choreography[]>;
     findByCountry(country: string): Promise<Choreography[]>;

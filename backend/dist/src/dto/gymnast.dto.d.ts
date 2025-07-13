@@ -12,4 +12,5 @@ export declare class GymnastDto {
     licenseExpiryDate?: Date;
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+    isLocal?: boolean;
 }

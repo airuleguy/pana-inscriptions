@@ -13,6 +13,7 @@ export declare class Gymnast {
     licenseExpiryDate: Date;
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+    isLocal: boolean;
     choreographies: Choreography[];
     createdAt: Date;
     updatedAt: Date;

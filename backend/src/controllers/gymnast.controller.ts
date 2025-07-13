@@ -1,12 +1,14 @@
-import { Controller, Get, Query, Param, HttpStatus, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { FigApiService } from '../services/fig-api.service';
+import { Controller, Get, Query, Param, HttpStatus, Delete, Post, Body, Patch, ValidationPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
+import { GymnastService } from '../services/gymnast.service';
 import { GymnastDto } from '../dto/gymnast.dto';
+import { CreateGymnastDto } from '../dto/create-gymnast.dto';
+import { UpdateGymnastDto } from '../dto/update-gymnast.dto';
 
 @ApiTags('gymnasts')
 @Controller('gymnasts')
 export class GymnastController {
-  constructor(private readonly figApiService: FigApiService) {}
+  constructor(private readonly gymnastService: GymnastService) {}
 
   @Get()
   @ApiOperation({ 
@@ -29,10 +31,7 @@ export class GymnastController {
     description: 'FIG API unavailable'
   })
   async findAll(@Query('country') country?: string): Promise<GymnastDto[]> {
-    if (country) {
-      return this.figApiService.getGymnastsByCountry(country);
-    }
-    return this.figApiService.getGymnasts();
+    return this.gymnastService.findAll(country);
   }
 
   @Get(':figId')
@@ -51,7 +50,7 @@ export class GymnastController {
     description: 'Gymnast not found'
   })
   async findOne(@Param('figId') figId: string): Promise<GymnastDto | null> {
-    return this.figApiService.getGymnastByFigId(figId);
+    return this.gymnastService.findByFigId(figId);
   }
 
   @Delete('cache')
@@ -64,6 +63,71 @@ export class GymnastController {
     description: 'Cache cleared successfully'
   })
   async clearCache(): Promise<void> {
-    return this.figApiService.clearCache();
+    return this.gymnastService.clearCache();
+  }
+
+  @Post()
+  @ApiOperation({ 
+    summary: 'Create a new local gymnast',
+    description: 'Create a new gymnast locally for athletes not registered in FIG database'
+  })
+  @ApiBody({ type: CreateGymnastDto })
+  @ApiResponse({ 
+    status: HttpStatus.CREATED, 
+    description: 'Gymnast successfully created',
+    type: GymnastDto
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Invalid input data or FIG ID already exists'
+  })
+  async create(@Body(ValidationPipe) createGymnastDto: CreateGymnastDto): Promise<GymnastDto> {
+    return this.gymnastService.create(createGymnastDto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ 
+    summary: 'Update a local gymnast',
+    description: 'Update an existing local gymnast (FIG API gymnasts cannot be updated)'
+  })
+  @ApiParam({ name: 'id', description: 'Database ID of the gymnast', example: 'uuid-string' })
+  @ApiBody({ type: UpdateGymnastDto })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Gymnast successfully updated',
+    type: GymnastDto
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Gymnast not found'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Cannot update FIG API gymnasts'
+  })
+  async update(@Param('id') id: string, @Body(ValidationPipe) updateGymnastDto: UpdateGymnastDto): Promise<GymnastDto> {
+    return this.gymnastService.update(id, updateGymnastDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ 
+    summary: 'Delete a local gymnast',
+    description: 'Delete a local gymnast (FIG API gymnasts cannot be deleted)'
+  })
+  @ApiParam({ name: 'id', description: 'Database ID of the gymnast', example: 'uuid-string' })
+  @ApiResponse({ 
+    status: HttpStatus.NO_CONTENT, 
+    description: 'Gymnast successfully deleted'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Gymnast not found'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Cannot delete FIG API gymnasts'
+  })
+  async remove(@Param('id') id: string): Promise<void> {
+    return this.gymnastService.remove(id);
   }
 } 

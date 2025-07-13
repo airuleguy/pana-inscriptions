@@ -42,6 +42,9 @@ export class Gymnast {
   @Column()
   category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
 
+  @Column({ default: false })
+  isLocal: boolean;
+
   @ManyToMany(() => Choreography, choreography => choreography.gymnasts)
   choreographies: Choreography[];
 
