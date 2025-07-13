@@ -1,41 +1,74 @@
-# Multi-stage build for production optimization
-FROM --platform=linux/amd64 node:18-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+###################
+# BUILD FOR LOCAL DEVELOPMENT
+###################
 
-FROM --platform=linux/amd64 node:18-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
+FROM --platform=linux/amd64 node:20-alpine AS development
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy application dependency manifests to the container image.
+# A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
+# Copying this first prevents re-running npm install on every code change.
+COPY --chown=node:node package*.json ./
+
+# Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
-COPY . .
-RUN npm run build
 
-FROM --platform=linux/amd64 node:18-alpine AS runner
-WORKDIR /app
+# Bundle app source
+COPY --chown=node:node . .
 
+# Use the node user from the image (instead of the root user)
+USER node
+
+###################
+# BUILD FOR PRODUCTION
+###################
+
+FROM --platform=linux/amd64 node:20-alpine AS build
+
+WORKDIR /usr/src/app
+
+COPY --chown=node:node package*.json ./
+
+# In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
+COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
+
+COPY --chown=node:node . .
+
+# Set NODE_ENV environment variable
 ENV NODE_ENV=production
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+# Run the build command which creates the production bundle
+RUN npm run build
+
+# Running `npm ci` removes the existing node_modules directory and passing in --only=production ensures that only the production dependencies are installed. This ensures that the node_modules directory is as optimized as possible
+RUN npm ci --only=production && npm cache clean --force
+
+USER node
+
+###################
+# PRODUCTION
+###################
+
+FROM --platform=linux/amd64 node:20-alpine AS production
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy the bundled code from the build stage to the production image
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
 # Install curl for health checks
 RUN apk add --no-cache curl
-
-# Copy built application
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-
-# Change ownership to nestjs user
-RUN chown -R nestjs:nodejs /app
-USER nestjs
-
-EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-CMD ["npm", "run", "start:prod"] 
+# Expose port
+EXPOSE 3001
+
+# Start the server using the production build
+CMD [ "node", "dist/src/main.js" ] 

@@ -6,7 +6,7 @@ import { ChoreographyCategory } from '@/constants/categories';
  * Replaces direct FIG API calls with backend endpoints
  */
 export class APIService {
-  private static readonly BASE_URL = ''; // Use relative URLs since Next.js will proxy to backend
+  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // Use backend URL from environment
   private static authToken: string | null = null;
   
   /**

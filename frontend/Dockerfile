@@ -1,10 +1,10 @@
 # Multi-stage build for production optimization
-FROM --platform=linux/amd64 node:18-alpine AS deps
+FROM --platform=linux/amd64 node:20-alpine AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production
 
-FROM --platform=linux/amd64 node:18-alpine AS builder
+FROM --platform=linux/amd64 node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -13,11 +13,11 @@ COPY . .
 RUN mkdir -p public
 RUN npm run build
 
-FROM --platform=linux/amd64 node:18-alpine AS runner
+FROM --platform=linux/amd64 node:20-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -30,6 +30,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 EXPOSE 3000
-ENV PORT 3000
+ENV PORT=3000
 
 CMD ["node", "server.js"] 
