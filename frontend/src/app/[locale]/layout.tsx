@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
 import { Providers } from "../providers";
 import { UnifiedNav } from "../../components/unified-nav";
 import { RegistrationSummaryManager } from "../../components/registration-summary-manager";
 import { locales, type Locale } from "@/lib/locale";
 import { notFound } from "next/navigation";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Panamerican Aerobic Gymnastics Championship",
@@ -42,36 +38,32 @@ export default function LocaleLayout({
   }
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <UnifiedNav />
-            <div className="flex-1">
-              {children}
-            </div>
-          
-            {/* Footer */}
-            <footer className="border-t bg-background">
-              <div className="container mx-auto px-4 py-6">
-                <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      © 2025 Panamerican Aerobic Gymnastics Championship
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>v1.0.0</span>
-                  </div>
-                </div>
+    <Providers locale={locale as Locale}>
+      <div className="relative flex min-h-screen flex-col">
+        <UnifiedNav />
+        <div className="flex-1">
+          {children}
+        </div>
+      
+        {/* Footer */}
+        <footer className="border-t bg-background">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  © 2025 Panamerican Aerobic Gymnastics Championship
+                </span>
               </div>
-            </footer>
-
-            {/* Registration Summary Sidebar */}
-            <RegistrationSummaryManager />
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>v1.0.0</span>
+              </div>
+            </div>
           </div>
-        </Providers>
-      </body>
-    </html>
+        </footer>
+
+        {/* Registration Summary Sidebar */}
+        <RegistrationSummaryManager />
+      </div>
+    </Providers>
   );
 } 

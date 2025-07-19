@@ -12,7 +12,7 @@ import { AlertCircle, Loader2, UserPlus, Info } from 'lucide-react';
 import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslations } from '@/contexts/i18n-context';
 
 interface CreateGymnastFormProps {
   open: boolean;
@@ -31,7 +31,7 @@ export function CreateGymnastForm({
   title,
   description
 }: CreateGymnastFormProps) {
-  const { t } = useTranslation('forms');
+  const { t } = useTranslations('forms');
   const [formData, setFormData] = useState<CreateGymnastRequest>({
     figId: '',
     firstName: '',

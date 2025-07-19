@@ -35,7 +35,10 @@ export function middleware(request: NextRequest) {
   const potentialLocale = segments[1];
   
   if (isValidLocale(potentialLocale)) {
-    return NextResponse.next();
+    // Add locale to request headers for the root layout
+    const response = NextResponse.next();
+    response.headers.set('x-locale', potentialLocale);
+    return response;
   }
 
   // Skip API routes and static files

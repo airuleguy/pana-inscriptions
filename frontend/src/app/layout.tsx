@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { headers } from "next/headers";
+import { defaultLocale } from "@/lib/locale";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,13 +20,16 @@ export const viewport = {
   themeColor: "#667eea",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const locale = headersList.get('x-locale') || defaultLocale;
+
   return (
-    <html suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={inter.className}>
         {children}
       </body>

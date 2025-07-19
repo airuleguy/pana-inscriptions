@@ -1,21 +1,21 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useLanguage } from '@/contexts/language-context';
+import { useI18n } from '@/contexts/i18n-context';
 
 interface LayoutWrapperProps {
   children: React.ReactNode;
 }
 
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
-  const { language } = useLanguage();
+  const { locale } = useI18n();
 
   useEffect(() => {
-    // Update document language when language changes
+    // Update document language when locale changes
     if (typeof document !== 'undefined') {
-      document.documentElement.lang = language;
+      document.documentElement.lang = locale;
     }
-  }, [language]);
+  }, [locale]);
 
   return <>{children}</>;
 }

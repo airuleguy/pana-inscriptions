@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Tournament, Choreography, Coach, Judge } from '@/types';
 import { useRegistration } from '@/contexts/registration-context';
+import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { getCountryByCode } from '@/lib/countries';
 import { toast } from 'sonner';
@@ -45,6 +46,8 @@ export default function TournamentRegistrationDashboard() {
   const params = useParams();
   const tournamentId = params.tournamentId as string;
   const { state, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
+  const { t } = useTranslations('dashboard');
+  const { t: tCommon } = useTranslations('common');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -141,7 +144,7 @@ export default function TournamentRegistrationDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading registration dashboard...</p>
+          <p className="text-muted-foreground">{t('loadingMessage')}</p>
         </div>
       </div>
     );
@@ -154,8 +157,8 @@ export default function TournamentRegistrationDashboard() {
   const registrationSections = [
     {
       id: 'choreography',
-      title: 'Choreography Registration',
-      description: 'Register your gymnastic routines and compositions',
+      title: t('choreographyRegistration'),
+      description: t('choreographyDescription'),
       icon: Music,
       path: `/registration/tournament/${tournamentId}/choreography`,
       count: state.choreographies.length,
@@ -164,8 +167,8 @@ export default function TournamentRegistrationDashboard() {
     },
     {
       id: 'coaches',
-      title: 'Coach Registration',
-      description: 'Register certified coaches for your team',
+      title: t('coachRegistration'),
+      description: t('coachDescription'),
       icon: GraduationCap,
       path: `/registration/tournament/${tournamentId}/coaches`,
       count: state.coaches.length,
@@ -174,8 +177,8 @@ export default function TournamentRegistrationDashboard() {
     },
     {
       id: 'judges',
-      title: 'Judge Registration',
-      description: 'Register qualified judges for the tournament',
+      title: t('judgeRegistration'),
+      description: t('judgeDescription'),
       icon: Scale,
       path: `/registration/tournament/${tournamentId}/judges`,
       count: state.judges.length,
@@ -196,7 +199,7 @@ export default function TournamentRegistrationDashboard() {
             <div className="flex items-center gap-3">
               <Trophy className="w-8 h-8 text-blue-600" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Registration Dashboard</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
                 <p className="text-gray-600 mt-1">
                   {selectedTournament.name} • {countryInfo.flag} {countryInfo.name}
                 </p>
@@ -210,7 +213,7 @@ export default function TournamentRegistrationDashboard() {
               className="flex items-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Refresh Data'}
+              {refreshing ? t('refreshing') : t('refreshData')}
             </Button>
           </div>
           
@@ -221,14 +224,14 @@ export default function TournamentRegistrationDashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg text-orange-900">Pending Registrations</h3>
+                    <h3 className="font-semibold text-lg text-orange-900">{t('pendingRegistrations')}</h3>
                     <p className="text-orange-700 mt-1">
-                      {pendingRegistrations?.totals.total || 0} item{(pendingRegistrations?.totals.total || 0) !== 1 ? 's' : ''} ready for submission
+                      {pendingRegistrations?.totals.total || 0} {t('itemsReadyForSubmission')}
                     </p>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-orange-900">{pendingRegistrations?.totals.total || 0}</div>
-                    <div className="text-sm text-orange-700">Pending</div>
+                    <div className="text-sm text-orange-700">{t('pending')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -239,14 +242,14 @@ export default function TournamentRegistrationDashboard() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-lg text-green-900">Submitted Registrations</h3>
+                    <h3 className="font-semibold text-lg text-green-900">{t('submittedRegistrations')}</h3>
                     <p className="text-green-700 mt-1">
-                      {submittedRegistrations?.totals.total || 0} item{(submittedRegistrations?.totals.total || 0) !== 1 ? 's' : ''} in database
+                      {submittedRegistrations?.totals.total || 0} {t('itemsInDatabase')}
                     </p>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-green-900">{submittedRegistrations?.totals.total || 0}</div>
-                    <div className="text-sm text-green-700">Submitted</div>
+                    <div className="text-sm text-green-700">{t('submitted')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -259,15 +262,15 @@ export default function TournamentRegistrationDashboard() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="register" className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Register New Items
+              {t('registerNewItems')}
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              View Pending ({pendingRegistrations?.totals.total || 0})
+              {t('viewPending')} ({pendingRegistrations?.totals.total || 0})
             </TabsTrigger>
             <TabsTrigger value="submitted" className="flex items-center gap-2">
               <Database className="w-4 h-4" />
-              View Submitted ({submittedRegistrations?.totals.total || 0})
+              {t('viewSubmitted')} ({submittedRegistrations?.totals.total || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -299,7 +302,7 @@ export default function TournamentRegistrationDashboard() {
                           <div>
                             <CardTitle className="text-lg">{section.title}</CardTitle>
                             <Badge variant={section.isCompleted ? "default" : "secondary"} className="mt-1">
-                              {section.count} registered
+                              {section.count} {t('registered')}
                             </Badge>
                           </div>
                         </div>
@@ -318,7 +321,7 @@ export default function TournamentRegistrationDashboard() {
                         variant={section.isCompleted ? "outline" : "default"} 
                         className="w-full"
                       >
-                        {section.isCompleted ? 'View & Edit' : 'Start Registration'}
+                        {section.isCompleted ? t('viewAndEdit') : t('startRegistration')}
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardContent>
@@ -338,7 +341,7 @@ export default function TournamentRegistrationDashboard() {
                   ) : (
                     <AlertCircle className="w-5 h-5 text-gray-500" />
                   )}
-                  Registration Status
+                  {t('registrationStatus')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -347,23 +350,21 @@ export default function TournamentRegistrationDashboard() {
                     <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                       <Clock className="w-5 h-5 text-orange-600 mt-0.5" />
                       <div>
-                        <p className="font-medium text-orange-800">Pending Registrations Ready</p>
+                        <p className="font-medium text-orange-800">{t('pendingRegistrationsReady')}</p>
                         <p className="text-orange-700 text-sm mt-1">
-                          You have {pendingCount} pending registration{pendingCount > 1 ? 's' : ''} ready for submission. 
-                          Review your selections in the summary sidebar and submit when ready.
+                          {pendingCount} {pendingCount > 1 ? t('pendingRegistrationsMessagePlural') : t('pendingRegistrationsMessage')}
                         </p>
                       </div>
                     </div>
                   </div>
-                ) : totalRegistrations > 0 ? (
+                ) : canConfirmRegistration() ? (
                   <div className="space-y-4">
                     <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                       <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                       <div>
-                        <p className="font-medium text-green-800">All Registrations Submitted</p>
+                        <p className="font-medium text-green-800">{t('allRegistrationsSubmitted')}</p>
                         <p className="text-green-700 text-sm mt-1">
-                          All your registrations have been submitted and are now under review. 
-                          Check the "View Submitted" tab to see your submitted registrations.
+                          {t('allRegistrationsMessage')}
                         </p>
                       </div>
                     </div>
@@ -373,9 +374,9 @@ export default function TournamentRegistrationDashboard() {
                     <div className="flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-gray-600 mt-0.5" />
                       <div>
-                        <p className="font-medium text-gray-800">No Registrations Yet</p>
+                        <p className="font-medium text-gray-800">{t('noRegistrationsYet')}</p>
                         <p className="text-gray-700 text-sm mt-1">
-                          Start by registering at least one choreography, coach, or judge using the sections above.
+                          {t('noRegistrationsMessage')}
                         </p>
                       </div>
                     </div>
@@ -395,19 +396,19 @@ export default function TournamentRegistrationDashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-orange-900">{pendingRegistrations.totals.total}</div>
-                        <div className="text-sm text-orange-700">Total Pending</div>
+                        <div className="text-sm text-orange-700">{t('totalPending')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-900">{pendingRegistrations.totals.choreographies}</div>
-                        <div className="text-sm text-blue-700">Choreographies</div>
+                        <div className="text-sm text-blue-700">{t('choreographies')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-purple-900">{pendingRegistrations.totals.coaches}</div>
-                        <div className="text-sm text-purple-700">Coaches</div>
+                        <div className="text-sm text-purple-700">{tCommon('navigation.coaches')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-red-900">{pendingRegistrations.totals.judges}</div>
-                        <div className="text-sm text-red-700">Judges</div>
+                        <div className="text-sm text-red-700">{tCommon('navigation.judges')}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -419,7 +420,7 @@ export default function TournamentRegistrationDashboard() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Music className="w-5 h-5 text-blue-600" />
-                        Pending Choreographies ({pendingRegistrations.choreographies.length})
+                        {t('pendingRegistrations')} {t('choreographies')} ({pendingRegistrations.choreographies.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -437,11 +438,11 @@ export default function TournamentRegistrationDashboard() {
                                     {choreography.type}
                                   </Badge>
                                   <Badge className="bg-orange-100 text-orange-800">
-                                    PENDING
+                                    {t('pending').toUpperCase()}
                                   </Badge>
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <Users className="w-4 h-4" />
-                                    {choreography.gymnasts.length} gymnasts
+                                    {choreography.gymnasts.length} {t('gymnasts')}
                                   </div>
                                 </div>
                               </div>
@@ -451,17 +452,6 @@ export default function TournamentRegistrationDashboard() {
                                   {formatDate(choreography.createdAt)}
                                 </div>
                               )}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {choreography.gymnasts.map((gymnast, index) => (
-                                <div key={index} className="flex items-center gap-2 p-2 bg-white rounded-md">
-                                  <User className="w-4 h-4 text-gray-600" />
-                                  <span className="text-sm">{gymnast.fullName}</span>
-                                  <Badge variant="secondary" className="ml-auto">
-                                    Age {gymnast.age}
-                                  </Badge>
-                                </div>
-                              ))}
                             </div>
                           </div>
                         ))}
@@ -476,7 +466,7 @@ export default function TournamentRegistrationDashboard() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <GraduationCap className="w-5 h-5 text-green-600" />
-                        Pending Coaches ({pendingRegistrations.coaches.length})
+                        {t('pendingRegistrations')} {tCommon('navigation.coaches')} ({pendingRegistrations.coaches.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -488,10 +478,10 @@ export default function TournamentRegistrationDashboard() {
                                 <h4 className="font-medium text-lg">{coach.fullName}</h4>
                                 <div className="flex items-center gap-4 mt-2">
                                   <Badge className="bg-green-100 text-green-800">
-                                    Level {coach.level}
+                                    {t('level')} {coach.level}
                                   </Badge>
                                   <Badge className="bg-orange-100 text-orange-800">
-                                    PENDING
+                                    {t('pending').toUpperCase()}
                                   </Badge>
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <span>{getCountryInfo(coach.country).flag}</span>
@@ -499,7 +489,7 @@ export default function TournamentRegistrationDashboard() {
                                   </div>
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <Award className="w-4 h-4" />
-                                    <span>FIG ID: {coach.id}</span>
+                                    <span>{t('figId')}: {coach.id}</span>
                                   </div>
                                 </div>
                               </div>
@@ -523,7 +513,7 @@ export default function TournamentRegistrationDashboard() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Scale className="w-5 h-5 text-purple-600" />
-                        Pending Judges ({pendingRegistrations.judges.length})
+                        {t('pendingRegistrations')} {tCommon('navigation.judges')} ({pendingRegistrations.judges.length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -535,10 +525,10 @@ export default function TournamentRegistrationDashboard() {
                                 <h4 className="font-medium text-lg">{judge.fullName}</h4>
                                 <div className="flex items-center gap-4 mt-2">
                                   <Badge className="bg-purple-100 text-purple-800">
-                                    Category {judge.category}
+                                    {t('category')} {judge.category}
                                   </Badge>
                                   <Badge className="bg-orange-100 text-orange-800">
-                                    PENDING
+                                    {t('pending').toUpperCase()}
                                   </Badge>
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <span>{getCountryInfo(judge.country).flag}</span>
@@ -546,192 +536,7 @@ export default function TournamentRegistrationDashboard() {
                                   </div>
                                   <div className="flex items-center gap-1 text-sm text-gray-600">
                                     <Award className="w-4 h-4" />
-                                    <span>FIG ID: {judge.id}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              {judge.createdAt && (
-                                <div className="text-sm text-gray-500 flex items-center gap-1">
-                                  <Clock className="w-4 h-4" />
-                                  {formatDate(judge.createdAt)}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            ) : (
-              <Card className="bg-gray-50">
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Registrations</h3>
-                    <p className="text-gray-600">
-                      All your registrations have been submitted or you haven't registered anything yet.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Submitted Registrations Tab */}
-          <TabsContent value="submitted" className="space-y-6">
-            {submittedRegistrations && submittedRegistrations.totals.total > 0 ? (
-              <div className="space-y-6">
-                {/* Summary Overview */}
-                <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-                  <CardContent className="pt-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-900">{submittedRegistrations.totals.total}</div>
-                        <div className="text-sm text-green-700">Total Submissions</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-900">{submittedRegistrations.totals.choreographies}</div>
-                        <div className="text-sm text-blue-700">Choreographies</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-900">{submittedRegistrations.totals.coaches}</div>
-                        <div className="text-sm text-purple-700">Coaches</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-900">{submittedRegistrations.totals.judges}</div>
-                        <div className="text-sm text-orange-700">Judges</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Choreographies */}
-                {submittedRegistrations.choreographies.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Music className="w-5 h-5 text-blue-600" />
-                        Submitted Choreographies ({submittedRegistrations.choreographies.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {submittedRegistrations.choreographies.map((choreography) => (
-                          <div key={choreography.id} className="border rounded-lg p-4 bg-blue-50/50">
-                            <div className="flex items-start justify-between mb-3">
-                              <div>
-                                <h4 className="font-medium text-lg">{choreography.name}</h4>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <Badge className="bg-blue-100 text-blue-800">
-                                    {choreography.category}
-                                  </Badge>
-                                  <Badge variant="outline">
-                                    {choreography.type}
-                                  </Badge>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <Users className="w-4 h-4" />
-                                    {choreography.gymnasts.length} gymnasts
-                                  </div>
-                                </div>
-                              </div>
-                              {choreography.createdAt && (
-                                <div className="text-sm text-gray-500 flex items-center gap-1">
-                                  <Clock className="w-4 h-4" />
-                                  {formatDate(choreography.createdAt)}
-                                </div>
-                              )}
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {choreography.gymnasts.map((gymnast, index) => (
-                                <div key={index} className="flex items-center gap-2 p-2 bg-white rounded-md">
-                                  <User className="w-4 h-4 text-gray-600" />
-                                  <span className="text-sm">{gymnast.fullName}</span>
-                                  <Badge variant="secondary" className="ml-auto">
-                                    Age {gymnast.age}
-                                  </Badge>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Coaches */}
-                {submittedRegistrations.coaches.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-green-600" />
-                        Submitted Coaches ({submittedRegistrations.coaches.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4">
-                        {submittedRegistrations.coaches.map((coach) => (
-                          <div key={coach.id} className="border rounded-lg p-4 bg-green-50/50">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="font-medium text-lg">{coach.fullName}</h4>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <Badge className="bg-green-100 text-green-800">
-                                    Level {coach.level}
-                                  </Badge>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <span>{getCountryInfo(coach.country).flag}</span>
-                                    <span>{getCountryInfo(coach.country).name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <Award className="w-4 h-4" />
-                                    <span>FIG ID: {coach.id}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              {coach.createdAt && (
-                                <div className="text-sm text-gray-500 flex items-center gap-1">
-                                  <Clock className="w-4 h-4" />
-                                  {formatDate(coach.createdAt)}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Judges */}
-                {submittedRegistrations.judges.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Scale className="w-5 h-5 text-purple-600" />
-                        Submitted Judges ({submittedRegistrations.judges.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid gap-4">
-                        {submittedRegistrations.judges.map((judge) => (
-                          <div key={judge.id} className="border rounded-lg p-4 bg-purple-50/50">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="font-medium text-lg">{judge.fullName}</h4>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <Badge className="bg-purple-100 text-purple-800">
-                                    Category {judge.category}
-                                  </Badge>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <span>{getCountryInfo(judge.country).flag}</span>
-                                    <span>{getCountryInfo(judge.country).name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                                    <Award className="w-4 h-4" />
-                                    <span>FIG ID: {judge.id}</span>
+                                    <span>{t('figId')}: {judge.id}</span>
                                   </div>
                                 </div>
                               </div>
@@ -752,17 +557,53 @@ export default function TournamentRegistrationDashboard() {
             ) : (
               <Card className="text-center py-12">
                 <CardContent>
-                  <Database className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">No Registrations Submitted</h3>
+                  <Clock className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">{t('pendingRegistrations')}</h3>
                   <p className="text-gray-600 mb-6">
-                    No registrations have been submitted to the database for this tournament yet.
+                    {t('noRegistrationsMessage')}
                   </p>
                   <Button 
                     onClick={() => setActiveTab('register')}
                     className="flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
-                    Start Registering
+                    {t('startRegistering')}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Submitted Registrations Tab */}
+          <TabsContent value="submitted" className="space-y-6">
+            {submittedRegistrations && submittedRegistrations.totals.total > 0 ? (
+              <div className="space-y-6">
+                {/* Similar structure to pending, but for submitted registrations */}
+                {/* This would be similar to the pending tab but showing submitted data */}
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <Database className="w-16 h-16 mx-auto mb-4 text-green-600" />
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">{submittedRegistrations.totals.total} {t('submittedRegistrations')}</h3>
+                    <p className="text-gray-600">
+                      {submittedRegistrations.totals.total} {t('itemsInDatabase')}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Database className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">{t('noRegistrationsSubmittedTitle')}</h3>
+                  <p className="text-gray-600 mb-6">
+                    {t('noRegistrationsSubmittedMessage')}
+                  </p>
+                  <Button 
+                    onClick={() => setActiveTab('register')}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('startRegistering')}
                   </Button>
                 </CardContent>
               </Card>

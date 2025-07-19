@@ -1,37 +1,42 @@
 'use client';
 
+import { ReactNode } from 'react';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/auth-context';
 import { RegistrationProvider } from '@/contexts/registration-context';
-import { LanguageProvider } from '@/contexts/language-context';
+import { I18nProvider } from '@/contexts/i18n-context';
+import { type Locale } from '@/lib/locale';
+// Initialize i18n
+import '@/lib/i18n';
 
 interface ProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  locale?: Locale;
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children, locale }: ProvidersProps) {
   return (
-    <LanguageProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
-      >
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <I18nProvider initialLocale={locale}>
         <AuthProvider>
           <RegistrationProvider>
             {children}
           </RegistrationProvider>
         </AuthProvider>
-        <Toaster 
-          position="top-right"
-          richColors
-          closeButton
-          expand
-          visibleToasts={3}
-        />
-      </ThemeProvider>
-    </LanguageProvider>
+      </I18nProvider>
+      <Toaster 
+        position="top-right"
+        richColors
+        closeButton
+        expand
+        visibleToasts={3}
+      />
+    </ThemeProvider>
   );
 } 

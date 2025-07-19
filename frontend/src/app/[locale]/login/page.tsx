@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslations } from '@/contexts/i18n-context';
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -20,7 +20,7 @@ export default function LoginPage() {
   
   const { login, error } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation('auth');
+  const { t } = useTranslations('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

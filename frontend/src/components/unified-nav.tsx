@@ -13,30 +13,30 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useRegistration } from '@/contexts/registration-context';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslations } from '@/contexts/i18n-context';
 
 export function UnifiedNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { state: authState, logout } = useAuth();
   const { state: registrationState, getPendingCount, toggleSidebar } = useRegistration();
-  const { t } = useTranslation('common');
+  const { t } = useTranslations('common');
 
   // Determine navigation type based on current path
   const getNavType = () => {
     if (!pathname) return 'none';
     
     // No navigation for these pages
-    if (['/login', '/unauthorized'].includes(pathname)) return 'none';
+    if (pathname.includes('/login') || pathname.includes('/unauthorized')) return 'none';
     
     // Landing page navigation
-    if (pathname === '/') return 'landing';
+    if (pathname === '/' || pathname === '/en' || pathname === '/es') return 'landing';
     
     // Tournament selection navigation
-    if (pathname === '/tournament-selection') return 'tournament-selection';
+    if (pathname.includes('/tournament-selection')) return 'tournament-selection';
     
     // Registration navigation
-    if (pathname.startsWith('/registration/tournament/')) return 'registration';
+    if (pathname.includes('/registration/tournament/')) return 'registration';
     
     // Default authenticated navigation
     if (authState.isAuthenticated) return 'authenticated';
@@ -69,6 +69,18 @@ export function UnifiedNav() {
     logout();
     toast.success('Logged out successfully');
   };
+
+  // Get current locale from pathname for links
+  const getLocalePrefix = () => {
+    const segments = pathname?.split('/') || [];
+    const potentialLocale = segments[1];
+    if (potentialLocale === 'en' || potentialLocale === 'es') {
+      return `/${potentialLocale}`;
+    }
+    return '/en'; // default fallback
+  };
+
+  const localePrefix = getLocalePrefix();
 
   // Auth component
   const renderAuthInfo = () => {
@@ -114,7 +126,7 @@ export function UnifiedNav() {
             
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
-              <span>{t('navigation.logout')}</span>
+              <span>{t('navigation.logout', 'Logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -146,7 +158,7 @@ export function UnifiedNav() {
                 {t('navigation.help', 'Help')}
               </Button>
               <Button asChild className="shadow-md">
-                <Link href="/login">{t('navigation.login')}</Link>
+                <Link href={`${localePrefix}/login`}>{t('navigation.login', 'Login')}</Link>
               </Button>
             </div>
           </div>
@@ -175,7 +187,7 @@ export function UnifiedNav() {
             
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/">Back to Home</Link>
+                <Link href={localePrefix}>Back to Home</Link>
               </Button>
               {renderAuthInfo()}
             </div>
@@ -185,38 +197,49 @@ export function UnifiedNav() {
     );
   }
 
-  // Registration navigation
+  // Registration navigation (existing code continues...)
   if (navType === 'registration') {
-    const tournamentId = pathname?.split('/')[3];
+    // Get tournament ID from pathname
+    const pathSegments = pathname?.split('/') || [];
+    const tournamentIdIndex = pathSegments.findIndex(segment => segment === 'tournament') + 1;
+    const tournamentId = pathSegments[tournamentIdIndex];
+
+    const handleTournamentNameClick = () => {
+      router.push(`${localePrefix}/tournament-selection`);
+    };
+
     const pendingCount = getPendingCount();
 
     const navigationItems = [
       {
-        id: 'choreography',
-        label: 'Choreography',
-        icon: ClipboardList,
-        href: `/registration/tournament/${tournamentId}/choreography`,
-        description: 'Register gymnastic routines'
+        id: 'dashboard',
+        label: t('navigation.dashboard', 'Dashboard'),
+        href: `${localePrefix}/registration/tournament/${tournamentId}/dashboard`,
+        icon: Trophy,
+        description: 'Overview & summary'
       },
       {
         id: 'coaches',
-        label: 'Coaches',
+        label: t('navigation.coaches', 'Coaches'),
+        href: `${localePrefix}/registration/tournament/${tournamentId}/coaches`,
         icon: UserCheck,
-        href: `/registration/tournament/${tournamentId}/coaches`,
-        description: 'Register coaching staff'
+        description: 'Coach registrations'
       },
       {
         id: 'judges',
-        label: 'Judges',
-        icon: Users,
-        href: `/registration/tournament/${tournamentId}/judges`,
-        description: 'Register judging panel'
+        label: t('navigation.judges', 'Judges'),
+        href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
+        icon: UserIcon,
+        description: 'Judge registrations'
+      },
+      {
+        id: 'choreography',
+        label: t('navigation.choreography', 'Choreography'),
+        href: `${localePrefix}/registration/tournament/${tournamentId}/choreography`,
+        icon: Calendar,
+        description: 'Choreography details'
       }
     ];
-
-    const handleTournamentNameClick = () => {
-      router.push('/tournament-selection');
-    };
 
     return (
       <div className="border-b bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
@@ -360,7 +383,7 @@ export function UnifiedNav() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
           <div className="mr-4 flex">
-            <a className="mr-6 flex items-center space-x-2" href="/tournament-selection">
+            <a className="mr-6 flex items-center space-x-2" href={`${localePrefix}/tournament-selection`}>
               <span className="font-bold text-lg">Panamerican Championship</span>
             </a>
           </div>

@@ -8,12 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Calendar, MapPin, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
-import { useTranslation } from '@/lib/i18n';
+import { useTranslations } from '@/contexts/i18n-context';
 
 export default function HomePage() {
   const { state, isLoading } = useAuth();
   const router = useRouter();
-  const { t } = useTranslation('home');
+  const { t } = useTranslations('home');
 
   useEffect(() => {
     // Don't redirect while still loading auth state
