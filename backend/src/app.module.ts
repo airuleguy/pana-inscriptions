@@ -20,6 +20,7 @@ import { JudgeController } from './controllers/judge.controller';
 import { TournamentRegistrationsController } from './controllers/tournament-registrations.controller';
 import { GlobalRegistrationsController } from './controllers/registrations.controller';
 import { HealthController } from './modules/health/health.controller';
+import { FigImageProxyController } from './controllers/fig-image-proxy.controller';
 import { AuthController } from './controllers/auth.controller';
 import { ChoreographyService } from './services/choreography.service';
 import { TournamentService } from './services/tournament.service';
@@ -27,6 +28,7 @@ import { CoachRegistrationService } from './services/coach-registration.service'
 import { JudgeRegistrationService } from './services/judge-registration.service';
 import { BatchRegistrationService } from './services/batch-registration.service';
 import { FigApiService } from './services/fig-api.service';
+import { FigImageProxyService } from './services/fig-image-proxy.service';
 import { GymnastService } from './services/gymnast.service';
 import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
@@ -80,6 +82,9 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     // Global cross-tournament operations
     GlobalRegistrationsController,
     
+    // Image proxy
+    FigImageProxyController,
+    
     // Authentication
     AuthController,
     
@@ -93,6 +98,7 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     JudgeRegistrationService,
     BatchRegistrationService,
     FigApiService,
+    FigImageProxyService,
     GymnastService,
     AuthService,
     JwtService,

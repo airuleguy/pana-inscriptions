@@ -13,6 +13,7 @@ export declare class Coach {
     tournament: Tournament;
     status: RegistrationStatus;
     notes?: string;
+    imageUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }

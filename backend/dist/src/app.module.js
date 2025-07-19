@@ -29,6 +29,7 @@ const judge_controller_1 = require("./controllers/judge.controller");
 const tournament_registrations_controller_1 = require("./controllers/tournament-registrations.controller");
 const registrations_controller_1 = require("./controllers/registrations.controller");
 const health_controller_1 = require("./modules/health/health.controller");
+const fig_image_proxy_controller_1 = require("./controllers/fig-image-proxy.controller");
 const auth_controller_1 = require("./controllers/auth.controller");
 const choreography_service_1 = require("./services/choreography.service");
 const tournament_service_1 = require("./services/tournament.service");
@@ -36,6 +37,7 @@ const coach_registration_service_1 = require("./services/coach-registration.serv
 const judge_registration_service_1 = require("./services/judge-registration.service");
 const batch_registration_service_1 = require("./services/batch-registration.service");
 const fig_api_service_1 = require("./services/fig-api.service");
+const fig_image_proxy_service_1 = require("./services/fig-image-proxy.service");
 const gymnast_service_1 = require("./services/gymnast.service");
 const auth_service_1 = require("./services/auth.service");
 const jwt_service_1 = require("./services/jwt.service");
@@ -77,6 +79,7 @@ exports.AppModule = AppModule = __decorate([
             judge_controller_1.JudgeController,
             tournament_registrations_controller_1.TournamentRegistrationsController,
             registrations_controller_1.GlobalRegistrationsController,
+            fig_image_proxy_controller_1.FigImageProxyController,
             auth_controller_1.AuthController,
             health_controller_1.HealthController,
         ],
@@ -87,6 +90,7 @@ exports.AppModule = AppModule = __decorate([
             judge_registration_service_1.JudgeRegistrationService,
             batch_registration_service_1.BatchRegistrationService,
             fig_api_service_1.FigApiService,
+            fig_image_proxy_service_1.FigImageProxyService,
             gymnast_service_1.GymnastService,
             auth_service_1.AuthService,
             jwt_service_1.JwtService,

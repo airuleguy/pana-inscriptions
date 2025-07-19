@@ -12,6 +12,7 @@ import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import type { Judge } from '@/types';
+import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
 interface JudgeDataTableProps {
   countryCode: string;
@@ -35,6 +36,9 @@ export function JudgeDataTable({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Image preloading hook
+  const { preloadPeopleImages } = useFigImagePreloader();
+
   // Load judges on component mount and country change
   useEffect(() => {
     if (!country) return;
@@ -44,6 +48,9 @@ export function JudgeDataTable({
         setLoading(true);
         const judges = await APIService.getJudges(country);
         setAvailableJudges(judges);
+        
+        // Preload images for better UX
+        await preloadPeopleImages(judges);
       } catch (error) {
         console.error('Error loading judges:', error);
         setError('Failed to load judges');
@@ -140,11 +147,11 @@ export function JudgeDataTable({
           const judge = row.original;
           return (
             <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="text-xs">
-                  {getInitials(judge.fullName)}
-                </AvatarFallback>
-              </Avatar>
+              <FigAvatar
+                figId={judge.id}
+                name={judge.fullName}
+                size="sm"
+              />
               <div className="flex flex-col">
                 <span className="font-medium">
                   {judge.lastName}, {judge.firstName}

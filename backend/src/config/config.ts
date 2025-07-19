@@ -45,4 +45,9 @@ export const configuration = () => ({
     ttl: parseInt(process.env.CACHE_TTL, 10) || 3600,
     max: parseInt(process.env.CACHE_MAX, 10) || 100,
   },
+  
+  imageCache: {
+    ttl: parseInt(process.env.IMAGE_CACHE_TTL, 10) || 86400, // 24 hours for images
+    maxSize: parseInt(process.env.MAX_IMAGE_SIZE, 10) || 5 * 1024 * 1024, // 5MB
+  },
 }); 

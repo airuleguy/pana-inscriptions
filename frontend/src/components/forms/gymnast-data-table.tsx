@@ -16,6 +16,7 @@ import type { Gymnast } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CreateGymnastForm } from './create-gymnast-form';
+import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
 interface GymnastDataTableProps {
   countryCode: string;
@@ -42,6 +43,9 @@ export function GymnastDataTable({
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
+  // Image preloading hook
+  const { preloadPeopleImages } = useFigImagePreloader();
+
   // Load gymnasts on component mount and country change
   useEffect(() => {
     async function loadGymnasts() {
@@ -54,6 +58,9 @@ export function GymnastDataTable({
         // Use backend API service which now includes correct license expiry dates
         const gymnasts = await APIService.getGymnasts(countryCode);
         setAvailableGymnasts(gymnasts);
+        
+        // Preload images for better UX
+        await preloadPeopleImages(gymnasts);
       } catch (err: unknown) {
         console.error('Failed to load gymnasts:', err);
         setError('Failed to load gymnasts from FIG database');
@@ -169,11 +176,11 @@ export function GymnastDataTable({
           const gymnast = row.original;
           return (
             <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="text-xs">
-                  {getInitials(gymnast.fullName || 'Unknown')}
-                </AvatarFallback>
-              </Avatar>
+              <FigAvatar
+                figId={gymnast.figId}
+                name={gymnast.fullName || 'Unknown'}
+                size="sm"
+              />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">
@@ -372,11 +379,12 @@ export function GymnastDataTable({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {gymnasts.map((gymnast) => (
                 <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                  <Avatar className="w-6 h-6">
-                    <AvatarFallback className="text-xs">
-                      {getInitials(gymnast.fullName || 'Unknown')}
-                    </AvatarFallback>
-                  </Avatar>
+                  <FigAvatar
+                    figId={gymnast.figId}
+                    name={gymnast.fullName || 'Unknown'}
+                    size="sm"
+                    className="w-6 h-6"
+                  />
                   <span className="text-sm font-medium">
                     {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
                   </span>

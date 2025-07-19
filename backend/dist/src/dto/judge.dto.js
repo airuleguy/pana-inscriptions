@@ -62,4 +62,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Current age', example: 49 }),
     __metadata("design:type", Number)
 ], JudgeDto.prototype, "age", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_3622' }),
+    __metadata("design:type", String)
+], JudgeDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=judge.dto.js.map

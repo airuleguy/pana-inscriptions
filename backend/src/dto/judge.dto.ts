@@ -36,4 +36,7 @@ export class JudgeDto {
 
   @ApiProperty({ description: 'Current age', example: 49 })
   age: number;
+
+  @ApiProperty({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_3622' })
+  imageUrl?: string;
 } 

@@ -67,6 +67,10 @@ export class Judge {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
+  @ApiProperty({ description: 'FIG image URL', nullable: true })
+  @Column({ name: 'image_url', nullable: true })
+  imageUrl?: string;
+
   @ApiProperty({ description: 'Registration date' })
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

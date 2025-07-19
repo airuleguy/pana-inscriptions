@@ -14,6 +14,7 @@ export declare class Gymnast {
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
     isLocal: boolean;
+    imageUrl?: string;
     choreographies: Choreography[];
     createdAt: Date;
     updatedAt: Date;

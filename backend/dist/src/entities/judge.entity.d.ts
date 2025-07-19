@@ -14,6 +14,7 @@ export declare class Judge {
     tournament: Tournament;
     status: RegistrationStatus;
     notes?: string;
+    imageUrl?: string;
     createdAt: Date;
     updatedAt: Date;
 }

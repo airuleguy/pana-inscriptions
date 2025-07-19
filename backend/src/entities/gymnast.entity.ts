@@ -45,6 +45,9 @@ export class Gymnast {
   @Column({ default: false })
   isLocal: boolean;
 
+  @Column({ nullable: true })
+  imageUrl?: string;
+
   @ManyToMany(() => Choreography, choreography => choreography.gymnasts)
   choreographies: Choreography[];
 

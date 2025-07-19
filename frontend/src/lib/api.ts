@@ -826,4 +826,96 @@ export class APIService {
     const categories = new Set(judges.map(j => j.category));
     return Array.from(categories).sort();
   }
+
+  // ============ IMAGE PROXY UTILITIES ============
+
+  /**
+   * Get proxied image URL for a FIG ID
+   * This serves images through our backend cache for better performance
+   */
+  static getProxiedImageUrl(figId: string, options?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+  }): string {
+    if (!figId) return '';
+    
+    const params = new URLSearchParams();
+    if (options?.width) params.append('width', options.width.toString());
+    if (options?.height) params.append('height', options.height.toString());
+    if (options?.quality) params.append('quality', options.quality.toString());
+    
+    const queryString = params.toString();
+    const baseUrl = `${this.BASE_URL}/api/v1/images/fig/${figId}`;
+    
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }
+
+  /**
+   * Get image information without downloading the image
+   */
+  static async getImageInfo(figId: string): Promise<{
+    figId: string;
+    imageUrl: string;
+    proxyUrl: string;
+    cached: boolean;
+    contentType: string | null;
+    contentLength: number | null;
+    lastModified: string | null;
+  }> {
+    return this.fetchAPI(`/api/v1/images/fig/${figId}/info`);
+  }
+
+  /**
+   * Preload multiple images into the backend cache
+   * Useful for warming up the cache when displaying lists
+   */
+  static async preloadImages(figIds: string[]): Promise<{
+    message: string;
+    total: number;
+    success: number;
+    failed: number;
+  }> {
+    return this.fetchAPI('/api/v1/images/preload', {
+      method: 'POST',
+      body: JSON.stringify({ figIds }),
+    });
+  }
+
+  /**
+   * Clear image cache
+   */
+  static async clearImageCache(figId?: string): Promise<void> {
+    const endpoint = figId ? `/api/v1/images/cache/${figId}` : '/api/v1/images/cache';
+    await this.fetchAPI(endpoint, { method: 'DELETE' });
+  }
+
+  /**
+   * Get image cache statistics
+   */
+  static async getImageCacheStats(): Promise<{
+    message: string;
+    cacheType: string;
+    ttl: number;
+  }> {
+    return this.fetchAPI('/api/v1/images/cache/stats');
+  }
+
+  /**
+   * Utility to preload images for a list of people (gymnasts, coaches, judges)
+   */
+  static async preloadPeopleImages<T extends { figId?: string; id?: string }>(people: T[]): Promise<void> {
+    const figIds = people
+      .map(person => person.figId || person.id)
+      .filter((id): id is string => Boolean(id));
+
+    if (figIds.length > 0) {
+      try {
+        await this.preloadImages(figIds);
+        console.log(`Preloaded ${figIds.length} images`);
+      } catch (error) {
+        console.warn('Failed to preload images:', error);
+      }
+    }
+  }
 } 

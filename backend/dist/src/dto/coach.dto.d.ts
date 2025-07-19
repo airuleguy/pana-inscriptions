@@ -8,4 +8,5 @@ export declare class CoachDto {
     discipline: string;
     level: string;
     levelDescription: string;
+    imageUrl?: string;
 }

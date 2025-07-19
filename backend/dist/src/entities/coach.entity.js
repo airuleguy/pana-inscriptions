@@ -88,6 +88,11 @@ __decorate([
     __metadata("design:type", String)
 ], Coach.prototype, "notes", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'FIG image URL', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'image_url', nullable: true }),
+    __metadata("design:type", String)
+], Coach.prototype, "imageUrl", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ description: 'Registration date' }),
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)

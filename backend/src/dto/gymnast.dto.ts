@@ -42,4 +42,7 @@ export class GymnastDto {
 
   @ApiProperty({ description: 'Whether this gymnast was created locally', example: false })
   isLocal?: boolean;
+
+  @ApiProperty({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_81725' })
+  imageUrl?: string;
 } 

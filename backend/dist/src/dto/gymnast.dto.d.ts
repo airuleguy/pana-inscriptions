@@ -13,4 +13,5 @@ export declare class GymnastDto {
     age: number;
     category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
     isLocal?: boolean;
+    imageUrl?: string;
 }

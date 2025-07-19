@@ -72,6 +72,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Gymnast.prototype, "isLocal", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Gymnast.prototype, "imageUrl", void 0);
+__decorate([
     (0, typeorm_1.ManyToMany)(() => choreography_entity_1.Choreography, choreography => choreography.gymnasts),
     __metadata("design:type", Array)
 ], Gymnast.prototype, "choreographies", void 0);

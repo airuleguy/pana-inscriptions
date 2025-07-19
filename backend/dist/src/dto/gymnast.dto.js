@@ -70,4 +70,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Whether this gymnast was created locally', example: false }),
     __metadata("design:type", Boolean)
 ], GymnastDto.prototype, "isLocal", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_81725' }),
+    __metadata("design:type", String)
+], GymnastDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=gymnast.dto.js.map

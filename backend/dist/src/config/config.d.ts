@@ -42,4 +42,8 @@ export declare const configuration: () => {
         ttl: number;
         max: number;
     };
+    imageCache: {
+        ttl: number;
+        maxSize: number;
+    };
 };

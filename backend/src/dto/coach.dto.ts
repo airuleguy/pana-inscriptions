@@ -27,4 +27,7 @@ export class CoachDto {
 
   @ApiProperty({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach' })
   levelDescription: string;
+
+  @ApiProperty({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_COACH123456' })
+  imageUrl?: string;
 } 

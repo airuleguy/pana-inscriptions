@@ -50,4 +50,8 @@ __decorate([
     (0, swagger_1.ApiProperty)({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach' }),
     __metadata("design:type", String)
 ], CoachDto.prototype, "levelDescription", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_COACH123456' }),
+    __metadata("design:type", String)
+], CoachDto.prototype, "imageUrl", void 0);
 //# sourceMappingURL=coach.dto.js.map

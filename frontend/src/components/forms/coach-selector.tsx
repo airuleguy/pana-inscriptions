@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import type { Coach } from '@/types';
+import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
 // Simple debounce implementation
 function debounce(
@@ -48,6 +49,9 @@ export function CoachSelector({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Image preloading hook
+  const { preloadPeopleImages } = useFigImagePreloader();
+
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
@@ -76,6 +80,9 @@ export function CoachSelector({
       try {
         const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
+        
+        // Preload images for better UX
+        await preloadPeopleImages(coaches);
       } catch (error) {
         console.error('Failed to load coaches:', error);
         setError('Failed to load coaches from FIG database');
@@ -219,11 +226,11 @@ export function CoachSelector({
                 {selectedCoaches.map((coach) => (
                   <div key={coach.id} className="flex items-center justify-between p-2 bg-muted rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Avatar className="w-8 h-8">
-                        <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                          {getInitials(coach.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
+                      <FigAvatar
+                        figId={coach.id}
+                        name={coach.fullName}
+                        size="sm"
+                      />
                       <div>
                         <p className="font-medium text-sm">{coach.fullName}</p>
                         <p className="text-xs text-muted-foreground">{coach.levelDescription}</p>
@@ -285,11 +292,12 @@ export function CoachSelector({
                       )}
                     </div>
                     
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-secondary text-secondary-foreground">
-                        {getInitials(coach.fullName)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <FigAvatar
+                      figId={coach.id}
+                      name={coach.fullName}
+                      size="md"
+                      className="w-10 h-10"
+                    />
                     
                     <div className="flex-grow min-w-0">
                       <div className="flex items-center gap-2 mb-1">

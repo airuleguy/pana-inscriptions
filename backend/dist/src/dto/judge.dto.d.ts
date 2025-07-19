@@ -11,4 +11,5 @@ export declare class JudgeDto {
     category: string;
     categoryDescription: string;
     age: number;
+    imageUrl?: string;
 }

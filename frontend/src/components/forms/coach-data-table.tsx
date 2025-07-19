@@ -12,6 +12,7 @@ import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import type { Coach } from '@/types';
+import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
 interface CoachDataTableProps {
   countryCode: string;
@@ -35,6 +36,9 @@ export function CoachDataTable({
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Image preloading hook
+  const { preloadPeopleImages } = useFigImagePreloader();
+
   // Load coaches on component mount and country change
   useEffect(() => {
     if (!country) return;
@@ -44,6 +48,9 @@ export function CoachDataTable({
         setLoading(true);
         const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
+        
+        // Preload images for better UX
+        await preloadPeopleImages(coaches);
       } catch (error) {
         console.error('Error loading coaches:', error);
         setError('Failed to load coaches');
@@ -140,11 +147,11 @@ export function CoachDataTable({
           const coach = row.original;
           return (
             <div className="flex items-center gap-3">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="text-xs">
-                  {getInitials(coach.fullName)}
-                </AvatarFallback>
-              </Avatar>
+              <FigAvatar
+                figId={coach.id}
+                name={coach.fullName}
+                size="sm"
+              />
               <div className="flex flex-col">
                 <span className="font-medium">
                   {coach.lastName}, {coach.firstName}
@@ -255,11 +262,12 @@ export function CoachDataTable({
               <div className="flex flex-wrap gap-2">
                 {selectedCoaches.map((coach) => (
                   <div key={coach.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                    <Avatar className="w-6 h-6">
-                      <AvatarFallback className="text-xs">
-                        {getInitials(coach.fullName)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <FigAvatar
+                      figId={coach.id}
+                      name={coach.fullName}
+                      size="sm"
+                      className="w-6 h-6"
+                    />
                     <span className="text-sm font-medium">
                       {coach.lastName}, {coach.firstName}
                     </span>

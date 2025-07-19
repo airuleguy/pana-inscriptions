@@ -18,6 +18,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const cache_manager_1 = require("@nestjs/cache-manager");
 const axios_1 = require("axios");
+const fig_image_util_1 = require("../utils/fig-image.util");
 let FigApiService = FigApiService_1 = class FigApiService {
     constructor(configService, cacheManager) {
         this.configService = configService;
@@ -261,6 +262,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
         const gender = coach.gender.toLowerCase() === 'male' ? 'MALE' : 'FEMALE';
         const fullName = `${coach.preferredfirstname} ${coach.preferredlastname}`;
         const levelDescription = this.getCoachLevelDescription(coach.level);
+        const imageUrl = fig_image_util_1.FigImageUtil.generateImageUrl(coach.id);
         return {
             id: coach.id,
             firstName: coach.preferredfirstname,
@@ -271,6 +273,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             discipline: coach.discipline,
             level: coach.level,
             levelDescription,
+            imageUrl,
         };
     }
     transformFigApiJudgeToDto(judge) {
@@ -284,6 +287,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             age--;
         }
         const categoryDescription = this.getJudgeCategoryDescription(judge.category);
+        const imageUrl = fig_image_util_1.FigImageUtil.generateImageUrl(judge.idfig);
         return {
             id: judge.idfig,
             firstName: judge.preferredfirstname,
@@ -297,6 +301,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             category: judge.category,
             categoryDescription,
             age,
+            imageUrl,
         };
     }
     getCoachLevelDescription(level) {
@@ -341,6 +346,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             category = 'JUNIOR';
         const gender = athlete.gender === 'male' ? 'MALE' : 'FEMALE';
         const fullName = `${athlete.preferredfirstname} ${athlete.preferredlastname}`;
+        const imageUrl = fig_image_util_1.FigImageUtil.generateImageUrl(athlete.gymnastid.trim());
         return {
             id: '',
             figId: athlete.gymnastid.trim(),
@@ -355,6 +361,7 @@ let FigApiService = FigApiService_1 = class FigApiService {
             licenseExpiryDate,
             age,
             category,
+            imageUrl,
         };
     }
 };

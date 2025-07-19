@@ -6,6 +6,7 @@ import axios, { AxiosResponse } from 'axios';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CoachDto } from '../dto/coach.dto';
 import { JudgeDto } from '../dto/judge.dto';
+import { FigImageUtil } from '../utils/fig-image.util';
 
 interface FigApiGymnast {
   idgymnastlicense: string;
@@ -400,6 +401,9 @@ export class FigApiService {
     // Generate level description
     const levelDescription = this.getCoachLevelDescription(coach.level);
     
+    // Generate image URL from FIG ID
+    const imageUrl = FigImageUtil.generateImageUrl(coach.id);
+    
     return {
       id: coach.id,
       firstName: coach.preferredfirstname,
@@ -410,6 +414,7 @@ export class FigApiService {
       discipline: coach.discipline,
       level: coach.level,
       levelDescription,
+      imageUrl,
     };
   }
 
@@ -436,6 +441,9 @@ export class FigApiService {
     // Generate category description
     const categoryDescription = this.getJudgeCategoryDescription(judge.category);
     
+    // Generate image URL from FIG ID
+    const imageUrl = FigImageUtil.generateImageUrl(judge.idfig);
+    
     return {
       id: judge.idfig,
       firstName: judge.preferredfirstname,
@@ -449,6 +457,7 @@ export class FigApiService {
       category: judge.category,
       categoryDescription,
       age,
+      imageUrl,
     };
   }
 
@@ -521,6 +530,9 @@ export class FigApiService {
     // Generate full name
     const fullName = `${athlete.preferredfirstname} ${athlete.preferredlastname}`;
     
+    // Generate image URL from FIG ID
+    const imageUrl = FigImageUtil.generateImageUrl(athlete.gymnastid.trim());
+    
     return {
       id: '', // Will be set by database
       figId: athlete.gymnastid.trim(),
@@ -535,6 +547,7 @@ export class FigApiService {
       licenseExpiryDate,
       age,
       category,
+      imageUrl,
     };
   }
 } 
