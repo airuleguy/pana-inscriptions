@@ -6,6 +6,7 @@ import { Judge } from '../entities/judge.entity';
 import { User } from '../entities/user.entity';
 import { UserSession } from '../entities/user-session.entity';
 
+
 export const configuration = () => ({
   port: parseInt(process.env.PORT, 10) || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',

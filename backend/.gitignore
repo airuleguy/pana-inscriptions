@@ -1,0 +1,8 @@
+# NestJS/TypeScript specific patterns
+
+# Build output
+dist/
+build/
+
+# TypeScript
+*.tsbuildinfo 
