@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { RegistrationSummarySidebar } from './registration-summary-sidebar';
 import { useRegistration } from '@/contexts/registration-context';
+import { useTranslations } from '@/contexts/i18n-context';
 import { getLocalePrefix } from '@/lib/locale';
 import { toast } from 'sonner';
 
@@ -11,6 +12,7 @@ export function RegistrationSummaryManager() {
   const router = useRouter();
   const pathname = usePathname();
   const { state, clearAll, getPendingCount, toggleSidebar, closeSidebar, submitRegistrations } = useRegistration();
+  const { t } = useTranslations('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Get locale prefix for navigation
@@ -22,15 +24,15 @@ export function RegistrationSummaryManager() {
       const pendingCount = getPendingCount();
       
       if (pendingCount === 0) {
-        toast.error('No pending registrations to submit.');
+        toast.error(t('registration.errors.noPendingRegistrations'));
         return;
       }
 
       // Submit pending registrations to backend
       await submitRegistrations();
       
-      toast.success(`Registration submitted successfully! ${pendingCount} items have been submitted.`, {
-        description: 'Your registrations are now in SUBMITTED status and will be reviewed by administrators.',
+      toast.success(t('registration.success.submittedSuccessfully').replace('{count}', pendingCount.toString()), {
+        description: t('registration.success.submittedDescription'),
         duration: 5000,
       });
 
@@ -53,7 +55,7 @@ export function RegistrationSummaryManager() {
       
     } catch (error) {
       console.error('Registration submission failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to submit registrations. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : t('registration.errors.submissionFailed');
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

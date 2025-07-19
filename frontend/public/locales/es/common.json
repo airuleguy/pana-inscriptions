@@ -323,6 +323,16 @@
       "noRegistrations": "No hay registros pendientes"
     }
   },
+  "registration": {
+    "success": {
+      "submittedSuccessfully": "¡Registro enviado exitosamente! {count} elementos han sido enviados.",
+      "submittedDescription": "Tus registros ahora están en estado ENVIADO y serán revisados por los administradores."
+    },
+    "errors": {
+      "noPendingRegistrations": "No hay registros pendientes para enviar.",
+      "submissionFailed": "Error al enviar registros. Por favor intenta de nuevo."
+    }
+  },
   "tournamentSelection": {
     "title": "Selección de Torneo",
     "subtitle": "Elige tu torneo y país",

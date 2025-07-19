@@ -323,6 +323,16 @@
       "noRegistrations": "No pending registrations"
     }
   },
+  "registration": {
+    "success": {
+      "submittedSuccessfully": "Registration submitted successfully! {count} items have been submitted.",
+      "submittedDescription": "Your registrations are now in SUBMITTED status and will be reviewed by administrators."
+    },
+    "errors": {
+      "noPendingRegistrations": "No pending registrations to submit.",
+      "submissionFailed": "Failed to submit registrations. Please try again."
+    }
+  },
   "tournamentSelection": {
     "title": "Tournament Selection",
     "subtitle": "Choose your tournament and country",
