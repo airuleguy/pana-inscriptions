@@ -10,6 +10,7 @@ import { CoachDataTable } from '@/components/forms/coach-data-table';
 import { getCountryByCode } from '@/lib/countries';
 import type { Coach, Tournament } from '@/types';
 import { useRegistration, RegisteredCoach } from '@/contexts/registration-context';
+import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { GraduationCap, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ export default function CoachRegistrationPage() {
   const params = useParams();
   const tournamentId = params.tournamentId as string;
   const { addCoach } = useRegistration();
+  const { t } = useTranslations('common');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,12 +80,12 @@ export default function CoachRegistrationPage() {
   // Handle registration submission
   const handleSaveSelected = async () => {
     if (selectedCoaches.length === 0) {
-      toast.error('Please select at least one coach to register.');
+      toast.error(t('coaches.selectAtLeastOne'));
       return;
     }
 
     if (!selectedTournament || !selectedCountry) {
-      toast.error('Missing tournament or country selection.');
+      toast.error(t('coaches.missingData'));
       return;
     }
 
@@ -107,8 +109,8 @@ export default function CoachRegistrationPage() {
         // Add to registration summary
         registrationData.forEach(coachReg => addCoach(coachReg));
 
-        toast.success('Coaches registered!', {
-          description: `Successfully registered ${response.results.length} coach(es) with PENDING status in the backend.`,
+        toast.success(t('coaches.registrationSuccess'), {
+          description: `${t('coaches.registrationSuccessDescription').replace('{count}', response.results.length.toString())}`,
           duration: 5000,
         });
 
@@ -116,9 +118,9 @@ export default function CoachRegistrationPage() {
         setSelectedCoaches([]);
       } else {
         // Handle API errors
-        const errorMessage = response.errors?.join(', ') || 'Failed to register coaches';
+        const errorMessage = response.errors?.join(', ') || t('coaches.registrationErrorDescription');
         
-        toast.error('Registration failed', {
+        toast.error(t('coaches.registrationFailedTitle'), {
           description: errorMessage,
           duration: 5000,
         });
@@ -126,9 +128,9 @@ export default function CoachRegistrationPage() {
       
     } catch (error) {
       console.error('Failed to register coaches:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register coaches with backend. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : t('coaches.registrationErrorDescription');
       
-      toast.error('Registration error', {
+      toast.error(t('coaches.registrationError'), {
         description: errorMessage,
         duration: 5000,
       });
@@ -142,7 +144,7 @@ export default function CoachRegistrationPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading coach registration...</p>
+          <p className="text-muted-foreground">{t('coaches.loadingMessage')}</p>
         </div>
       </div>
     );
@@ -152,15 +154,17 @@ export default function CoachRegistrationPage() {
     return null; // This will be handled by the redirect in useEffect
   }
 
+  const countryInfo = getCountryByCode(selectedCountry);
+
   return (
     <div className="space-y-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <GraduationCap className="w-8 h-8 text-blue-600" />
-            Coach Registration
+            {t('coaches.title')}
           </h1>
           <p className="text-gray-600 mt-2">
-            Register certified coaches for {selectedTournament.name}
+            {t('coaches.description')} {selectedTournament.name}
           </p>
         </div>
 
@@ -171,12 +175,12 @@ export default function CoachRegistrationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <GraduationCap className="w-5 h-5" />
-                Coach Selection
+                {t('coaches.selectionTitle')}
               </CardTitle>
               <CardDescription>
-                {selectedCountry 
-                  ? `Select coaches from ${getCountryByCode(selectedCountry)?.name} for tournament registration`
-                  : 'Select a country first to view available coaches'
+                {selectedCountry && countryInfo
+                  ? t('coaches.selectionDescription').replace('{country}', countryInfo.name)
+                  : t('coaches.selectionDescriptionFallback')
                 }
               </CardDescription>
             </CardHeader>
@@ -192,9 +196,9 @@ export default function CoachRegistrationPage() {
               ) : (
                 <div className="text-center py-12">
                   <GraduationCap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">Select a Country</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-2">{t('coaches.selectCountryTitle')}</h3>
                   <p className="text-muted-foreground">
-                    Choose your country from the dropdown above to view and select eligible coaches
+                    {t('coaches.selectCountryDescription')}
                   </p>
                 </div>
               )}
@@ -205,17 +209,17 @@ export default function CoachRegistrationPage() {
           {selectedCoaches.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Additional Notes</CardTitle>
+                <CardTitle>{t('coaches.additionalNotesTitle')}</CardTitle>
                 <CardDescription>
-                  Add any special requirements or notes for the coaching staff registration (optional)
+                  {t('coaches.additionalNotesDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
+                  <Label htmlFor="notes">{t('coaches.notesLabel')}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Enter any additional information about the coaches or special requirements..."
+                    placeholder={t('coaches.notesPlaceholder')}
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     rows={4}
@@ -237,7 +241,7 @@ export default function CoachRegistrationPage() {
                   )}
                   <div className="flex-1">
                     <p className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                      {registrationResult.success ? 'Registration Successful!' : 'Registration Failed'}
+                      {registrationResult.success ? t('coaches.registrationSuccessful') : t('coaches.registrationFailed')}
                     </p>
                     <p className={`text-sm mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
                       {registrationResult.message}
@@ -261,7 +265,7 @@ export default function CoachRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Adding to summary...' : 'Add to Summary'}
+              {submitting ? t('coaches.addingToSummary') : t('coaches.addToSummary')}
             </Button>
             
             <Button 
@@ -269,7 +273,7 @@ export default function CoachRegistrationPage() {
               size="lg" 
               onClick={() => router.push(`/registration/tournament/${tournamentId}/judges`)}
             >
-              Continue to Judge Registration
+              {t('coaches.continueToJudges')}
             </Button>
             
             <Button 
@@ -277,7 +281,7 @@ export default function CoachRegistrationPage() {
               size="lg" 
               onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
             >
-              View Registration Summary
+              {t('coaches.viewSummary')}
             </Button>
           </div>
         </div>

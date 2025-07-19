@@ -11,6 +11,7 @@ import { Loader2, RefreshCw, AlertCircle, GraduationCap } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
+import { useTranslations } from '@/contexts/i18n-context';
 import type { Coach } from '@/types';
 import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
@@ -31,6 +32,7 @@ export function CoachDataTable({
   requiredLevel,
   disabled = false
 }: CoachDataTableProps) {
+  const { t } = useTranslations('common');
   const [availableCoaches, setAvailableCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +143,7 @@ export function CoachDataTable({
         id: "fullName",
         accessorKey: "fullName",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Coach" />
+          <DataTableColumnHeader column={column} title={t('coaches.table.coach')} />
         ),
         cell: ({ row }) => {
           const coach = row.original;
@@ -167,13 +169,13 @@ export function CoachDataTable({
       {
         accessorKey: "gender",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Gender" />
+          <DataTableColumnHeader column={column} title={t('coaches.table.gender')} />
         ),
         cell: ({ row }) => {
           const gender = row.getValue("gender") as string;
           return (
             <Badge variant={gender === 'MALE' ? 'default' : 'secondary'}>
-              {gender === 'MALE' ? 'Male' : 'Female'}
+              {gender === 'MALE' ? t('coaches.table.male') : t('coaches.table.female')}
             </Badge>
           );
         },
@@ -181,7 +183,7 @@ export function CoachDataTable({
       {
         accessorKey: "level",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Level" />
+          <DataTableColumnHeader column={column} title={t('coaches.table.level')} />
         ),
         cell: ({ row }) => {
           const level = row.getValue("level") as string;
@@ -195,7 +197,7 @@ export function CoachDataTable({
       {
         accessorKey: "levelDescription",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Description" />
+          <DataTableColumnHeader column={column} title={t('coaches.table.description')} />
         ),
         cell: ({ row }) => {
           const description = row.getValue("levelDescription") as string;
@@ -207,7 +209,7 @@ export function CoachDataTable({
         },
       },
     ],
-    [selectedCoaches, onSelectionChange, maxSelection, disabled]
+    [selectedCoaches, onSelectionChange, maxSelection, disabled, t]
   );
 
   if (loading) {
@@ -215,7 +217,7 @@ export function CoachDataTable({
       <Card>
         <CardContent className="p-8 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Loading coaches from FIG database...</p>
+          <p className="text-muted-foreground">{t('coaches.table.loadingCoaches')}</p>
         </CardContent>
       </Card>
     );
@@ -226,10 +228,14 @@ export function CoachDataTable({
       <Card>
         <CardContent className="p-8 text-center">
           <AlertCircle className="w-8 h-8 mx-auto mb-4 text-destructive" />
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4">
+            {error === 'Failed to load coaches' ? t('coaches.table.failedToLoadCoaches') : 
+             error === 'Failed to refresh coaches' ? t('coaches.table.failedToRefreshCoaches') : 
+             error}
+          </p>
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
+            {t('coaches.table.tryAgain')}
           </Button>
         </CardContent>
       </Card>
@@ -246,7 +252,7 @@ export function CoachDataTable({
               <div className="flex items-center justify-between">
                 <h4 className="font-medium flex items-center gap-2">
                   <GraduationCap className="w-4 h-4" />
-                  Selected Coaches ({selectedCoaches.length}/{maxSelection})
+                  {t('coaches.table.selectedCoaches')} ({selectedCoaches.length}/{maxSelection})
                 </h4>
                 <Button
                   variant="ghost"
@@ -289,7 +295,7 @@ export function CoachDataTable({
             columns={columns}
             data={filteredCoaches}
             searchKey="fullName"
-            searchPlaceholder="Search coaches by name or level..."
+            searchPlaceholder={t('coaches.table.searchPlaceholder')}
           />
         </CardContent>
       </Card>
