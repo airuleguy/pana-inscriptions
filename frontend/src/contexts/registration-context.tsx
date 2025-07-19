@@ -57,6 +57,7 @@ interface RegistrationContextType {
   getTotalCount: () => number;
   canConfirmRegistration: () => boolean;
   loadExistingRegistrations: () => Promise<void>;
+  syncPendingRegistrations: () => Promise<void>;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   isLoading: boolean;
@@ -136,6 +137,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       }
     }
   }, []);
+
+
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
@@ -330,6 +333,83 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }
   }, [state.tournament, state.country]);
 
+  const syncPendingRegistrations = useCallback(async () => {
+    if (!state.tournament || !state.country) {
+      console.log('Cannot sync pending registrations: missing tournament or country');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Get pending registrations from database (database is the single source of truth)
+      const pendingData = await APIService.getPendingRegistrations(state.tournament.id);
+      
+      // Transform API data to registration format
+      const pendingChoreographies: RegisteredChoreography[] = pendingData.choreographies.map(choreo => ({
+        id: choreo.id,
+        name: choreo.name,
+        category: choreo.category,
+        type: choreo.type,
+        gymnastsCount: choreo.gymnasts.length,
+        gymnasts: choreo.gymnasts,
+        registeredAt: new Date(choreo.createdAt),
+        status: 'PENDING' as RegistrationStatus,
+        choreographyData: choreo,
+      }));
+
+      const pendingCoaches: RegisteredCoach[] = pendingData.coaches.map(coach => ({
+        id: coach.id,
+        name: coach.fullName,
+        level: coach.level,
+        country: coach.country,
+        registeredAt: new Date(coach.createdAt || Date.now()),
+        status: 'PENDING' as RegistrationStatus,
+        coachData: coach,
+      }));
+
+      const pendingJudges: RegisteredJudge[] = pendingData.judges.map(judge => ({
+        id: judge.id,
+        name: judge.fullName,
+        category: judge.category,
+        country: judge.country,
+        registeredAt: new Date(judge.createdAt || Date.now()),
+        status: 'PENDING' as RegistrationStatus,
+        judgeData: judge,
+      }));
+
+      // Replace pending registrations with database state, keep submitted ones
+      setState(prev => {
+        // Get existing non-pending registrations (submitted/registered)
+        const existingSubmitted = prev.choreographies.filter(c => c.status !== 'PENDING');
+        const existingCoachesSubmitted = prev.coaches.filter(c => c.status !== 'PENDING');
+        const existingJudgesSubmitted = prev.judges.filter(j => j.status !== 'PENDING');
+
+        return {
+          ...prev,
+          choreographies: [...existingSubmitted, ...pendingChoreographies],
+          coaches: [...existingCoachesSubmitted, ...pendingCoaches],
+          judges: [...existingJudgesSubmitted, ...pendingJudges],
+        };
+      });
+
+      console.log(`Refreshed ${pendingData.totals.total} pending registrations from database`);
+    } catch (error) {
+      console.error('Failed to sync pending registrations:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [state.tournament, state.country]);
+
+  // Auto-sync pending registrations when tournament and country are available
+  useEffect(() => {
+    if (state.tournament && state.country) {
+      // Always sync from database since all pending registrations are immediately persisted to DB
+      // localStorage is just a cache/mirror of the database state
+      console.log('Auto-refreshing pending registrations from database...');
+      syncPendingRegistrations();
+    }
+  }, [state.tournament, state.country, syncPendingRegistrations]);
+
   const value: RegistrationContextType = {
     state,
     addChoreography,
@@ -342,6 +422,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     getTotalCount,
     canConfirmRegistration,
     loadExistingRegistrations,
+    syncPendingRegistrations,
     toggleSidebar,
     closeSidebar,
     isLoading,

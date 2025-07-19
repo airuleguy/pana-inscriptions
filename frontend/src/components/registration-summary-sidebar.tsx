@@ -18,7 +18,8 @@ import {
   Calendar,
   CheckCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { countries } from '@/lib/countries';
 
@@ -35,7 +36,8 @@ export function RegistrationSummarySidebar({
   onConfirmRegistration,
   isSubmitting = false
 }: RegistrationSummarySidebarProps) {
-  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
+  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration, getPendingCount, getRegistrationsByStatus, syncPendingRegistrations, isLoading } = useRegistration();
+  const [syncingPending, setSyncingPending] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     choreographies: true,
     coaches: true,
@@ -63,6 +65,17 @@ export function RegistrationSummarySidebar({
     });
   };
 
+  const handleSyncPending = async () => {
+    setSyncingPending(true);
+    try {
+      await syncPendingRegistrations();
+    } catch (error) {
+      console.error('Failed to sync pending registrations:', error);
+    } finally {
+      setSyncingPending(false);
+    }
+  };
+
   const totalCount = getTotalCount();
   const pendingCount = getPendingCount();
   const pendingRegistrations = getRegistrationsByStatus('PENDING');
@@ -83,6 +96,16 @@ export function RegistrationSummarySidebar({
                   </SheetTitle>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSyncPending}
+                    disabled={syncingPending || isLoading || !state.tournament || !state.country}
+                    className="h-8 w-8 p-0"
+                    title="Refresh from database"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${syncingPending ? 'animate-spin' : ''}`} />
+                  </Button>
                   {pendingCount > 0 && (
                     <Badge variant="default" className="bg-orange-100 text-orange-800">
                       {pendingCount} pending

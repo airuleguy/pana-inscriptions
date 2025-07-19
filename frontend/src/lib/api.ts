@@ -581,6 +581,23 @@ export class APIService {
   }
 
   /**
+   * Get pending registrations for a tournament (used for side summary sync)
+   */
+  static async getPendingRegistrations(tournamentId: string): Promise<{
+    choreographies: Choreography[];
+    coaches: Coach[];
+    judges: Judge[];
+    totals: {
+      choreographies: number;
+      coaches: number;
+      judges: number;
+      total: number;
+    };
+  }> {
+    return await this.getRegistrationsByStatus(tournamentId, 'PENDING');
+  }
+
+  /**
    * Update batch registration status (Admin only)
    */
   static async updateRegistrationsStatus(
