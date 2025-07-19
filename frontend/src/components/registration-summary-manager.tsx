@@ -1,15 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { RegistrationSummarySidebar } from './registration-summary-sidebar';
 import { useRegistration } from '@/contexts/registration-context';
+import { getLocalePrefix } from '@/lib/locale';
 import { toast } from 'sonner';
 
 export function RegistrationSummaryManager() {
   const router = useRouter();
+  const pathname = usePathname();
   const { state, clearAll, getPendingCount, toggleSidebar, closeSidebar, submitRegistrations } = useRegistration();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Get locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
 
   const handleConfirmRegistration = async () => {
     setIsSubmitting(true);
@@ -37,13 +42,13 @@ export function RegistrationSummaryManager() {
       if (tournamentData) {
         try {
           const tournament = JSON.parse(tournamentData);
-          router.push(`/registration/tournament/${tournament.id}/dashboard`);
+          router.push(`${localePrefix}/registration/tournament/${tournament.id}/dashboard`);
         } catch (error) {
           console.error('Error parsing tournament data:', error);
-          router.push('/tournament-selection');
+          router.push(`${localePrefix}/tournament-selection`);
         }
       } else {
-        router.push('/tournament-selection');
+        router.push(`${localePrefix}/tournament-selection`);
       }
       
     } catch (error) {

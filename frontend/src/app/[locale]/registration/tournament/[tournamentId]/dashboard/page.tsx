@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { useRegistration } from '@/contexts/registration-context';
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { getCountryByCode } from '@/lib/countries';
+import { getLocalePrefix } from '@/lib/locale';
 import { toast } from 'sonner';
 import { 
   Trophy, 
@@ -44,9 +45,13 @@ interface SubmittedRegistrations {
 export default function TournamentRegistrationDashboard() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const tournamentId = params.tournamentId as string;
   const { state, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
   const { t } = useTranslations('common');
+  
+  // Get locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [pendingRegistrations, setPendingRegistrations] = useState<SubmittedRegistrations | null>(null);
@@ -76,14 +81,14 @@ export default function TournamentRegistrationDashboard() {
         setLoading(false);
       } catch (error) {
         console.error('Error loading tournament data:', error);
-        router.push('/tournament-selection');
+        router.push(`${localePrefix}/tournament-selection`);
       }
     };
 
     if (tournamentId) {
       loadData();
     } else {
-      router.push('/tournament-selection');
+      router.push(`${localePrefix}/tournament-selection`);
     }
   }, [tournamentId, router]);
 
@@ -153,7 +158,7 @@ export default function TournamentRegistrationDashboard() {
       icon: Music,
       color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
       iconColor: 'text-blue-600',
-      href: `/registration/tournament/${tournamentId}/choreography`,
+      href: `${localePrefix}/registration/tournament/${tournamentId}/choreography`,
       count: state.choreographies.length,
       isCompleted: state.choreographies.length > 0
     },
@@ -164,7 +169,7 @@ export default function TournamentRegistrationDashboard() {
       icon: GraduationCap,
       color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
       iconColor: 'text-purple-600',
-      href: `/registration/tournament/${tournamentId}/coaches`,
+      href: `${localePrefix}/registration/tournament/${tournamentId}/coaches`,
       count: state.coaches.length,
       isCompleted: state.coaches.length > 0
     },
@@ -175,7 +180,7 @@ export default function TournamentRegistrationDashboard() {
       icon: Scale,
       color: 'bg-red-50 border-red-200 hover:bg-red-100',
       iconColor: 'text-red-600',
-      href: `/registration/tournament/${tournamentId}/judges`,
+      href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
       count: state.judges.length,
       isCompleted: state.judges.length > 0
     }
@@ -495,7 +500,7 @@ export default function TournamentRegistrationDashboard() {
                       {t('dashboard.noRegistrationsMessage')}
                     </p>
                     <Button 
-                      onClick={() => router.push(`/registration/tournament/${tournamentId}/choreography`)}
+                      onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/choreography`)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       {t('dashboard.startRegistering')}
@@ -529,7 +534,7 @@ export default function TournamentRegistrationDashboard() {
                       {t('dashboard.noRegistrationsSubmittedMessage')}
                     </p>
                     <Button 
-                      onClick={() => router.push(`/registration/tournament/${tournamentId}/choreography`)}
+                      onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/choreography`)}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       {t('dashboard.startRegistering')}

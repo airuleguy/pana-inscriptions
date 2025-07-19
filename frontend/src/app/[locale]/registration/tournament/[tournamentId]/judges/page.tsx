@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -12,15 +12,20 @@ import type { Judge, Tournament } from '@/types';
 import { useRegistration, RegisteredJudge } from '@/contexts/registration-context';
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
+import { getLocalePrefix } from '@/lib/locale';
 import { Scale, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function JudgeRegistrationPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const tournamentId = params.tournamentId as string;
   const { addJudge } = useRegistration();
   const { t } = useTranslations('common');
+  
+  // Get locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -269,7 +274,7 @@ export default function JudgeRegistrationPage() {
             <Button 
               variant="outline" 
               size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/choreography`)}
+              onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/choreography`)}
             >
               {t('judges.continueToChoreography')}
             </Button>
@@ -277,7 +282,7 @@ export default function JudgeRegistrationPage() {
             <Button 
               variant="secondary" 
               size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
+              onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/dashboard`)}
             >
               {t('judges.viewSummary')}
             </Button>

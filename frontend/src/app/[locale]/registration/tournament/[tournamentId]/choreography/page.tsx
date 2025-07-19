@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import { useRegistration, RegisteredChoreography } from '@/contexts/registration
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { generateChoreographyName, calculateAge, calculateCategory, determineChoreographyType } from '@/lib/utils';
+import { getLocalePrefix } from '@/lib/locale';
 import { Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,9 +31,13 @@ const choreographyTypes = [
 export default function ChoreographyRegistrationPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const tournamentId = params.tournamentId as string;
   const { addChoreography } = useRegistration();
   const { t } = useTranslations('common');
+  
+  // Get locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,7 +64,7 @@ export default function ChoreographyRegistrationPage() {
         const countryData = localStorage.getItem('selectedCountry');
 
         if (!tournamentData || !countryData) {
-          router.push('/tournament-selection');
+          router.push(`${localePrefix}/tournament-selection`);
           return;
         }
 
@@ -67,7 +72,7 @@ export default function ChoreographyRegistrationPage() {
         
         // Validate that the tournament ID from URL matches the stored one
         if (tournament.id !== tournamentId) {
-          router.push('/tournament-selection');
+          router.push(`${localePrefix}/tournament-selection`);
           return;
         }
 
@@ -76,14 +81,14 @@ export default function ChoreographyRegistrationPage() {
         setLoading(false);
       } catch (error) {
         console.error('Error loading tournament data:', error);
-        router.push('/tournament-selection');
+        router.push(`${localePrefix}/tournament-selection`);
       }
     };
 
     if (tournamentId) {
       loadData();
     } else {
-      router.push('/tournament-selection');
+      router.push(`${localePrefix}/tournament-selection`);
     }
   }, [tournamentId, router]);
 
@@ -445,7 +450,7 @@ export default function ChoreographyRegistrationPage() {
             <Button 
               variant="secondary" 
               size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
+              onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/dashboard`)}
             >
               {t('choreography.viewSummary')}
             </Button>

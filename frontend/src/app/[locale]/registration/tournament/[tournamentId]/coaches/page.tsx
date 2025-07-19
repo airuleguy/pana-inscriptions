@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -12,15 +12,20 @@ import type { Coach, Tournament } from '@/types';
 import { useRegistration, RegisteredCoach } from '@/contexts/registration-context';
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
+import { getLocalePrefix } from '@/lib/locale';
 import { GraduationCap, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CoachRegistrationPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const tournamentId = params.tournamentId as string;
   const { addCoach } = useRegistration();
   const { t } = useTranslations('common');
+  
+  // Get locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +49,7 @@ export default function CoachRegistrationPage() {
 
         if (!tournamentData || !countryData) {
           // Redirect to tournament selection if no selections found
-          router.push('/tournament-selection');
+          router.push(`${localePrefix}/tournament-selection`);
           return;
         }
 
@@ -52,7 +57,7 @@ export default function CoachRegistrationPage() {
         
         // Validate that the tournament ID from URL matches the stored one
         if (tournament.id !== tournamentId) {
-          router.push('/tournament-selection');
+          router.push(`${localePrefix}/tournament-selection`);
           return;
         }
 
@@ -61,14 +66,14 @@ export default function CoachRegistrationPage() {
         setLoading(false);
       } catch (error) {
         console.error('Error loading tournament data:', error);
-        router.push('/tournament-selection');
+        router.push(`${localePrefix}/tournament-selection`);
       }
     };
 
     if (tournamentId) {
       loadData();
     } else {
-      router.push('/tournament-selection');
+      router.push(`${localePrefix}/tournament-selection`);
     }
   }, [tournamentId, router]);
 
@@ -271,7 +276,7 @@ export default function CoachRegistrationPage() {
             <Button 
               variant="outline" 
               size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/judges`)}
+              onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/judges`)}
             >
               {t('coaches.continueToJudges')}
             </Button>
@@ -279,7 +284,7 @@ export default function CoachRegistrationPage() {
             <Button 
               variant="secondary" 
               size="lg" 
-              onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
+              onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/dashboard`)}
             >
               {t('coaches.viewSummary')}
             </Button>
