@@ -12,6 +12,7 @@ import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials, getCategoryColor, formatDateDDMMYYYY } from '@/lib/utils';
 import { ChoreographyCategory } from '@/constants/categories';
+import { useTranslations } from '@/contexts/i18n-context';
 import type { Gymnast } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -35,6 +36,7 @@ export function GymnastDataTable({
   requiredCategory,
   disabled = false
 }: GymnastDataTableProps) {
+  const { t } = useTranslations('common');
   const [availableGymnasts, setAvailableGymnasts] = useState<Gymnast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +172,7 @@ export function GymnastDataTable({
         id: "fullName",
         accessorKey: "fullName",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Gymnast" />
+          <DataTableColumnHeader column={column} title={t('gymnasts.table.gymnast')} />
         ),
         cell: ({ row }) => {
           const gymnast = row.original;
@@ -178,17 +180,17 @@ export function GymnastDataTable({
             <div className="flex items-center gap-3">
               <FigAvatar
                 figId={gymnast.figId}
-                name={gymnast.fullName || 'Unknown'}
+                name={gymnast.fullName || t('gymnasts.table.unknown')}
                 size="sm"
               />
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">
-                    {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
+                    {gymnast.lastName || t('gymnasts.table.unknown')}, {gymnast.firstName || t('gymnasts.table.unknown')}
                   </span>
                   {gymnast.isLocal && (
                     <Badge variant="outline" className="text-xs text-blue-700 border-blue-300 bg-blue-50">
-                      Local
+                      {t('gymnasts.table.local')}
                     </Badge>
                   )}
                 </div>
@@ -203,13 +205,13 @@ export function GymnastDataTable({
       {
         accessorKey: "gender",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Gender" />
+          <DataTableColumnHeader column={column} title={t('gymnasts.table.gender')} />
         ),
         cell: ({ row }) => {
           const gender = row.getValue("gender") as string;
           return (
             <Badge variant={gender === 'MALE' ? 'default' : 'secondary'}>
-              {gender === 'MALE' ? 'Male' : gender === 'FEMALE' ? 'Female' : 'Unknown'}
+              {gender === 'MALE' ? t('gymnasts.table.male') : gender === 'FEMALE' ? t('gymnasts.table.female') : t('gymnasts.table.unknown')}
             </Badge>
           );
         },
@@ -217,7 +219,7 @@ export function GymnastDataTable({
       {
         accessorKey: "age",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Age" />
+          <DataTableColumnHeader column={column} title={t('gymnasts.table.age')} />
         ),
         cell: ({ row }) => {
           const age = row.getValue("age") as number;
@@ -227,13 +229,13 @@ export function GymnastDataTable({
       {
         accessorKey: "category",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Category" />
+          <DataTableColumnHeader column={column} title={t('gymnasts.table.category')} />
         ),
         cell: ({ row }) => {
           const category = row.getValue("category") as string;
           return (
             <Badge variant="outline" className={getCategoryColor(category as ChoreographyCategory)}>
-              {category || 'Unknown'}
+              {category || t('gymnasts.table.unknown')}
             </Badge>
           );
         },
@@ -241,7 +243,7 @@ export function GymnastDataTable({
       {
         accessorKey: "dateOfBirth",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Date of Birth" />
+          <DataTableColumnHeader column={column} title={t('gymnasts.table.dateOfBirth')} />
         ),
         cell: ({ row }) => {
           const date = row.getValue("dateOfBirth") as Date;
@@ -250,7 +252,7 @@ export function GymnastDataTable({
       },
       {
         id: "license",
-        header: "License",
+        header: t('gymnasts.table.license'),
         cell: ({ row }) => {
           const gymnast = row.original;
           
@@ -259,10 +261,10 @@ export function GymnastDataTable({
             return (
               <div className="flex flex-col gap-1">
                 <Badge variant="outline" className="text-amber-700 border-amber-300 bg-amber-50">
-                  To Check
+                  {t('gymnasts.table.toCheck')}
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  Local gymnast
+                  {t('gymnasts.table.localGymnast')}
                 </span>
               </div>
             );
@@ -272,17 +274,17 @@ export function GymnastDataTable({
           return (
             <div className="flex flex-col gap-1">
               <Badge variant={gymnast.licenseValid ? 'default' : 'destructive'}>
-                {gymnast.licenseValid ? 'Valid' : 'Expired'}
+                {gymnast.licenseValid ? t('gymnasts.table.valid') : t('gymnasts.table.expired')}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                Expires: {formatDateDDMMYYYY(gymnast.licenseExpiryDate)}
+                {t('gymnasts.table.expires')}: {formatDateDDMMYYYY(gymnast.licenseExpiryDate)}
               </span>
             </div>
           );
         },
       },
     ],
-    [gymnasts, onSelectionChange, maxSelection, disabled]
+    [gymnasts, onSelectionChange, maxSelection, disabled, t]
   );
 
   if (loading) {
@@ -290,7 +292,7 @@ export function GymnastDataTable({
       <Card>
         <CardContent className="p-8 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Loading gymnasts from FIG database...</p>
+          <p className="text-muted-foreground">{t('gymnasts.table.loadingGymnasts')}</p>
         </CardContent>
       </Card>
     );
@@ -301,10 +303,14 @@ export function GymnastDataTable({
       <Card>
         <CardContent className="p-8 text-center">
           <AlertCircle className="w-8 h-8 mx-auto mb-4 text-destructive" />
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4">
+            {error === 'Failed to load gymnasts from FIG database' ? t('gymnasts.table.failedToLoad') : 
+             error === 'Failed to refresh gymnast data' ? t('gymnasts.table.failedToRefresh') : 
+             error}
+          </p>
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
+            {t('gymnasts.table.tryAgain')}
           </Button>
         </CardContent>
       </Card>
@@ -319,7 +325,7 @@ export function GymnastDataTable({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search gymnasts..."
+                placeholder={t('gymnasts.table.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 w-64"
@@ -329,13 +335,13 @@ export function GymnastDataTable({
             
             <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={disabled}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Categories" />
+                <SelectValue placeholder={t('gymnasts.table.allCategories')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="YOUTH">Youth</SelectItem>
-                <SelectItem value="JUNIOR">Junior</SelectItem>
-                <SelectItem value="SENIOR">Senior</SelectItem>
+                <SelectItem value="all">{t('gymnasts.table.allCategories')}</SelectItem>
+                <SelectItem value="YOUTH">{t('gymnasts.table.youth')}</SelectItem>
+                <SelectItem value="JUNIOR">{t('gymnasts.table.junior')}</SelectItem>
+                <SelectItem value="SENIOR">{t('gymnasts.table.senior')}</SelectItem>
               </SelectContent>
             </Select>
             
@@ -347,7 +353,7 @@ export function GymnastDataTable({
               className="flex items-center gap-2"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('gymnasts.table.refresh')}
             </Button>
             
             <Button
@@ -358,12 +364,12 @@ export function GymnastDataTable({
               className="flex items-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
-              Create New Gymnast
+              {t('gymnasts.table.createNewGymnast')}
             </Button>
           </div>
           
           <div className="text-sm text-gray-600">
-            {gymnasts.length} selected
+            {gymnasts.length} {t('gymnasts.table.selected')}
           </div>
         </div>
 
@@ -372,7 +378,7 @@ export function GymnastDataTable({
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-blue-600" />
               <span className="font-medium text-blue-900">
-                Selected Gymnasts ({gymnasts.length})
+                {t('gymnasts.table.selectedGymnasts')} ({gymnasts.length})
               </span>
             </div>
             
@@ -381,12 +387,12 @@ export function GymnastDataTable({
                 <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
                   <FigAvatar
                     figId={gymnast.figId}
-                    name={gymnast.fullName || 'Unknown'}
+                    name={gymnast.fullName || t('gymnasts.table.unknown')}
                     size="sm"
                     className="w-6 h-6"
                   />
                   <span className="text-sm font-medium">
-                    {gymnast.lastName || 'Unknown'}, {gymnast.firstName || 'Unknown'}
+                    {gymnast.lastName || t('gymnasts.table.unknown')}, {gymnast.firstName || t('gymnasts.table.unknown')}
                   </span>
                   <Badge variant="outline" className={getCategoryColor(gymnast.category as ChoreographyCategory)}>
                     {gymnast.category}
@@ -405,7 +411,7 @@ export function GymnastDataTable({
             columns={columns}
             data={filteredGymnasts}
             searchKey="fullName"
-            searchPlaceholder="Search gymnasts by name..."
+            searchPlaceholder={t('gymnasts.table.searchByName')}
           />
         </CardContent>
       </Card>

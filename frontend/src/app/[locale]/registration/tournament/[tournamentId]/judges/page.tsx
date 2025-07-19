@@ -10,6 +10,7 @@ import { JudgeDataTable } from '@/components/forms/judge-data-table';
 import { getCountryByCode } from '@/lib/countries';
 import type { Judge, Tournament } from '@/types';
 import { useRegistration, RegisteredJudge } from '@/contexts/registration-context';
+import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { Scale, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -19,6 +20,7 @@ export default function JudgeRegistrationPage() {
   const params = useParams();
   const tournamentId = params.tournamentId as string;
   const { addJudge } = useRegistration();
+  const { t } = useTranslations('common');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,12 +78,12 @@ export default function JudgeRegistrationPage() {
   // Handle registration submission
   const handleSaveSelected = async () => {
     if (selectedJudges.length === 0) {
-      toast.error('Please select at least one judge to register.');
+      toast.error(t('judges.selectAtLeastOne'));
       return;
     }
 
     if (!selectedTournament || !selectedCountry) {
-      toast.error('Missing tournament or country selection.');
+      toast.error(t('judges.missingData'));
       return;
     }
 
@@ -105,8 +107,8 @@ export default function JudgeRegistrationPage() {
         // Add to registration summary
         registrationData.forEach(judgeReg => addJudge(judgeReg));
 
-        toast.success('Judges registered!', {
-          description: `Successfully registered ${response.results.length} judge(s) with PENDING status in the backend.`,
+        toast.success(t('judges.registrationSuccess'), {
+          description: `${t('judges.registrationSuccessDescription').replace('{count}', response.results.length.toString())}`,
           duration: 5000,
         });
 
@@ -114,9 +116,9 @@ export default function JudgeRegistrationPage() {
         setSelectedJudges([]);
       } else {
         // Handle API errors
-        const errorMessage = response.errors?.join(', ') || 'Failed to register judges';
+        const errorMessage = response.errors?.join(', ') || t('judges.registrationErrorDescription');
         
-        toast.error('Registration failed', {
+        toast.error(t('judges.registrationFailedTitle'), {
           description: errorMessage,
           duration: 5000,
         });
@@ -124,9 +126,9 @@ export default function JudgeRegistrationPage() {
       
     } catch (error) {
       console.error('Failed to register judges:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to register judges with backend. Please try again.';
+      const errorMessage = error instanceof Error ? error.message : t('judges.registrationErrorDescription');
       
-      toast.error('Registration error', {
+      toast.error(t('judges.registrationError'), {
         description: errorMessage,
         duration: 5000,
       });
@@ -140,7 +142,7 @@ export default function JudgeRegistrationPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading judge registration...</p>
+          <p className="text-muted-foreground">{t('judges.loadingMessage')}</p>
         </div>
       </div>
     );
@@ -150,15 +152,17 @@ export default function JudgeRegistrationPage() {
     return null;
   }
 
+  const countryInfo = getCountryByCode(selectedCountry);
+
   return (
     <div className="space-y-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Scale className="w-8 h-8 text-purple-600" />
-            Judge Registration
+            {t('judges.title')}
           </h1>
           <p className="text-gray-600 mt-2">
-            Register certified judges for {selectedTournament.name}
+            {t('judges.description')} {selectedTournament.name}
           </p>
         </div>
 
@@ -169,12 +173,12 @@ export default function JudgeRegistrationPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Scale className="w-5 h-5" />
-                Judge Selection
+                {t('judges.selectionTitle')}
               </CardTitle>
               <CardDescription>
-                {selectedCountry 
-                  ? `Select judges from ${getCountryByCode(selectedCountry)?.name} for tournament registration`
-                  : 'Select a country first to view available judges'
+                {selectedCountry && countryInfo
+                  ? t('judges.selectionDescription').replace('{country}', countryInfo.name)
+                  : t('judges.selectionDescriptionFallback')
                 }
               </CardDescription>
             </CardHeader>
@@ -190,9 +194,9 @@ export default function JudgeRegistrationPage() {
               ) : (
                 <div className="text-center py-12">
                   <Scale className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">Select a Country</h3>
+                  <h3 className="text-lg font-medium text-foreground mb-2">{t('judges.selectCountryTitle')}</h3>
                   <p className="text-muted-foreground">
-                    Choose your country from the dropdown above to view and select eligible judges
+                    {t('judges.selectCountryDescription')}
                   </p>
                 </div>
               )}
@@ -203,17 +207,17 @@ export default function JudgeRegistrationPage() {
           {selectedJudges.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Additional Notes</CardTitle>
+                <CardTitle>{t('judges.additionalNotesTitle')}</CardTitle>
                 <CardDescription>
-                  Add any special requirements or notes for the judging panel registration (optional)
+                  {t('judges.additionalNotesDescription')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
+                  <Label htmlFor="notes">{t('judges.notesLabel')}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Enter any additional information about the judges or special requirements..."
+                    placeholder={t('judges.notesPlaceholder')}
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}
                     rows={4}
@@ -235,7 +239,7 @@ export default function JudgeRegistrationPage() {
                   )}
                   <div className="flex-1">
                     <p className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                      {registrationResult.success ? 'Registration Successful!' : 'Registration Failed'}
+                      {registrationResult.success ? t('judges.registrationSuccessful') : t('judges.registrationFailed')}
                     </p>
                     <p className={`text-sm mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
                       {registrationResult.message}
@@ -259,7 +263,7 @@ export default function JudgeRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Adding to summary...' : 'Add to Summary'}
+              {submitting ? t('judges.addingToSummary') : t('judges.addToSummary')}
             </Button>
             
             <Button 
@@ -267,7 +271,7 @@ export default function JudgeRegistrationPage() {
               size="lg" 
               onClick={() => router.push(`/registration/tournament/${tournamentId}/choreography`)}
             >
-              Continue to Choreography Registration
+              {t('judges.continueToChoreography')}
             </Button>
             
             <Button 
@@ -275,7 +279,7 @@ export default function JudgeRegistrationPage() {
               size="lg" 
               onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
             >
-              View Registration Summary
+              {t('judges.viewSummary')}
             </Button>
           </div>
         </div>

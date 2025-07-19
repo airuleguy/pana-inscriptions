@@ -12,18 +12,19 @@ import { getCountryByCode } from '@/lib/countries';
 import type { Gymnast, ChoreographyType, Tournament, Choreography } from '@/types';
 import { ChoreographyCategory } from '@/constants/categories';
 import { useRegistration, RegisteredChoreography } from '@/contexts/registration-context';
+import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
 import { generateChoreographyName, calculateAge, calculateCategory, determineChoreographyType } from '@/lib/utils';
 import { Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const choreographyTypes = [
-  { value: 'MIND', label: "Men's Individual", count: 1 },
-  { value: 'WIND', label: "Women's Individual", count: 1 },
-  { value: 'MXP', label: 'Mixed Pair', count: 2 },
-  { value: 'TRIO', label: 'Trio', count: 3 },
-  { value: 'GRP', label: 'Group', count: 5 },
-  { value: 'DNCE', label: 'Dance', count: 8 },
+  { value: 'MIND', count: 1 },
+  { value: 'WIND', count: 1 },
+  { value: 'MXP', count: 2 },
+  { value: 'TRIO', count: 3 },
+  { value: 'GRP', count: 5 },
+  { value: 'DNCE', count: 8 },
 ] as const;
 
 export default function ChoreographyRegistrationPage() {
@@ -31,6 +32,7 @@ export default function ChoreographyRegistrationPage() {
   const params = useParams();
   const tournamentId = params.tournamentId as string;
   const { addChoreography } = useRegistration();
+  const { t } = useTranslations('common');
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,13 +110,9 @@ export default function ChoreographyRegistrationPage() {
         setCategory(autoCategory as ChoreographyCategory);
 
         // Show success message for valid combinations
-        const typeDisplayName = autoType === 'MIND' ? "Men's Individual" : 
-                                autoType === 'WIND' ? "Women's Individual" :
-                                autoType === 'MXP' ? "Mixed Pair" :
-                                autoType === 'TRIO' ? "Trio" :
-                                autoType === 'GRP' ? "Group" : "Dance";
+        const typeDisplayName = t(`choreography.types.${autoType}`);
         
-        toast.success('Choreography details auto-detected!', {
+        toast.success(t('choreography.autoDetectedSuccess'), {
           description: `${autoName} | ${typeDisplayName} | ${autoCategory}`,
           duration: 2000,
         });
@@ -125,8 +123,10 @@ export default function ChoreographyRegistrationPage() {
         const nextValidCount = validCounts.find(count => count > gymnasts.length) || 8;
         const prevValidCount = validCounts.reverse().find(count => count < gymnasts.length) || 1;
         
-        toast.info(`${gymnasts.length} gymnasts selected`, {
-          description: `Valid counts: 1, 2, 3, 5, or 8 gymnasts. Continue to ${nextValidCount} or go back to ${prevValidCount}.`,
+        toast.info(t('choreography.invalidCountInfo').replace('{count}', gymnasts.length.toString()), {
+          description: t('choreography.invalidCountDetails')
+            .replace('{next}', nextValidCount.toString())
+            .replace('{prev}', prevValidCount.toString()),
           duration: 3000,
         });
       }
@@ -136,7 +136,7 @@ export default function ChoreographyRegistrationPage() {
       setChoreographyType('');
       setCategory('');
     }
-  }, [gymnasts]);
+  }, [gymnasts, t]);
 
   // Check if form is valid
   const isValidGymnastCount = [1, 2, 3, 5, 8].includes(gymnasts.length);
@@ -153,7 +153,7 @@ export default function ChoreographyRegistrationPage() {
     if (!selectedTournament || !selectedCountry) {
       setRegistrationResult({
         success: false,
-        message: 'Missing tournament or country selection',
+        message: t('choreography.missingData'),
       });
       return;
     }
@@ -199,25 +199,25 @@ export default function ChoreographyRegistrationPage() {
 
         setRegistrationResult({
           success: true,
-          message: 'Choreography successfully registered in PENDING status!',
+          message: t('choreography.choreographyRegisteredMessage'),
           choreography: registeredChoreography,
         });
 
-        toast.success('Choreography registered!', {
-          description: 'Your choreography has been registered with PENDING status in the backend.',
+        toast.success(t('choreography.registrationSuccess'), {
+          description: t('choreography.registrationSuccessDescription'),
           duration: 3000,
         });
       } else {
         // Handle API errors
-        const errorMessage = response.errors?.join(', ') || 'Failed to register choreography';
+        const errorMessage = response.errors?.join(', ') || t('choreography.registrationFailedDescription');
         setRegistrationResult({
           success: false,
           message: errorMessage,
         });
 
-        toast.error('Registration failed', {
+        toast.error(t('choreography.registrationFailedTitle'), {
           description: errorMessage.includes('FIG ID') 
-            ? 'Some gymnasts have missing FIG IDs. Try refreshing the gymnast data in the selection table.'
+            ? t('choreography.registrationFailedDescription')
             : errorMessage,
           duration: 8000,
         });
@@ -231,15 +231,15 @@ export default function ChoreographyRegistrationPage() {
       
     } catch (err) {
       console.error('Choreography registration failed:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to register choreography with backend. Please try again.';
+      const errorMessage = err instanceof Error ? err.message : t('choreography.registrationFailedDescription');
       setRegistrationResult({
         success: false,
         message: errorMessage,
       });
       
-      toast.error('Registration error', {
+      toast.error(t('choreography.registrationError'), {
         description: errorMessage.includes('FIG ID') 
-          ? 'Some gymnasts have missing FIG IDs. Try refreshing the gymnast data in the selection table.'
+          ? t('choreography.registrationFailedDescription')
           : errorMessage,
         duration: 8000,
       });
@@ -253,7 +253,7 @@ export default function ChoreographyRegistrationPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading choreography registration...</p>
+          <p className="text-muted-foreground">{t('choreography.loadingMessage')}</p>
         </div>
       </div>
     );
@@ -263,14 +263,40 @@ export default function ChoreographyRegistrationPage() {
     return null;
   }
 
+  const countryInfo = getCountryByCode(selectedCountry);
+  const countryName = countryInfo?.name || selectedCountry;
+
+  // Build gymnast selection description dynamically
+  const getGymnastSelectionDescription = () => {
+    if (gymnasts.length === 0) {
+      return t('choreography.gymnastSelectionEmpty').replace('{country}', countryName);
+    }
+    
+    let description = t('choreography.gymnastSelectionWithCount')
+      .replace('{count}', gymnasts.length.toString())
+      .replace('{plural}', gymnasts.length > 1 ? 's' : '')
+      .replace('{country}', countryName);
+    
+    if (choreographyType) {
+      const typeDisplayName = t(`choreography.types.${choreographyType}`);
+      description += t('choreography.typeDetected').replace('{type}', typeDisplayName.toLowerCase());
+    }
+    
+    if (firstGymnastCategory) {
+      description += t('choreography.categoryFilterActive').replace('{category}', firstGymnastCategory);
+    }
+    
+    return description;
+  };
+
   return (
     <div className="space-y-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">
-            Choreography Registration
+            {t('choreography.title')}
           </h1>
           <p className="text-gray-600 mt-2">
-            Register your gymnastic routine for {selectedTournament.name}
+            {t('choreography.description')} {selectedTournament.name}
           </p>
         </div>
 
@@ -279,26 +305,22 @@ export default function ChoreographyRegistrationPage() {
           <Card>
             <CardHeader>
               <CardTitle>
-                Gymnast Selection {gymnasts.length > 0 && `(${gymnasts.length} selected)`}
+                {t('choreography.gymnastSelection')} {gymnasts.length > 0 && `(${gymnasts.length} ${t('gymnasts.table.selected')})`}
               </CardTitle>
               <CardDescription>
-                {gymnasts.length === 0 
-                  ? `Select gymnasts from ${getCountryByCode(selectedCountry)?.name} to automatically detect choreography details`
-                  : `Selected ${gymnasts.length} gymnast${gymnasts.length > 1 ? 's' : ''} from ${getCountryByCode(selectedCountry)?.name}${choreographyType ? ` - Detected as ${choreographyType.toLowerCase()} routine` : ''}${firstGymnastCategory ? ` - Filtered by ${firstGymnastCategory} category` : ''}`
-                }
+                {getGymnastSelectionDescription()}
               </CardDescription>
               {firstGymnastCategory && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <p className="text-sm text-blue-800">
-                    🔒 <strong>Category Filter Active:</strong> Only showing <strong>{firstGymnastCategory}</strong> gymnasts. All gymnasts in a choreography must be from the same category.
+                    {t('choreography.categoryFilterNotice').replace('{category}', firstGymnastCategory)}
                   </p>
                 </div>
               )}
               {gymnasts.length > 0 && ![1, 2, 3, 5, 8].includes(gymnasts.length) && (
                 <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
                   <p className="text-sm text-amber-800">
-                    ⚠️ <strong>{gymnasts.length} gymnasts</strong> is not a valid count for competition. 
-                    Valid counts are: <strong>1, 2, 3, 5, or 8</strong> gymnasts.
+                    {t('choreography.invalidCountWarning').replace('{count}', gymnasts.length.toString())}
                   </p>
                 </div>
               )}
@@ -317,59 +339,59 @@ export default function ChoreographyRegistrationPage() {
           {/* Basic Information - Auto-detected details */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle>{t('choreography.basicInformation')}</CardTitle>
               <CardDescription>
-                Basic details are automatically detected from your selected gymnasts
+                {t('choreography.basicInformationDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Choreography Name</Label>
+                  <Label htmlFor="name">{t('choreography.choreographyName')}</Label>
                   <Input
                     id="name"
-                    placeholder="Auto-generated from gymnast surnames"
+                    placeholder={t('choreography.choreographyNamePlaceholder')}
                     value={choreographyName}
                     onChange={(e) => setChoreographyName(e.target.value)}
                     className={gymnasts.length > 0 ? "bg-green-50 border-green-200" : ""}
                   />
                   {gymnasts.length > 0 && (
-                    <p className="text-xs text-green-600">✓ Auto-generated from selected gymnasts</p>
+                    <p className="text-xs text-green-600">{t('choreography.autoGeneratedFromGymnasts')}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="type">Type</Label>
+                  <Label htmlFor="type">{t('choreography.type')}</Label>
                   <Select value={choreographyType} onValueChange={(value) => setChoreographyType(value as ChoreographyType)} disabled={gymnasts.length > 0}>
                     <SelectTrigger className={gymnasts.length > 0 ? "bg-green-50 border-green-200" : ""}>
-                      <SelectValue placeholder="Auto-detected from gymnast count" />
+                      <SelectValue placeholder={t('choreography.typePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {choreographyTypes.map((type) => (
                         <SelectItem key={type.value} value={type.value}>
-                          {type.label} ({type.count} gymnast{type.count > 1 ? 's' : ''})
+                          {t(`choreography.types.${type.value}`)} ({type.count} {t('gymnasts.table.gymnast')}{type.count > 1 ? 's' : ''})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   {gymnasts.length > 0 && (
-                    <p className="text-xs text-green-600">✓ Auto-detected from gymnast count and gender</p>
+                    <p className="text-xs text-green-600">{t('choreography.autoDetectedFromCount')}</p>
                   )}
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">{t('choreography.category')}</Label>
                 <Select value={category} onValueChange={(value) => setCategory(value as ChoreographyCategory)} disabled={gymnasts.length > 0}>
                   <SelectTrigger className={gymnasts.length > 0 ? "bg-green-50 border-green-200" : ""}>
-                    <SelectValue placeholder="Auto-detected from gymnast ages" />
+                    <SelectValue placeholder={t('choreography.categoryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="YOUTH">Youth (≤15 years)</SelectItem>
-                    <SelectItem value="JUNIOR">Junior (16-17 years)</SelectItem>
-                    <SelectItem value="SENIOR">Senior (18+ years)</SelectItem>
+                    <SelectItem value="YOUTH">{t('choreography.youthCategory')}</SelectItem>
+                    <SelectItem value="JUNIOR">{t('choreography.juniorCategory')}</SelectItem>
+                    <SelectItem value="SENIOR">{t('choreography.seniorCategory')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {gymnasts.length > 0 && (
-                  <p className="text-xs text-green-600">✓ Auto-detected from oldest gymnast age</p>
+                  <p className="text-xs text-green-600">{t('choreography.autoDetectedFromAge')}</p>
                 )}
               </div>
             </CardContent>
@@ -387,7 +409,7 @@ export default function ChoreographyRegistrationPage() {
                   )}
                   <div className="flex-1">
                     <p className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                      {registrationResult.success ? 'Registration Successful!' : 'Registration Failed'}
+                      {registrationResult.success ? t('choreography.registrationSuccessful') : t('choreography.registrationFailed')}
                     </p>
                     <p className={`text-sm mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
                       {registrationResult.message}
@@ -411,12 +433,12 @@ export default function ChoreographyRegistrationPage() {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              {submitting ? 'Adding to summary...' : 'Add to Summary'}
+              {submitting ? t('choreography.addingToSummary') : t('choreography.addToSummary')}
             </Button>
             
             {!isValidGymnastCount && gymnasts.length > 0 && (
               <p className="text-sm text-amber-600 self-center">
-                Select 1, 2, 3, 5, or 8 gymnasts to enable registration
+                {t('choreography.invalidCountMessage')}
               </p>
             )}
             
@@ -425,7 +447,7 @@ export default function ChoreographyRegistrationPage() {
               size="lg" 
               onClick={() => router.push(`/registration/tournament/${tournamentId}/dashboard`)}
             >
-              View Registration Summary
+              {t('choreography.viewSummary')}
             </Button>
           </div>
         </div>

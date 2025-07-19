@@ -11,6 +11,7 @@ import { Loader2, RefreshCw, AlertCircle, Scale } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
+import { useTranslations } from '@/contexts/i18n-context';
 import type { Judge } from '@/types';
 import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
 
@@ -31,6 +32,7 @@ export function JudgeDataTable({
   requiredCategory,
   disabled = false
 }: JudgeDataTableProps) {
+  const { t } = useTranslations('common');
   const [availableJudges, setAvailableJudges] = useState<Judge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +143,7 @@ export function JudgeDataTable({
         id: "fullName",
         accessorKey: "fullName",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Judge" />
+          <DataTableColumnHeader column={column} title={t('judges.table.judge')} />
         ),
         cell: ({ row }) => {
           const judge = row.original;
@@ -167,13 +169,13 @@ export function JudgeDataTable({
       {
         accessorKey: "gender",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Gender" />
+          <DataTableColumnHeader column={column} title={t('judges.table.gender')} />
         ),
         cell: ({ row }) => {
           const gender = row.getValue("gender") as string;
           return (
             <Badge variant={gender === 'MALE' ? 'default' : 'secondary'}>
-              {gender === 'MALE' ? 'Male' : 'Female'}
+              {gender === 'MALE' ? t('judges.table.male') : t('judges.table.female')}
             </Badge>
           );
         },
@@ -181,7 +183,7 @@ export function JudgeDataTable({
       {
         accessorKey: "category",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Category" />
+          <DataTableColumnHeader column={column} title={t('judges.table.category')} />
         ),
         cell: ({ row }) => {
           const category = row.getValue("category") as string;
@@ -195,7 +197,7 @@ export function JudgeDataTable({
       {
         accessorKey: "categoryDescription",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Description" />
+          <DataTableColumnHeader column={column} title={t('judges.table.description')} />
         ),
         cell: ({ row }) => {
           const description = row.getValue("categoryDescription") as string;
@@ -209,19 +211,19 @@ export function JudgeDataTable({
       {
         accessorKey: "age",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Age" />
+          <DataTableColumnHeader column={column} title={t('judges.table.age')} />
         ),
         cell: ({ row }) => {
           const age = row.getValue("age") as number;
           return (
             <span className="text-sm">
-              {age} years
+              {age} {t('judges.table.years')}
             </span>
           );
         },
       },
     ],
-    [disabled, maxSelection, onSelectionChange, selectedJudges]
+    [disabled, maxSelection, onSelectionChange, selectedJudges, t]
   );
 
   // Loading state
@@ -231,7 +233,7 @@ export function JudgeDataTable({
         <CardContent className="py-8">
           <div className="flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-muted-foreground">Loading judges...</span>
+            <span className="text-muted-foreground">{t('judges.table.loadingJudges')}</span>
           </div>
         </CardContent>
       </Card>
@@ -246,7 +248,11 @@ export function JudgeDataTable({
           <div className="text-center space-y-3">
             <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
             <div>
-              <p className="text-sm font-medium text-red-600">{error}</p>
+              <p className="text-sm font-medium text-red-600">
+                {error === 'Failed to load judges' ? t('judges.table.failedToLoadJudges') : 
+                 error === 'Failed to refresh judges' ? t('judges.table.failedToRefreshJudges') : 
+                 error}
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -259,7 +265,7 @@ export function JudgeDataTable({
                 ) : (
                   <RefreshCw className="w-3 h-3 mr-1" />
                 )}
-                Try Again
+                {t('judges.table.tryAgain')}
               </Button>
             </div>
           </div>
@@ -276,11 +282,11 @@ export function JudgeDataTable({
           <div className="text-center space-y-3">
             <Scale className="w-8 h-8 text-muted-foreground mx-auto" />
             <div>
-              <p className="text-sm font-medium">No judges found</p>
+              <p className="text-sm font-medium">{t('judges.table.noJudgesFound')}</p>
               <p className="text-xs text-muted-foreground">
                 {requiredCategory
-                  ? `No judges with category ${requiredCategory} found for this country`
-                  : 'No judges found for this country'
+                  ? t('judges.table.noJudgesFoundWithCategory').replace('{category}', requiredCategory)
+                  : t('judges.table.noJudgesFoundGeneral')
                 }
               </p>
               <Button
@@ -295,7 +301,7 @@ export function JudgeDataTable({
                 ) : (
                   <RefreshCw className="w-3 h-3 mr-1" />
                 )}
-                Refresh
+                {t('judges.table.refresh')}
               </Button>
             </div>
           </div>
@@ -311,11 +317,11 @@ export function JudgeDataTable({
           <div className="flex items-center gap-2">
             <Scale className="w-4 h-4" />
             <h3 className="font-medium">
-              Available Judges ({filteredJudges.length})
+              {t('judges.table.availableJudges')} ({filteredJudges.length})
             </h3>
             {requiredCategory && (
               <Badge variant="outline" className="text-xs">
-                Category {requiredCategory}
+                {t('judges.table.categoryBadge')} {requiredCategory}
               </Badge>
             )}
           </div>
@@ -337,7 +343,10 @@ export function JudgeDataTable({
         {selectedJudges.length > 0 && (
           <div className="border-t p-4 bg-muted/30">
             <p className="text-sm text-muted-foreground">
-              Selected {selectedJudges.length} of {maxSelection} judge{maxSelection > 1 ? 's' : ''}
+              {maxSelection > 1 ? 
+                t('judges.table.selectedCountPlural').replace('{selected}', selectedJudges.length.toString()).replace('{max}', maxSelection.toString()) :
+                t('judges.table.selectedCount').replace('{selected}', selectedJudges.length.toString()).replace('{max}', maxSelection.toString())
+              }
             </p>
           </div>
         )}
