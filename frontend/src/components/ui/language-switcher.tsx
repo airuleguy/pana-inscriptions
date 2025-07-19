@@ -1,10 +1,10 @@
 'use client';
 
+import { useRouter, usePathname } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
-import { SUPPORTED_LANGUAGES, getLanguageDisplayName, type SupportedLanguage } from '@/lib/i18n';
-import { useLanguage } from '@/contexts/language-context';
+import { locales, localeNames, type Locale, removeLocaleFromUrl, addLocaleToUrl, getLocaleFromUrl } from '@/lib/locale';
 
 interface LanguageSwitcherProps {
   variant?: 'select' | 'button';
@@ -12,24 +12,32 @@ interface LanguageSwitcherProps {
 }
 
 export function LanguageSwitcher({ variant = 'select', className }: LanguageSwitcherProps) {
-  const { language, changeLanguage } = useLanguage();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  // Get current locale from URL
+  const currentLocale = getLocaleFromUrl(pathname) || 'en';
 
-  const handleLanguageChange = (newLocale: string) => {
-    changeLanguage(newLocale as SupportedLanguage);
+  const handleLanguageChange = (newLocale: Locale) => {
+    // Remove current locale from pathname and add new locale
+    const pathWithoutLocale = removeLocaleFromUrl(pathname);
+    const newPath = addLocaleToUrl(pathWithoutLocale, newLocale);
+    
+    router.push(newPath);
   };
 
   if (variant === 'button') {
     return (
       <div className={`flex gap-1 ${className}`}>
-        {SUPPORTED_LANGUAGES.map((lang) => (
+        {locales.map((locale) => (
           <Button
-            key={lang.code}
-            variant={language === lang.code ? 'default' : 'ghost'}
+            key={locale}
+            variant={currentLocale === locale ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => handleLanguageChange(lang.code)}
+            onClick={() => handleLanguageChange(locale)}
             className="px-2 py-1 text-xs"
           >
-            {lang.code.toUpperCase()}
+            {locale.toUpperCase()}
           </Button>
         ))}
       </div>
@@ -39,16 +47,16 @@ export function LanguageSwitcher({ variant = 'select', className }: LanguageSwit
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Globe className="h-4 w-4 text-muted-foreground" />
-      <Select value={language} onValueChange={handleLanguageChange}>
+      <Select value={currentLocale} onValueChange={(value) => handleLanguageChange(value as Locale)}>
         <SelectTrigger className="w-auto min-w-[100px]">
           <SelectValue>
-            {getLanguageDisplayName(language)}
+            {localeNames[currentLocale]?.nativeName || currentLocale}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {SUPPORTED_LANGUAGES.map((lang) => (
-            <SelectItem key={lang.code} value={lang.code}>
-              {lang.nativeName}
+          {locales.map((locale) => (
+            <SelectItem key={locale} value={locale}>
+              {localeNames[locale]?.nativeName || locale}
             </SelectItem>
           ))}
         </SelectContent>
