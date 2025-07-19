@@ -1,0 +1,93 @@
+{
+  "gymnast": {
+    "title": "Create New Gymnast",
+    "description": "Register a gymnast who is not yet in the FUG database",
+    "fields": {
+      "figId": "FIG ID",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "gender": "Gender",
+      "country": "Country",
+      "dateOfBirth": "Date of Birth",
+      "nationality": "Nationality",
+      "passportNumber": "Passport Number",
+      "category": "Category"
+    },
+    "placeholders": {
+      "figId": "Enter FIG ID",
+      "firstName": "Enter first name",
+      "lastName": "Enter last name",
+      "dateOfBirth": "Select date of birth",
+      "passportNumber": "Enter passport number"
+    },
+    "validation": {
+      "figIdRequired": "FIG ID is required",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "genderRequired": "Gender is required",
+      "countryRequired": "Country is required",
+      "dateOfBirthRequired": "Date of birth is required",
+      "invalidDate": "Please enter a valid date",
+      "invalidFigId": "Please enter a valid FIG ID"
+    },
+    "success": {
+      "created": "Gymnast created successfully",
+      "updated": "Gymnast updated successfully"
+    }
+  },
+  "coach": {
+    "title": "Add Coach",
+    "description": "Register a coach for this tournament",
+    "fields": {
+      "figId": "FIG ID",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "country": "Country",
+      "email": "Email",
+      "phone": "Phone",
+      "license": "License Number",
+      "specialization": "Specialization"
+    },
+    "success": {
+      "created": "Coach added successfully",
+      "updated": "Coach updated successfully"
+    }
+  },
+  "judge": {
+    "title": "Add Judge",
+    "description": "Register a judge for this tournament",
+    "fields": {
+      "figId": "FIG ID",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "country": "Country",
+      "email": "Email",
+      "phone": "Phone",
+      "category": "Judging Category",
+      "level": "Judging Level",
+      "experience": "Years of Experience"
+    },
+    "success": {
+      "created": "Judge added successfully",
+      "updated": "Judge updated successfully"
+    }
+  },
+  "choreography": {
+    "title": "Register Choreography",
+    "description": "Register a choreography for the tournament",
+    "fields": {
+      "name": "Choreography Name",
+      "category": "Category",
+      "difficulty": "Difficulty Level",
+      "duration": "Duration (seconds)",
+      "music": "Music Title",
+      "composer": "Composer",
+      "gymnasts": "Gymnasts",
+      "coaches": "Coaches"
+    },
+    "success": {
+      "created": "Choreography registered successfully",
+      "updated": "Choreography updated successfully"
+    }
+  }
+}

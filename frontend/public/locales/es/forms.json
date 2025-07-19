@@ -1,0 +1,93 @@
+{
+  "gymnast": {
+    "title": "Crear Nuevo Gimnasta",
+    "description": "Registrar un gimnasta que aún no está en la base de datos FUG",
+    "fields": {
+      "figId": "ID FIG",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "gender": "Género",
+      "country": "País",
+      "dateOfBirth": "Fecha de Nacimiento",
+      "nationality": "Nacionalidad",
+      "passportNumber": "Número de Pasaporte",
+      "category": "Categoría"
+    },
+    "placeholders": {
+      "figId": "Ingresa el ID FIG",
+      "firstName": "Ingresa el nombre",
+      "lastName": "Ingresa el apellido",
+      "dateOfBirth": "Selecciona fecha de nacimiento",
+      "passportNumber": "Ingresa número de pasaporte"
+    },
+    "validation": {
+      "figIdRequired": "El ID FIG es obligatorio",
+      "firstNameRequired": "El nombre es obligatorio",
+      "lastNameRequired": "El apellido es obligatorio",
+      "genderRequired": "El género es obligatorio",
+      "countryRequired": "El país es obligatorio",
+      "dateOfBirthRequired": "La fecha de nacimiento es obligatoria",
+      "invalidDate": "Por favor ingresa una fecha válida",
+      "invalidFigId": "Por favor ingresa un ID FIG válido"
+    },
+    "success": {
+      "created": "Gimnasta creado exitosamente",
+      "updated": "Gimnasta actualizado exitosamente"
+    }
+  },
+  "coach": {
+    "title": "Agregar Entrenador",
+    "description": "Registrar un entrenador para este torneo",
+    "fields": {
+      "figId": "ID FIG",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "country": "País",
+      "email": "Correo Electrónico",
+      "phone": "Teléfono",
+      "license": "Número de Licencia",
+      "specialization": "Especialización"
+    },
+    "success": {
+      "created": "Entrenador agregado exitosamente",
+      "updated": "Entrenador actualizado exitosamente"
+    }
+  },
+  "judge": {
+    "title": "Agregar Juez",
+    "description": "Registrar un juez para este torneo",
+    "fields": {
+      "figId": "ID FIG",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "country": "País",
+      "email": "Correo Electrónico",
+      "phone": "Teléfono",
+      "category": "Categoría de Arbitraje",
+      "level": "Nivel de Arbitraje",
+      "experience": "Años de Experiencia"
+    },
+    "success": {
+      "created": "Juez agregado exitosamente",
+      "updated": "Juez actualizado exitosamente"
+    }
+  },
+  "choreography": {
+    "title": "Registrar Coreografía",
+    "description": "Registrar una coreografía para el torneo",
+    "fields": {
+      "name": "Nombre de la Coreografía",
+      "category": "Categoría",
+      "difficulty": "Nivel de Dificultad",
+      "duration": "Duración (segundos)",
+      "music": "Título de la Música",
+      "composer": "Compositor",
+      "gymnasts": "Gimnastas",
+      "coaches": "Entrenadores"
+    },
+    "success": {
+      "created": "Coreografía registrada exitosamente",
+      "updated": "Coreografía actualizada exitosamente"
+    }
+  }
+}

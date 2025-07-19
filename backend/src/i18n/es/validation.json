@@ -1,0 +1,48 @@
+{
+  "common": {
+    "required": "Este campo es obligatorio",
+    "invalid": "Valor inválido",
+    "notFound": "Recurso no encontrado",
+    "unauthorized": "No tienes autorización para realizar esta acción",
+    "forbidden": "Acceso denegado",
+    "alreadyExists": "El recurso ya existe"
+  },
+  "user": {
+    "usernameRequired": "El nombre de usuario es obligatorio",
+    "passwordRequired": "La contraseña es obligatoria",
+    "invalidCredentials": "Nombre de usuario o contraseña inválidos",
+    "userNotFound": "Usuario no encontrado",
+    "userAlreadyExists": "El usuario ya existe"
+  },
+  "gymnast": {
+    "figIdRequired": "El ID FIG es obligatorio",
+    "figIdInvalid": "Formato de ID FIG inválido",
+    "firstNameRequired": "El nombre es obligatorio",
+    "lastNameRequired": "El apellido es obligatorio",
+    "genderRequired": "El género es obligatorio",
+    "genderInvalid": "El género debe ser MASCULINO o FEMENINO",
+    "countryRequired": "El país es obligatorio",
+    "countryInvalid": "Código de país inválido",
+    "dateOfBirthRequired": "La fecha de nacimiento es obligatoria",
+    "dateOfBirthInvalid": "Fecha de nacimiento inválida",
+    "ageInvalid": "La edad debe estar entre 10 y 50 años",
+    "gymnastNotFound": "Gimnasta no encontrado",
+    "gymnastAlreadyExists": "Ya existe un gimnasta con este ID FIG"
+  },
+  "tournament": {
+    "tournamentNotFound": "Torneo no encontrado",
+    "tournamentInactive": "El torneo no está activo",
+    "registrationClosed": "El período de registro ha terminado",
+    "registrationNotOpen": "El registro aún no ha abierto"
+  },
+  "choreography": {
+    "nameRequired": "El nombre de la coreografía es obligatorio",
+    "categoryRequired": "La categoría es obligatoria",
+    "categoryInvalid": "Categoría inválida",
+    "durationRequired": "La duración es obligatoria",
+    "durationInvalid": "La duración debe estar entre 90 y 150 segundos",
+    "gymnastRequired": "Se requiere al menos un gimnasta",
+    "maxGymnastsExceeded": "Número máximo de gimnastas excedido para esta categoría",
+    "choreographyNotFound": "Coreografía no encontrada"
+  }
+}

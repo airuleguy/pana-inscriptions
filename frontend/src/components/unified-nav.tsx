@@ -12,12 +12,15 @@ import { LogOut, User as UserIcon, Trophy, Users, UserCheck, ClipboardList, Chev
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useRegistration } from '@/contexts/registration-context';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
+import { useTranslation } from '@/lib/i18n';
 
 export function UnifiedNav() {
   const router = useRouter();
   const pathname = usePathname();
   const { state: authState, logout } = useAuth();
   const { state: registrationState, getPendingCount, toggleSidebar } = useRegistration();
+  const { t } = useTranslation('common');
 
   // Determine navigation type based on current path
   const getNavType = () => {
@@ -111,7 +114,7 @@ export function UnifiedNav() {
             
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t('navigation.logout')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -138,11 +141,12 @@ export function UnifiedNav() {
             </div>
             
             <div className="flex items-center gap-2">
+              <LanguageSwitcher variant="button" className="mr-2" />
               <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Help
+                {t('navigation.help', 'Help')}
               </Button>
               <Button asChild className="shadow-md">
-                <Link href="/login">Login</Link>
+                <Link href="/login">{t('navigation.login')}</Link>
               </Button>
             </div>
           </div>
@@ -316,7 +320,7 @@ export function UnifiedNav() {
                 className="relative border-blue-200 hover:bg-blue-50 hover:border-blue-300"
               >
                 <ClipboardList className="w-4 h-4 mr-2" />
-                Summary
+                {t('navigation.summary', 'Summary')}
                 {pendingCount > 0 && (
                   <Badge 
                     variant="secondary" 
@@ -367,6 +371,7 @@ export function UnifiedNav() {
             </div>
             
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               {renderAuthInfo()}
             </div>
           </div>

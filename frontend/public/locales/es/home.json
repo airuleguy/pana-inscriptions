@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "badge": "Registro Oficial de Torneos FIG",
+    "title": "Campeonato Panamericano de Gimnasia Aeróbica",
+    "year": "2025",
+    "description": "Selecciona tu torneo y país, luego registra coreografías, entrenadores y jueces para el torneo de gimnasia aeróbica más prestigioso de las Américas. Conectado a la base de datos oficial de la FIG.",
+    "startRegistration": "Comenzar Registro",
+    "loginToDashboard": "Acceder al Panel"
+  },
+  "tournamentInfo": {
+    "title": "Información del Torneo",
+    "importantDates": {
+      "title": "Fechas Importantes",
+      "registrationOpens": "Abre el Registro:",
+      "registrationCloses": "Cierra el Registro:",
+      "championshipDates": "Fechas del Campeonato:"
+    },
+    "locationLimits": {
+      "title": "Ubicación y Límites",
+      "hostCity": "Ciudad Anfitriona:",
+      "maxPerCategory": "Máximo por Categoría:",
+      "eligibleCountries": "Países Elegibles:",
+      "tbd": "Por Determinar",
+      "fourChoreographies": "4 coreografías",
+      "allAmericas": "Todas las Américas"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Registrar tu Equipo?",
+    "description": "Registra coreografías, entrenadores y jueces para el campeonato de gimnasia aeróbica más prestigioso de las Américas",
+    "startRegistration": "Comenzar Registro",
+    "learnMore": "Saber Más"
+  }
+}

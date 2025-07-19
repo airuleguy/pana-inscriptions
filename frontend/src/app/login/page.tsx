@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n';
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -19,12 +20,13 @@ export default function LoginPage() {
   
   const { login, error } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!credentials.username.trim() || !credentials.password.trim()) {
-      toast.error('Please enter both username and password');
+      toast.error(t('login.errors.emptyFields'));
       return;
     }
 
@@ -32,11 +34,11 @@ export default function LoginPage() {
     
     try {
       await login(credentials);
-      toast.success('Login successful!');
+      toast.success(t('login.success.loginSuccessful'));
       // Redirect to tournament selection or dashboard
       router.push('/tournament-selection');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      const errorMessage = error instanceof Error ? error.message : t('login.errors.loginFailed');
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -58,17 +60,17 @@ export default function LoginPage() {
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-900">
-              Country Delegate Login
+              {t('login.title')}
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Sign in to access the Panamerican Aerobic Gymnastics Championship registration system
+              {t('login.description')}
             </CardDescription>
           </CardHeader>
           
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">{t('login.username')}</Label>
                 <Input
                   id="username"
                   type="text"
@@ -82,7 +84,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('login.password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -108,7 +110,7 @@ export default function LoginPage() {
                 className="w-full"
                 disabled={isSubmitting || !credentials.username.trim() || !credentials.password.trim()}
               >
-                {isSubmitting ? 'Signing in...' : 'Sign In'}
+                {isSubmitting ? t('login.loggingIn') : t('login.loginButton')}
               </Button>
             </CardFooter>
           </form>

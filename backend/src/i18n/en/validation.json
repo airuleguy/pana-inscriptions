@@ -1,0 +1,48 @@
+{
+  "common": {
+    "required": "This field is required",
+    "invalid": "Invalid value",
+    "notFound": "Resource not found",
+    "unauthorized": "You are not authorized to perform this action",
+    "forbidden": "Access denied",
+    "alreadyExists": "Resource already exists"
+  },
+  "user": {
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "invalidCredentials": "Invalid username or password",
+    "userNotFound": "User not found",
+    "userAlreadyExists": "User already exists"
+  },
+  "gymnast": {
+    "figIdRequired": "FIG ID is required",
+    "figIdInvalid": "Invalid FIG ID format",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "genderRequired": "Gender is required",
+    "genderInvalid": "Gender must be MALE or FEMALE",
+    "countryRequired": "Country is required",
+    "countryInvalid": "Invalid country code",
+    "dateOfBirthRequired": "Date of birth is required",
+    "dateOfBirthInvalid": "Invalid date of birth",
+    "ageInvalid": "Age must be between 10 and 50 years",
+    "gymnastNotFound": "Gymnast not found",
+    "gymnastAlreadyExists": "Gymnast with this FIG ID already exists"
+  },
+  "tournament": {
+    "tournamentNotFound": "Tournament not found",
+    "tournamentInactive": "Tournament is not active",
+    "registrationClosed": "Registration period has ended",
+    "registrationNotOpen": "Registration has not opened yet"
+  },
+  "choreography": {
+    "nameRequired": "Choreography name is required",
+    "categoryRequired": "Category is required",
+    "categoryInvalid": "Invalid category",
+    "durationRequired": "Duration is required",
+    "durationInvalid": "Duration must be between 90 and 150 seconds",
+    "gymnastRequired": "At least one gymnast is required",
+    "maxGymnastsExceeded": "Maximum number of gymnasts exceeded for this category",
+    "choreographyNotFound": "Choreography not found"
+  }
+}
