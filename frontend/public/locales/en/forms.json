@@ -28,11 +28,55 @@
       "countryRequired": "Country is required",
       "dateOfBirthRequired": "Date of birth is required",
       "invalidDate": "Please enter a valid date",
-      "invalidFigId": "Please enter a valid FIG ID"
+      "invalidFigId": "Please enter a valid FIG ID",
+      "figIdMinLength": "FIG ID must be at least 3 characters",
+      "firstNameMinLength": "First name must be at least 2 characters",
+      "lastNameMinLength": "Last name must be at least 2 characters",
+      "ageRange": "Age must be between 10 and 50 years",
+      "figIdExists": "A gymnast with this FIG ID already exists"
+    },
+    "labels": {
+      "figIdRequired": "FIG ID *",
+      "firstNameRequired": "First Name *",
+      "lastNameRequired": "Last Name *",
+      "genderRequired": "Gender *",
+      "dateOfBirthRequired": "Date of Birth *"
+    },
+    "placeholders": {
+      "figIdExample": "e.g. FIG123456",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name"
+    },
+    "genderOptions": {
+      "female": "Female",
+      "male": "Male"
+    },
+    "licenseNotice": {
+      "title": "License Status Notice",
+      "description": "Local gymnasts are marked as \"license to check\" by default. Please verify their FUG registration status before the tournament."
+    },
+    "preview": {
+      "title": "Gymnast Preview:",
+      "fullName": "Full Name:",
+      "age": "Age:",
+      "category": "Category:",
+      "licenseStatus": "License Status:",
+      "toCheck": "To Check",
+      "years": "years"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create Gymnast",
+      "creating": "Creating..."
     },
     "success": {
       "created": "Gymnast created successfully",
+      "createdDescription": "{name} has been added to your country's gymnast list with \"license to check\" status.",
       "updated": "Gymnast updated successfully"
+    },
+    "errors": {
+      "createFailed": "Failed to create gymnast",
+      "createFailedDescription": "Please check your input and try again."
     }
   },
   "coach": {

@@ -261,6 +261,23 @@
       "searchByName": "Search gymnasts by name..."
     }
   },
+  "dataTable": {
+    "view": "View",
+    "toggleColumns": "Toggle columns",
+    "asc": "Asc",
+    "desc": "Desc",
+    "hide": "Hide",
+    "filter": "Filter...",
+    "noResults": "No results.",
+    "rowsSelected": "row(s) selected",
+    "rowsPerPage": "Rows per page",
+    "page": "Page",
+    "of": "of",
+    "goToFirstPage": "Go to first page",
+    "goToPreviousPage": "Go to previous page", 
+    "goToNextPage": "Go to next page",
+    "goToLastPage": "Go to last page"
+  },
   "errors": {
     "general": "An error occurred. Please try again.",
     "network": "Network error. Please check your connection.",

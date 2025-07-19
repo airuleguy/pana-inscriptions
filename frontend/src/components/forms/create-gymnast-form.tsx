@@ -13,6 +13,7 @@ import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
 import { useTranslations } from '@/contexts/i18n-context';
+import { ChoreographyCategory, AGE_LIMITS } from '@/constants/categories';
 
 interface CreateGymnastFormProps {
   open: boolean;
@@ -81,35 +82,35 @@ export function CreateGymnastForm({
 
     // FIG ID validation
     if (!formData.figId.trim()) {
-      errors.figId = 'FIG ID is required';
+      errors.figId = t('gymnast.validation.figIdRequired');
     } else if (formData.figId.length < 3) {
-      errors.figId = 'FIG ID must be at least 3 characters';
+      errors.figId = t('gymnast.validation.figIdMinLength');
     }
 
     // First name validation
     if (!formData.firstName.trim()) {
-      errors.firstName = 'First name is required';
+      errors.firstName = t('gymnast.validation.firstNameRequired');
     } else if (formData.firstName.length < 2) {
-      errors.firstName = 'First name must be at least 2 characters';
+      errors.firstName = t('gymnast.validation.firstNameMinLength');
     }
 
     // Last name validation
     if (!formData.lastName.trim()) {
-      errors.lastName = 'Last name is required';
+      errors.lastName = t('gymnast.validation.lastNameRequired');
     } else if (formData.lastName.length < 2) {
-      errors.lastName = 'Last name must be at least 2 characters';
+      errors.lastName = t('gymnast.validation.lastNameMinLength');
     }
 
     // Date of birth validation
     if (!formData.dateOfBirth) {
-      errors.dateOfBirth = 'Date of birth is required';
+      errors.dateOfBirth = t('gymnast.validation.dateOfBirthRequired');
     } else {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       
       if (age < 10 || age > 50) {
-        errors.dateOfBirth = 'Age must be between 10 and 50 years';
+        errors.dateOfBirth = t('gymnast.validation.ageRange');
       }
     }
 
@@ -135,8 +136,8 @@ export function CreateGymnastForm({
       handleOpenChange(false);
       
       // Show success message
-      toast.success('Gymnast created successfully!', {
-        description: `${newGymnast.fullName} has been added to your country's gymnast list with "license to check" status.`,
+      toast.success(t('gymnast.success.created'), {
+        description: t('gymnast.success.createdDescription').replace('{name}', newGymnast.fullName),
         duration: 5000,
       });
       
@@ -145,10 +146,10 @@ export function CreateGymnastForm({
       
       // Handle specific error cases
       if (error.message?.includes('already exists')) {
-        setFormErrors({ figId: 'A gymnast with this FIG ID already exists' });
+        setFormErrors({ figId: t('gymnast.validation.figIdExists') });
       } else {
-        toast.error('Failed to create gymnast', {
-          description: error.message || 'Please check your input and try again.',
+        toast.error(t('gymnast.errors.createFailed'), {
+          description: error.message || t('gymnast.errors.createFailedDescription'),
           duration: 5000,
         });
       }
@@ -170,11 +171,15 @@ export function CreateGymnastForm({
     return age;
   };
 
-  // Calculate category for preview
-  const calculateCategory = (age: number): string => {
-    if (age <= 15) return 'YOUTH';
-    if (age <= 17) return 'JUNIOR';
-    return 'SENIOR';
+  // Calculate category for preview using proper business rules
+  const calculateCategory = (age: number): ChoreographyCategory => {
+    if (age >= AGE_LIMITS[ChoreographyCategory.YOUTH].min && age <= AGE_LIMITS[ChoreographyCategory.YOUTH].max) {
+      return ChoreographyCategory.YOUTH;
+    }
+    if (age >= AGE_LIMITS[ChoreographyCategory.JUNIOR].min && age <= AGE_LIMITS[ChoreographyCategory.JUNIOR].max) {
+      return ChoreographyCategory.JUNIOR;
+    }
+    return ChoreographyCategory.SENIOR;
   };
 
   const previewAge = formData.dateOfBirth ? calculateAge(formData.dateOfBirth) : null;
@@ -200,8 +205,8 @@ export function CreateGymnastForm({
               <div className="flex items-start gap-3">
                 <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-amber-800">
-                  <p className="font-medium mb-1">License Status Notice</p>
-                  <p>Local gymnasts are marked as "license to check" by default. Please verify their FUG registration status before the tournament.</p>
+                  <p className="font-medium mb-1">{t('gymnast.licenseNotice.title')}</p>
+                  <p>{t('gymnast.licenseNotice.description')}</p>
                 </div>
               </div>
             </CardContent>
@@ -212,11 +217,11 @@ export function CreateGymnastForm({
             {/* FIG ID */}
             <div className="space-y-2">
               <Label htmlFor="figId" className="text-sm font-medium">
-                FIG ID *
+                {t('gymnast.labels.figIdRequired')}
               </Label>
               <Input
                 id="figId"
-                placeholder="e.g. FIG123456"
+                placeholder={t('gymnast.placeholders.figIdExample')}
                 value={formData.figId}
                 onChange={(e) => handleInputChange('figId', e.target.value)}
                 className={formErrors.figId ? 'border-red-500' : ''}
@@ -233,11 +238,11 @@ export function CreateGymnastForm({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium">
-                  First Name *
+                  {t('gymnast.labels.firstNameRequired')}
                 </Label>
                 <Input
                   id="firstName"
-                  placeholder="First name"
+                  placeholder={t('gymnast.placeholders.firstNamePlaceholder')}
                   value={formData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
                   className={formErrors.firstName ? 'border-red-500' : ''}
@@ -252,11 +257,11 @@ export function CreateGymnastForm({
 
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name *
+                  {t('gymnast.labels.lastNameRequired')}
                 </Label>
                 <Input
                   id="lastName"
-                  placeholder="Last name"
+                  placeholder={t('gymnast.placeholders.lastNamePlaceholder')}
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
                   className={formErrors.lastName ? 'border-red-500' : ''}
@@ -272,14 +277,14 @@ export function CreateGymnastForm({
 
             {/* Gender */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Gender *</Label>
+              <Label className="text-sm font-medium">{t('gymnast.labels.genderRequired')}</Label>
               <Select value={formData.gender} onValueChange={(value: 'MALE' | 'FEMALE') => handleInputChange('gender', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="FEMALE">Female</SelectItem>
-                  <SelectItem value="MALE">Male</SelectItem>
+                  <SelectItem value="FEMALE">{t('gymnast.genderOptions.female')}</SelectItem>
+                  <SelectItem value="MALE">{t('gymnast.genderOptions.male')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -287,7 +292,7 @@ export function CreateGymnastForm({
             {/* Date of Birth */}
             <div className="space-y-2">
               <Label htmlFor="dateOfBirth" className="text-sm font-medium">
-                Date of Birth *
+                {t('gymnast.labels.dateOfBirthRequired')}
               </Label>
               <Input
                 id="dateOfBirth"
@@ -309,20 +314,20 @@ export function CreateGymnastForm({
               <Card className="border-green-200 bg-green-50">
                 <CardContent className="p-4">
                   <div className="text-sm">
-                    <p className="font-medium text-green-800 mb-2">Gymnast Preview:</p>
+                    <p className="font-medium text-green-800 mb-2">{t('gymnast.preview.title')}</p>
                     <div className="space-y-1">
-                      <p><span className="font-medium">Full Name:</span> {formData.firstName} {formData.lastName}</p>
-                      <p><span className="font-medium">Age:</span> {previewAge} years</p>
+                      <p><span className="font-medium">{t('gymnast.preview.fullName')}</span> {formData.firstName} {formData.lastName}</p>
+                      <p><span className="font-medium">{t('gymnast.preview.age')}</span> {previewAge} {t('gymnast.preview.years')}</p>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Category:</span>
+                        <span className="font-medium">{t('gymnast.preview.category')}</span>
                         <Badge variant="outline" className="text-green-700 border-green-300">
                           {previewCategory}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">License Status:</span>
+                        <span className="font-medium">{t('gymnast.preview.licenseStatus')}</span>
                         <Badge variant="outline" className="text-amber-700 border-amber-300">
-                          To Check
+                          {t('gymnast.preview.toCheck')}
                         </Badge>
                       </div>
                     </div>
@@ -339,7 +344,7 @@ export function CreateGymnastForm({
             onClick={() => handleOpenChange(false)}
             disabled={isSubmitting}
           >
-            Cancel
+            {t('gymnast.buttons.cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -351,7 +356,7 @@ export function CreateGymnastForm({
             ) : (
               <UserPlus className="w-4 h-4" />
             )}
-            {isSubmitting ? 'Creating...' : 'Create Gymnast'}
+            {isSubmitting ? t('gymnast.buttons.creating') : t('gymnast.buttons.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

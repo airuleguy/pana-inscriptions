@@ -28,11 +28,55 @@
       "countryRequired": "El país es obligatorio",
       "dateOfBirthRequired": "La fecha de nacimiento es obligatoria",
       "invalidDate": "Por favor ingresa una fecha válida",
-      "invalidFigId": "Por favor ingresa un ID FIG válido"
+      "invalidFigId": "Por favor ingresa un ID FIG válido",
+      "figIdMinLength": "El ID FIG debe tener al menos 3 caracteres",
+      "firstNameMinLength": "El nombre debe tener al menos 2 caracteres",
+      "lastNameMinLength": "El apellido debe tener al menos 2 caracteres",
+      "ageRange": "La edad debe estar entre 10 y 50 años",
+      "figIdExists": "Ya existe un gimnasta con este ID FIG"
+    },
+    "labels": {
+      "figIdRequired": "ID FIG *",
+      "firstNameRequired": "Nombre *",
+      "lastNameRequired": "Apellido *",
+      "genderRequired": "Género *",
+      "dateOfBirthRequired": "Fecha de Nacimiento *"
+    },
+    "placeholders": {
+      "figIdExample": "ej. FIG123456",
+      "firstNamePlaceholder": "Nombre",
+      "lastNamePlaceholder": "Apellido"
+    },
+    "genderOptions": {
+      "female": "Femenino",
+      "male": "Masculino"
+    },
+    "licenseNotice": {
+      "title": "Aviso de Estado de Licencia",
+      "description": "Los gimnastas locales se marcan como \"licencia por verificar\" por defecto. Por favor verifica su estado de registro FUG antes del torneo."
+    },
+    "preview": {
+      "title": "Vista Previa del Gimnasta:",
+      "fullName": "Nombre Completo:",
+      "age": "Edad:",
+      "category": "Categoría:",
+      "licenseStatus": "Estado de Licencia:",
+      "toCheck": "Por Verificar",
+      "years": "años"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "create": "Crear Gimnasta",
+      "creating": "Creando..."
     },
     "success": {
       "created": "Gimnasta creado exitosamente",
+      "createdDescription": "{name} ha sido agregado a la lista de gimnastas de tu país con estado \"licencia por verificar\".",
       "updated": "Gimnasta actualizado exitosamente"
+    },
+    "errors": {
+      "createFailed": "Falló la creación del gimnasta",
+      "createFailedDescription": "Por favor verifica tu entrada e intenta de nuevo."
     }
   },
   "coach": {

@@ -17,6 +17,7 @@ import { Column } from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff, Settings2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { useTranslations } from "@/contexts/i18n-context"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -55,6 +56,8 @@ export function DataTableColumnHeader<TData, TValue>({
   title,
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
+  const { t } = useTranslations('common');
+
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>
   }
@@ -81,16 +84,16 @@ export function DataTableColumnHeader<TData, TValue>({
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
             <ArrowUp className="mr-2 h-4 w-4" />
-            Asc
+            {t('dataTable.asc')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDown className="mr-2 h-4 w-4" />
-            Desc
+            {t('dataTable.desc')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
             <EyeOff className="mr-2 h-4 w-4" />
-            Hide
+            {t('dataTable.hide')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -105,6 +108,8 @@ interface DataTableViewOptionsProps<TData> {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
+  const { t } = useTranslations('common');
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -114,11 +119,11 @@ export function DataTableViewOptions<TData>({
           className="ml-auto hidden h-8 lg:flex"
         >
           <Settings2 className="mr-2 h-4 w-4" />
-          View
+          {t('dataTable.view')}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
-        <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('dataTable.toggleColumns')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
@@ -127,6 +132,39 @@ export function DataTableViewOptions<TData>({
               typeof column.accessorFn !== "undefined" && column.getCanHide()
           )
           .map((column: any) => {
+            // Extract the title from the column header, fallback to column.id if no title is found
+            const getColumnTitle = (column: any) => {
+              const headerDef = column.columnDef.header;
+              if (typeof headerDef === 'function') {
+                // For functional headers, we need to extract the title prop
+                // This is a bit tricky since we can't call the function here
+                // Let's check if it's a DataTableColumnHeader and extract the title
+                return column.id;
+              } else if (typeof headerDef === 'string') {
+                return headerDef;
+              }
+              return column.id;
+            };
+
+            // Get the column title from the header definition
+            let columnTitle = column.id;
+            
+            // For columns with DataTableColumnHeader, we need to get the title
+            // Since we can't easily extract it from the function, we'll use a mapping
+            const headerTitleMap: { [key: string]: string } = {
+              'fullName': t('gymnasts.table.gymnast'),
+              'gender': t('gymnasts.table.gender'), 
+              'age': t('gymnasts.table.age'),
+              'category': t('gymnasts.table.category'),
+              'dateOfBirth': t('gymnasts.table.dateOfBirth'),
+              'license': t('gymnasts.table.license'),
+              // For coaches and judges tables
+              'coach': t('coaches.table.coach'),
+              'judge': t('judges.table.judge')
+            };
+
+            columnTitle = headerTitleMap[column.id] || column.id;
+
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
@@ -134,7 +172,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {columnTitle}
               </DropdownMenuCheckboxItem>
             )
           })}
@@ -150,15 +188,17 @@ interface DataTablePaginationProps<TData> {
 export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
+  const { t } = useTranslations('common');
+
   return (
     <div className="flex items-center justify-between px-2">
       <div className="flex-1 text-sm text-muted-foreground">
-        {table.getFilteredSelectedRowModel().rows.length} of{" "}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {table.getFilteredSelectedRowModel().rows.length} {t('dataTable.of')}{" "}
+        {table.getFilteredRowModel().rows.length} {t('dataTable.rowsSelected')}.
       </div>
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">Rows per page</p>
+          <p className="text-sm font-medium">{t('dataTable.rowsPerPage')}</p>
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
@@ -178,7 +218,7 @@ export function DataTablePagination<TData>({
           </Select>
         </div>
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          {t('dataTable.page')} {table.getState().pagination.pageIndex + 1} {t('dataTable.of')}{" "}
           {table.getPageCount()}
         </div>
         <div className="flex items-center space-x-2">
@@ -189,7 +229,7 @@ export function DataTablePagination<TData>({
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to first page</span>
+            <span className="sr-only">{t('dataTable.goToFirstPage')}</span>
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -199,7 +239,7 @@ export function DataTablePagination<TData>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t('dataTable.goToPreviousPage')}</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
@@ -209,7 +249,7 @@ export function DataTablePagination<TData>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t('dataTable.goToNextPage')}</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
@@ -219,7 +259,7 @@ export function DataTablePagination<TData>({
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to last page</span>
+            <span className="sr-only">{t('dataTable.goToLastPage')}</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
@@ -240,9 +280,10 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   searchKey,
-  searchPlaceholder = "Filter...",
+  searchPlaceholder,
   onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
+  const { t } = useTranslations('common');
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -280,7 +321,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         {searchKey && (
           <Input
-            placeholder={searchPlaceholder}
+            placeholder={searchPlaceholder || t('dataTable.filter')}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn(searchKey)?.setFilterValue(event.target.value)
@@ -333,7 +374,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('dataTable.noResults')}
                 </TableCell>
               </TableRow>
             )}

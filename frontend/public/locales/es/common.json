@@ -261,6 +261,23 @@
       "searchByName": "Buscar gimnastas por nombre..."
     }
   },
+  "dataTable": {
+    "view": "Ver",
+    "toggleColumns": "Alternar columnas",
+    "asc": "Asc",
+    "desc": "Desc",
+    "hide": "Ocultar",
+    "filter": "Filtrar...",
+    "noResults": "Sin resultados.",
+    "rowsSelected": "fila(s) seleccionada(s)",
+    "rowsPerPage": "Filas por página",
+    "page": "Página",
+    "of": "de",
+    "goToFirstPage": "Ir a la primera página",
+    "goToPreviousPage": "Ir a la página anterior", 
+    "goToNextPage": "Ir a la página siguiente",
+    "goToLastPage": "Ir a la última página"
+  },
   "errors": {
     "general": "Ocurrió un error. Por favor intenta de nuevo.",
     "network": "Error de red. Por favor verifica tu conexión.",
