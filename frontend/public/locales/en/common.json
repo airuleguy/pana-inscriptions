@@ -44,7 +44,8 @@
     "judges": "Judges",
     "choreography": "Choreography",
     "help": "Help",
-    "summary": "Summary"
+    "summary": "Summary",
+    "clickToChangeTournament": "Click to change tournament"
   },
   "dashboard": {
     "title": "Registration Dashboard",
@@ -294,5 +295,32 @@
     "created": "Created successfully",
     "updated": "Updated successfully",
     "deleted": "Deleted successfully"
+  },
+  "registrationSummary": {
+    "title": "Registration Summary",
+    "description": "Review your {count} pending registrations, then submit for approval",
+    "descriptionAllSubmitted": "All registrations have been submitted",
+    "refreshTooltip": "Refresh from database",
+    "pendingBadge": "{count} pending",
+    "emptyState": {
+      "title": "No pending registrations",
+      "description": "All registrations have been submitted or no registrations created yet"
+    },
+    "sections": {
+      "choreographies": "Choreographies",
+      "coaches": "Coaches", 
+      "judges": "Judges"
+    },
+    "choreographyCard": {
+      "gymnastCount": "{count} gymnast",
+      "gymnastCountPlural": "{count} gymnasts"
+    },
+    "submitButton": {
+      "submit": "Submit {count} Pending Registration",
+      "submitPlural": "Submit {count} Pending Registrations",
+      "submitting": "Submitting...",
+      "allSubmitted": "All registrations submitted",
+      "noRegistrations": "No pending registrations"
+    }
   }
 }

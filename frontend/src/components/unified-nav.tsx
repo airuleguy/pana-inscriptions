@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, User as UserIcon, Trophy, Users, UserCheck, ClipboardList, ChevronLeft, Menu, Calendar, MapPin, Globe } from 'lucide-react';
+import { LogOut, Trophy, Users, UserCheck, ClipboardList, ChevronLeft, Menu, Calendar, MapPin, Globe } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useRegistration } from '@/contexts/registration-context';
@@ -117,13 +117,6 @@ export function UnifiedNav() {
             
             <DropdownMenuSeparator />
             
-            <DropdownMenuItem disabled>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
               <span>{t('navigation.logout', 'Logout')}</span>
@@ -229,7 +222,7 @@ export function UnifiedNav() {
         id: 'judges',
         label: t('navigation.judges', 'Judges'),
         href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
-        icon: UserIcon,
+        icon: UserCheck,
         description: 'Judge registrations'
       },
       {
@@ -263,7 +256,7 @@ export function UnifiedNav() {
                     {registrationState.tournament?.shortName || registrationState.tournament?.name || 'Tournament Registration'}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Click to change tournament
+                    {t('navigation.clickToChangeTournament')}
                   </div>
                 </div>
               </button>

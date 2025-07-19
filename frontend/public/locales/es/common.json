@@ -44,7 +44,8 @@
     "judges": "Jueces",
     "choreography": "Coreografía",
     "help": "Ayuda",
-    "summary": "Resumen"
+    "summary": "Resumen",
+    "clickToChangeTournament": "Clic para cambiar torneo"
   },
   "dashboard": {
     "title": "Panel de Registro",
@@ -294,5 +295,32 @@
     "created": "Creado exitosamente",
     "updated": "Actualizado exitosamente",
     "deleted": "Eliminado exitosamente"
+  },
+  "registrationSummary": {
+    "title": "Resumen de Registro",
+    "description": "Revisa tus {count} registros pendientes, luego envía para aprobación",
+    "descriptionAllSubmitted": "Todos los registros han sido enviados",
+    "refreshTooltip": "Actualizar desde base de datos",
+    "pendingBadge": "{count} pendientes",
+    "emptyState": {
+      "title": "No hay registros pendientes",
+      "description": "Todos los registros han sido enviados o no se han creado registros aún"
+    },
+    "sections": {
+      "choreographies": "Coreografías",
+      "coaches": "Entrenadores", 
+      "judges": "Jueces"
+    },
+    "choreographyCard": {
+      "gymnastCount": "{count} gimnasta",
+      "gymnastCountPlural": "{count} gimnastas"
+    },
+    "submitButton": {
+      "submit": "Enviar {count} Registro Pendiente",
+      "submitPlural": "Enviar {count} Registros Pendientes",
+      "submitting": "Enviando...",
+      "allSubmitted": "Todos los registros enviados",
+      "noRegistrations": "No hay registros pendientes"
+    }
   }
 }
