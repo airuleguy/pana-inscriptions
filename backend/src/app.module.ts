@@ -28,6 +28,7 @@ import { CoachRegistrationService } from './services/coach-registration.service'
 import { JudgeRegistrationService } from './services/judge-registration.service';
 import { BatchRegistrationService } from './services/batch-registration.service';
 import { FigApiService } from './services/fig-api.service';
+import { i18nConfig } from './config/i18n.config';
 import { FigImageProxyService } from './services/fig-image-proxy.service';
 import { GymnastService } from './services/gymnast.service';
 import { AuthService } from './services/auth.service';
@@ -67,6 +68,9 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
       useFactory: async (configService: ConfigService) => configService.get('cache'),
       inject: [ConfigService],
     }),
+
+    // Internationalization
+    i18nConfig,
   ],
   controllers: [
     // Core resource controllers

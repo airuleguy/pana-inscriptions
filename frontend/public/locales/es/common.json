@@ -1,0 +1,63 @@
+{
+  "general": {
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "add": "Agregar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "actions": "Acciones",
+    "status": "Estado",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "country": "País",
+    "date": "Fecha",
+    "time": "Hora",
+    "gender": "Género",
+    "male": "Masculino",
+    "female": "Femenino",
+    "other": "Otro"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "dashboard": "Panel de Control",
+    "registration": "Registro",
+    "tournaments": "Torneos",
+    "participants": "Participantes",
+    "gymnasts": "Gimnastas",
+    "coaches": "Entrenadores",
+    "judges": "Jueces"
+  },
+  "errors": {
+    "general": "Ocurrió un error. Por favor intenta de nuevo.",
+    "network": "Error de red. Por favor verifica tu conexión.",
+    "unauthorized": "No tienes autorización para realizar esta acción.",
+    "notFound": "El recurso solicitado no fue encontrado.",
+    "validation": "Por favor verifica tu información e intenta de nuevo.",
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Por favor ingresa un correo electrónico válido",
+    "invalidDate": "Por favor ingresa una fecha válida",
+    "invalidPhone": "Por favor ingresa un número de teléfono válido"
+  },
+  "success": {
+    "saved": "Guardado exitosamente",
+    "created": "Creado exitosamente",
+    "updated": "Actualizado exitosamente",
+    "deleted": "Eliminado exitosamente"
+  }
+}

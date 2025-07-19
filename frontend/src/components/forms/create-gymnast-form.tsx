@@ -12,6 +12,7 @@ import { AlertCircle, Loader2, UserPlus, Info } from 'lucide-react';
 import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n';
 
 interface CreateGymnastFormProps {
   open: boolean;
@@ -27,9 +28,10 @@ export function CreateGymnastForm({
   onOpenChange,
   countryCode,
   onGymnastCreated,
-  title = "Create New Gymnast",
-  description = "Register a gymnast who is not yet in the FUG database"
+  title,
+  description
 }: CreateGymnastFormProps) {
+  const { t } = useTranslation('forms');
   const [formData, setFormData] = useState<CreateGymnastRequest>({
     figId: '',
     firstName: '',
@@ -184,10 +186,10 @@ export function CreateGymnastForm({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-blue-600" />
-            {title}
+            {title || t('gymnast.title')}
           </DialogTitle>
           <DialogDescription>
-            {description}
+            {description || t('gymnast.description')}
           </DialogDescription>
         </DialogHeader>
 

@@ -8,10 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Calendar, MapPin, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
+import { useTranslation } from '@/lib/i18n';
 
 export default function HomePage() {
   const { state, isLoading } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation('home');
 
   useEffect(() => {
     // Don't redirect while still loading auth state
@@ -29,7 +31,7 @@ export default function HomePage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">{t('general.loading')}</p>
         </div>
       </div>
     );
@@ -47,28 +49,27 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto space-y-6">
             <Badge variant="secondary" className="mb-4 shadow-sm">
               <Globe className="w-4 h-4 mr-2" />
-              Official FIG Tournament Registration
+              {t('hero.badge')}
             </Badge>
             
             <h1 className="text-5xl font-bold text-foreground leading-tight">
-              Panamerican Aerobic Gymnastics Championship
-              <span className="block text-3xl text-primary mt-2">2025</span>
+              {t('hero.title')}
+              <span className="block text-3xl text-primary mt-2">{t('hero.year')}</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Select your tournament and country, then register choreographies, coaches, and judges for the most 
-              prestigious aerobic gymnastics tournament in the Americas. Connected to the official FIG database.
+              {t('hero.description')}
             </p>
             
             <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
               <Button size="lg" asChild className="shadow-lg font-semibold">
                 <Link href="/tournament-selection">
-                  Start Registration
+                  {t('hero.startRegistration')}
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild className="shadow-md border-2 font-semibold">
                 <Link href="/login">
-                  Login to Dashboard
+                  {t('hero.loginToDashboard')}
                 </Link>
               </Button>
             </div>
@@ -82,7 +83,7 @@ export default function HomePage() {
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-foreground mb-12">
-              Tournament Information
+              {t('tournamentInfo.title')}
             </h2>
             
             <div className="grid md:grid-cols-2 gap-8">
@@ -90,20 +91,20 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <Calendar className="w-5 h-5" />
-                    Important Dates
+                    {t('tournamentInfo.importantDates.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Registration Opens:</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.importantDates.registrationOpens')}</span>
                     <span className="text-muted-foreground">January 15, 2024</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Registration Closes:</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.importantDates.registrationCloses')}</span>
                     <span className="text-muted-foreground">March 15, 2024</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Championship Dates:</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.importantDates.championshipDates')}</span>
                     <span className="text-muted-foreground">April 20-25, 2024</span>
                   </div>
                 </CardContent>
@@ -113,21 +114,21 @@ export default function HomePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <MapPin className="w-5 h-5" />
-                    Location & Limits
+                    {t('tournamentInfo.locationLimits.title')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Host City:</span>
-                    <span className="text-muted-foreground">TBD</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.locationLimits.hostCity')}</span>
+                    <span className="text-muted-foreground">{t('tournamentInfo.locationLimits.tbd')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Max per Category:</span>
-                    <span className="text-muted-foreground">4 choreographies</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.locationLimits.maxPerCategory')}</span>
+                    <span className="text-muted-foreground">{t('tournamentInfo.locationLimits.fourChoreographies')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-medium text-foreground">Eligible Countries:</span>
-                    <span className="text-muted-foreground">All Americas</span>
+                    <span className="font-medium text-foreground">{t('tournamentInfo.locationLimits.eligibleCountries')}</span>
+                    <span className="text-muted-foreground">{t('tournamentInfo.locationLimits.allAmericas')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -140,21 +141,21 @@ export default function HomePage() {
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl font-bold mb-4 text-white">
-            Ready to Register Your Team?
+            {t('cta.title')}
           </h2>
           <p className="text-xl mb-8 text-blue-100 leading-relaxed">
-            Register choreographies, coaches, and judges for the most prestigious aerobic gymnastics championship in the Americas
+            {t('cta.description')}
           </p>
           
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <Button size="lg" variant="secondary" asChild className="shadow-lg font-semibold">
               <Link href="/tournament-selection">
-                Start Registration
+                {t('cta.startRegistration')}
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-blue-600 shadow-lg font-semibold" asChild>
               <Link href="#tournament-info">
-                Learn More
+                {t('cta.learnMore')}
               </Link>
             </Button>
           </div>

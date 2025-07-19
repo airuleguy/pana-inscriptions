@@ -1,0 +1,34 @@
+{
+  "hero": {
+    "badge": "Official FIG Tournament Registration",
+    "title": "Panamerican Aerobic Gymnastics Championship",
+    "year": "2025",
+    "description": "Select your tournament and country, then register choreographies, coaches, and judges for the most prestigious aerobic gymnastics tournament in the Americas. Connected to the official FIG database.",
+    "startRegistration": "Start Registration",
+    "loginToDashboard": "Login to Dashboard"
+  },
+  "tournamentInfo": {
+    "title": "Tournament Information",
+    "importantDates": {
+      "title": "Important Dates",
+      "registrationOpens": "Registration Opens:",
+      "registrationCloses": "Registration Closes:",
+      "championshipDates": "Championship Dates:"
+    },
+    "locationLimits": {
+      "title": "Location & Limits",
+      "hostCity": "Host City:",
+      "maxPerCategory": "Max per Category:",
+      "eligibleCountries": "Eligible Countries:",
+      "tbd": "TBD",
+      "fourChoreographies": "4 choreographies",
+      "allAmericas": "All Americas"
+    }
+  },
+  "cta": {
+    "title": "Ready to Register Your Team?",
+    "description": "Register choreographies, coaches, and judges for the most prestigious aerobic gymnastics championship in the Americas",
+    "startRegistration": "Start Registration",
+    "learnMore": "Learn More"
+  }
+}
