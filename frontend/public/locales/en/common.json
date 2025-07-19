@@ -322,5 +322,33 @@
       "allSubmitted": "All registrations submitted",
       "noRegistrations": "No pending registrations"
     }
+  },
+  "tournamentSelection": {
+    "title": "Tournament Selection",
+    "subtitle": "Choose your tournament and country",
+    "backToHome": "Back to Home",
+    "steps": {
+      "tournamentSelection": "Tournament Selection",
+      "registration": "Registration"
+    },
+    "loading": "Loading tournaments...",
+    "selectTournament": {
+      "title": "Select Tournament",
+      "emptyState": "No tournaments available at the moment.",
+      "tryAgain": "Try Again",
+      "active": "Active",
+      "locationTbd": "TBD"
+    },
+    "selectCountry": {
+      "title": "Select Country",
+      "placeholder": "Choose your country",
+      "eligibilityNote": "Only countries from the Americas region are eligible for Panamerican championships."
+    },
+    "selectionSummary": {
+      "title": "Selection Summary",
+      "tournament": "Tournament:",
+      "country": "Country:"
+    },
+    "continueButton": "Continue to Registration"
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +12,13 @@ import { APIService } from '@/lib/api';
 import { Tournament } from '@/types';
 import { countries, popularCountries } from '@/lib/countries';
 import { ProtectedRoute } from '@/components/protected-route';
+import { useTranslations } from '@/contexts/i18n-context';
+import { getLocalePrefix } from '@/lib/locale';
 
 function TournamentSelectionContent() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { t } = useTranslations('common');
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
@@ -23,6 +27,9 @@ function TournamentSelectionContent() {
 
   // Use Americas countries from the popularCountries list (first 19 are Americas)
   const americasCountries = popularCountries.slice(0, 19);
+
+  // Get current locale prefix for navigation
+  const localePrefix = getLocalePrefix(pathname || '');
 
   useEffect(() => {
     loadTournaments();
@@ -52,8 +59,8 @@ function TournamentSelectionContent() {
       localStorage.setItem('selectedTournament', JSON.stringify(selectedTournament));
       localStorage.setItem('selectedCountry', selectedCountry);
       
-      // Navigate to the tournament-centric registration URL
-      router.push(`/registration/tournament/${selectedTournament.id}/dashboard`);
+      // Navigate to the tournament-centric registration URL with locale prefix
+      router.push(`${localePrefix}/registration/tournament/${selectedTournament.id}/dashboard`);
     }
   };
 
@@ -67,7 +74,7 @@ function TournamentSelectionContent() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading tournaments...</p>
+          <p className="text-muted-foreground">{t('tournamentSelection.loading')}</p>
         </div>
       </div>
     );
@@ -83,14 +90,14 @@ function TournamentSelectionContent() {
               <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                 1
               </div>
-              <span className="text-sm font-medium text-blue-600">Tournament Selection</span>
+              <span className="text-sm font-medium text-blue-600">{t('tournamentSelection.steps.tournamentSelection')}</span>
             </div>
             <div className="w-8 h-0.5 bg-gray-300"></div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-300 text-gray-500 rounded-full flex items-center justify-center text-sm font-semibold">
                 2
               </div>
-              <span className="text-sm text-gray-500">Registration</span>
+              <span className="text-sm text-gray-500">{t('tournamentSelection.steps.registration')}</span>
             </div>
           </div>
 
@@ -103,7 +110,7 @@ function TournamentSelectionContent() {
                   onClick={loadTournaments} 
                   className="mt-4"
                 >
-                  Try Again
+                  {t('tournamentSelection.selectTournament.tryAgain')}
                 </Button>
               </CardContent>
             </Card>
@@ -114,13 +121,13 @@ function TournamentSelectionContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-blue-600" />
-                Select Tournament
+                {t('tournamentSelection.selectTournament.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {tournaments.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
-                  No tournaments available at the moment.
+                  {t('tournamentSelection.selectTournament.emptyState')}
                 </p>
               ) : (
                 <div className="grid gap-4">
@@ -140,7 +147,7 @@ function TournamentSelectionContent() {
                             <h3 className="font-semibold text-lg">{tournament.name}</h3>
                             {tournament.isActive && (
                               <Badge variant="default" className="bg-green-100 text-green-800">
-                                Active
+                                {t('tournamentSelection.selectTournament.active')}
                               </Badge>
                             )}
                           </div>
@@ -153,7 +160,7 @@ function TournamentSelectionContent() {
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin className="w-4 h-4" />
-                              <span>{tournament.location || 'TBD'}</span>
+                              <span>{tournament.location || t('tournamentSelection.selectTournament.locationTbd')}</span>
                             </div>
                           </div>
                           {tournament.description && (
@@ -184,13 +191,13 @@ function TournamentSelectionContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="w-5 h-5 text-blue-600" />
-                Select Country
+                {t('tournamentSelection.selectCountry.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Choose your country" />
+                  <SelectValue placeholder={t('tournamentSelection.selectCountry.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {americasCountries.map((country) => (
@@ -204,7 +211,7 @@ function TournamentSelectionContent() {
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-2">
-                Only countries from the Americas region are eligible for Panamerican championships.
+                {t('tournamentSelection.selectCountry.eligibilityNote')}
               </p>
             </CardContent>
           </Card>
@@ -213,18 +220,18 @@ function TournamentSelectionContent() {
           {(selectedTournament || selectedCountry) && (
             <Card className="shadow-lg border-blue-200 bg-blue-50">
               <CardHeader>
-                <CardTitle className="text-blue-800">Selection Summary</CardTitle>
+                <CardTitle className="text-blue-800">{t('tournamentSelection.selectionSummary.title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {selectedTournament && (
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-blue-700">Tournament:</span>
+                    <span className="font-medium text-blue-700">{t('tournamentSelection.selectionSummary.tournament')}</span>
                     <span className="text-blue-900">{selectedTournament.name}</span>
                   </div>
                 )}
                 {selectedCountry && (
                   <div className="flex justify-between items-center">
-                    <span className="font-medium text-blue-700">Country:</span>
+                    <span className="font-medium text-blue-700">{t('tournamentSelection.selectionSummary.country')}</span>
                     <span className="text-blue-900">{getCountryName(selectedCountry)}</span>
                   </div>
                 )}
@@ -240,7 +247,7 @@ function TournamentSelectionContent() {
               disabled={!selectedTournament || !selectedCountry}
               className="shadow-lg font-semibold px-8"
             >
-              Continue to Registration
+              {t('tournamentSelection.continueButton')}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

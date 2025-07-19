@@ -322,5 +322,33 @@
       "allSubmitted": "Todos los registros enviados",
       "noRegistrations": "No hay registros pendientes"
     }
+  },
+  "tournamentSelection": {
+    "title": "Selección de Torneo",
+    "subtitle": "Elige tu torneo y país",
+    "backToHome": "Volver al Inicio",
+    "steps": {
+      "tournamentSelection": "Selección de Torneo",
+      "registration": "Registro"
+    },
+    "loading": "Cargando torneos...",
+    "selectTournament": {
+      "title": "Seleccionar Torneo",
+      "emptyState": "No hay torneos disponibles en este momento.",
+      "tryAgain": "Intentar de Nuevo",
+      "active": "Activo",
+      "locationTbd": "Por Definir"
+    },
+    "selectCountry": {
+      "title": "Seleccionar País",
+      "placeholder": "Elige tu país",
+      "eligibilityNote": "Solo los países de la región de las Américas son elegibles para los campeonatos panamericanos."
+    },
+    "selectionSummary": {
+      "title": "Resumen de Selección",
+      "tournament": "Torneo:",
+      "country": "País:"
+    },
+    "continueButton": "Continuar al Registro"
   }
 }

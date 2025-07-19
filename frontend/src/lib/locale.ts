@@ -29,4 +29,9 @@ export function removeLocaleFromUrl(pathname: string): string {
 export function addLocaleToUrl(pathname: string, locale: Locale): string {
   const cleanPath = removeLocaleFromUrl(pathname);
   return `/${locale}${cleanPath}`;
+}
+
+export function getLocalePrefix(pathname: string): string {
+  const locale = getLocaleFromUrl(pathname);
+  return locale ? `/${locale}` : `/${defaultLocale}`;
 } 

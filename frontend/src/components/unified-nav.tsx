@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRegistration } from '@/contexts/registration-context';
 import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useTranslations } from '@/contexts/i18n-context';
+import { getLocalePrefix } from '@/lib/locale';
 
 export function UnifiedNav() {
   const router = useRouter();
@@ -70,17 +71,8 @@ export function UnifiedNav() {
     toast.success('Logged out successfully');
   };
 
-  // Get current locale from pathname for links
-  const getLocalePrefix = () => {
-    const segments = pathname?.split('/') || [];
-    const potentialLocale = segments[1];
-    if (potentialLocale === 'en' || potentialLocale === 'es') {
-      return `/${potentialLocale}`;
-    }
-    return '/en'; // default fallback
-  };
-
-  const localePrefix = getLocalePrefix();
+  // Get current locale prefix for links
+  const localePrefix = getLocalePrefix(pathname || '');
 
   // Auth component
   const renderAuthInfo = () => {
@@ -172,15 +164,15 @@ export function UnifiedNav() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  Tournament Selection
+                  {t('tournamentSelection.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">Choose your tournament and country</p>
+                <p className="text-sm text-muted-foreground">{t('tournamentSelection.subtitle')}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" asChild>
-                <Link href={localePrefix}>Back to Home</Link>
+                <Link href={localePrefix}>{t('tournamentSelection.backToHome')}</Link>
               </Button>
               {renderAuthInfo()}
             </div>
