@@ -284,7 +284,7 @@ export function GymnastDataTable({
         },
       },
     ],
-    [gymnasts, onSelectionChange, maxSelection, disabled, t]
+    [gymnasts, onSelectionChange, maxSelection, disabled]
   );
 
   if (loading) {

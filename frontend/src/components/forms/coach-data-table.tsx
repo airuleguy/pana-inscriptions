@@ -209,7 +209,7 @@ export function CoachDataTable({
         },
       },
     ],
-    [selectedCoaches, onSelectionChange, maxSelection, disabled, t]
+    [selectedCoaches, onSelectionChange, maxSelection, disabled]
   );
 
   if (loading) {

@@ -141,7 +141,7 @@ export default function ChoreographyRegistrationPage() {
       setChoreographyType('');
       setCategory('');
     }
-  }, [gymnasts, t]);
+  }, [gymnasts]);
 
   // Check if form is valid
   const isValidGymnastCount = [1, 2, 3, 5, 8].includes(gymnasts.length);
@@ -322,13 +322,6 @@ export default function ChoreographyRegistrationPage() {
                   </p>
                 </div>
               )}
-              {gymnasts.length > 0 && ![1, 2, 3, 5, 8].includes(gymnasts.length) && (
-                <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                  <p className="text-sm text-amber-800">
-                    {t('choreography.invalidCountWarning').replace('{count}', gymnasts.length.toString())}
-                  </p>
-                </div>
-              )}
             </CardHeader>
             <CardContent>
               <GymnastDataTable
@@ -440,12 +433,6 @@ export default function ChoreographyRegistrationPage() {
               )}
               {submitting ? t('choreography.addingToSummary') : t('choreography.addToSummary')}
             </Button>
-            
-            {!isValidGymnastCount && gymnasts.length > 0 && (
-              <p className="text-sm text-amber-600 self-center">
-                {t('choreography.invalidCountMessage')}
-              </p>
-            )}
             
             <Button 
               variant="secondary" 

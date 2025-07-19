@@ -223,7 +223,7 @@ export function JudgeDataTable({
         },
       },
     ],
-    [disabled, maxSelection, onSelectionChange, selectedJudges, t]
+    [disabled, maxSelection, onSelectionChange, selectedJudges]
   );
 
   // Loading state
