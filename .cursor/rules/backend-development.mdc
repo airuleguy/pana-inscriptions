@@ -1,0 +1,276 @@
+---
+globs: backend/**/*.ts,src/**/*.service.ts,src/**/*.controller.ts,src/**/*.module.ts,src/**/*.dto.ts,src/**/*.entity.ts,src/**/*.guard.ts
+description: Backend development standards for TypeScript/NestJS with clean architecture and design patterns
+---
+
+# Backend Development Standards (NestJS/TypeScript)
+
+You are an expert in TypeScript, NestJS, Clean Architecture, Domain-Driven Design, and RESTful API development.
+
+## Architecture Principles
+
+### Clean Architecture & DDD Structure
+
+**Current structure (works well for project size):**
+```
+src/
+├── controllers/      # HTTP layer, input validation
+├── services/        # Business logic and use cases
+├── entities/        # TypeORM entities
+├── dto/             # Data transfer objects
+├── guards/          # Authentication/authorization
+├── utils/           # Shared utilities (including business rules)
+└── config/          # Configuration
+```
+
+**Aspirational structure (for larger projects):**
+```
+src/
+├── domain/           # Business entities, value objects, aggregates
+├── application/      # Use cases, services, commands/queries  
+├── infrastructure/   # Database, external APIs, adapters
+├── controllers/      # HTTP layer, input validation
+└── dto/             # Data transfer objects
+```
+
+### SOLID Principles Application
+- **Single Responsibility**: Each service/controller has one clear purpose
+- **Open/Closed**: Use interfaces and dependency injection for extensibility
+- **Liskov Substitution**: Proper inheritance and interface implementation
+- **Interface Segregation**: Small, focused interfaces
+- **Dependency Inversion**: Depend on abstractions, not concretions
+
+## API Design Standards
+
+### RESTful Conventions
+- Use `/api/v1/` versioning prefix
+- Apply standard HTTP methods: GET, POST, PUT, PATCH, DELETE
+- Use consistent `camelCase` for request/response field names (aligns with TypeScript/React frontend)
+- Use `UPPER_SNAKE_CASE` for enums
+- Implement proper HTTP status codes (200, 201, 400, 401, 403, 404, 500)
+
+### Request/Response Structure
+```typescript
+// Standard response: Direct return for simple cases
+Promise<EntityDto[]>
+
+// Optional envelope structure for complex collections with pagination
+{
+  data: [...],
+  paging: {
+    limit: number,
+    offset: number,
+    total_count: number,
+    next_cursor?: string
+  }
+}
+
+// Error responses: Use NestJS built-in exceptions
+throw new BadRequestException('Clear error message');
+throw new NotFoundException('Resource not found');
+```
+
+### Pagination Strategy (When Needed)
+- **Cursor-based**: For frequently changing data
+- **Offset-based**: For static datasets  
+- **Direct arrays**: For smaller datasets (current approach)
+- Consider pagination when endpoints return >100 items consistently
+
+## NestJS Best Practices
+
+### Dependency Injection
+```typescript
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly emailService: EmailService,
+  ) {}
+}
+```
+
+### Guards and Authentication
+- Use `@UseGuards()` for route protection
+- Implement proper JWT validation
+- Apply principle of least privilege
+- Use custom guards for business logic authorization
+
+### DTOs and Validation
+- Use `class-validator` and `class-transformer`
+- Create separate DTOs for Create/Update operations
+- Implement proper input sanitization
+- Use `@Transform()` for data transformation
+
+### Error Handling
+```typescript
+// Use NestJS built-in exceptions with clear messages
+throw new BadRequestException('Invalid input data');
+throw new NotFoundException('Resource not found');
+throw new ForbiddenException('Insufficient permissions');
+
+// For business rule violations, use BadRequestException with descriptive message
+throw new BadRequestException('Registration limit exceeded for this tournament');
+
+// Always log errors with context
+this.logger.error(`Operation failed: ${error.message}`, error.stack);
+```
+
+## Design Patterns Implementation
+
+### Strategy Pattern (for Business Rules)
+```typescript
+interface BusinessRuleStrategy {
+  validate(data: any): boolean;
+  getErrorMessage(): string;
+}
+
+@Injectable()
+export class BusinessRulesFactory {
+  createStrategy(type: string): BusinessRuleStrategy {
+    // Factory implementation
+  }
+}
+```
+
+### Command/Query Separation
+- Separate read and write operations
+- Use CQRS pattern for complex domains
+- Implement proper command validation
+
+## Code Quality Standards
+
+### Service Layer Structure
+```typescript
+@Injectable()
+export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly externalApiService: ExternalApiService,
+  ) {}
+
+  // Public methods - use cases
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    await this.validateBusinessRules(createUserDto);
+    return this.userRepository.save(createUserDto);
+  }
+
+  // Private methods - internal logic
+  private async validateBusinessRules(data: CreateUserDto): Promise<void> {
+    // Business validation logic
+  }
+}
+```
+
+### Controller Best Practices
+```typescript
+@Controller('api/v1/users')
+@UseGuards(JwtAuthGuard)
+export class UserController {
+  @Post()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.userService.createUser(createUserDto);
+    return this.mapToResponseDto(user);
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.mapToResponseDto(user);
+  }
+}
+```
+
+## Security Standards
+
+### Input Validation
+- Validate all inputs using DTOs
+- Sanitize data before processing
+- Use parameterized queries (TypeORM handles this)
+- Implement rate limiting
+
+### Authentication & Authorization
+- Use JWT with proper expiration
+- Implement refresh token strategy
+- Store secrets in environment variables
+- Apply CORS policies appropriately
+
+## Testing Requirements
+
+### Unit Testing Structure
+```typescript
+describe('UserService', () => {
+  let service: UserService;
+  let repository: Repository<User>;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        UserService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: createMockRepository(),
+        },
+      ],
+    }).compile();
+
+    service = module.get<UserService>(UserService);
+    repository = module.get<Repository<User>>(getRepositoryToken(User));
+  });
+
+  it('should create user successfully', async () => {
+    // Test implementation
+  });
+});
+```
+
+### Test Coverage Goals
+- Maintain ≥80% code coverage on business logic
+- Test business rules thoroughly
+- Include integration tests for API endpoints
+- Use test data builders to minimize duplication
+
+## Observability & Monitoring
+
+### Logging Standards
+```typescript
+import { Logger } from '@nestjs/common';
+
+@Injectable()
+export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
+  async createUser(data: CreateUserDto): Promise<User> {
+    this.logger.log(`Creating user with email: ${data.email}`);
+    try {
+      // Implementation
+      this.logger.log(`User created successfully: ${user.id}`);
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to create user: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+}
+```
+
+### Performance Considerations
+- Target <200ms response time (95th percentile)
+- Implement database query optimization
+- Use proper indexing strategies
+- Consider caching for frequently accessed data
+
+## File Organization
+- Group related functionality in modules
+- Use barrel exports for clean imports
+- Keep controllers thin, business logic in services
+- Separate concerns clearly between layers
+
+Follow NestJS documentation for advanced patterns and keep business logic pure and testable.
