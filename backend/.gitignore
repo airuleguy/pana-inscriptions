@@ -5,4 +5,7 @@ dist/
 build/
 
 # TypeScript
-*.tsbuildinfo 
+*.tsbuildinfo
+
+# Generated files (i18n types, etc.)
+src/generated/ 
