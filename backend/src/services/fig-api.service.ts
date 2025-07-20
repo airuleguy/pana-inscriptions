@@ -75,7 +75,7 @@ export class FigApiService {
       // Try to get from cache first
       const cachedData = await this.cacheManager.get<GymnastDto[]>(this.CACHE_KEY);
       if (cachedData) {
-        this.logger.log('Returning cached FIG gymnast data');
+        this.logger.debug('Returning cached FIG gymnast data');
         return cachedData;
       }
 
@@ -116,55 +116,12 @@ export class FigApiService {
   }
 
   async getGymnastsByCountry(country: string): Promise<GymnastDto[]> {
-    try {
-      // Try to get country-specific data from cache first
-      const cacheKey = `${this.CACHE_KEY}-${country.toUpperCase()}`;
-      const cachedData = await this.cacheManager.get<GymnastDto[]>(cacheKey);
-      if (cachedData) {
-        this.logger.log(`Returning cached FIG gymnast data for country: ${country}`);
-        return cachedData;
-      }
-
-      // Fetch with country filter from FIG API
-      this.logger.log(`Fetching gymnast data from FIG API for country: ${country}`);
-      const countrySpecificUrl = `${this.figApiUrl}?function=searchLicenses&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&idlicense=&lastname=`;
-      
-      const response: AxiosResponse<FigApiGymnast[]> = await axios.get(countrySpecificUrl, {
-        timeout: this.API_TIMEOUT,
-      });
-
-      if (!Array.isArray(response.data)) {
-        throw new HttpException('FIG API returned unexpected data format', HttpStatus.BAD_GATEWAY);
-      }
-
-      // Transform the data to match frontend expectations at ingestion point
-      const gymnasts: GymnastDto[] = response.data
-        .map(athlete => this.transformFigApiGymnastToDto(athlete))
-        .filter(gymnast => gymnast !== null);
-
-      // Cache the country-specific result
-      await this.cacheManager.set(cacheKey, gymnasts, this.CACHE_TTL);
-      this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API for country: ${country}`);
-
-      return gymnasts;
-    } catch (error) {
-      this.logger.error(`Failed to fetch gymnasts from FIG API for country: ${country}`, error);
-      
-      if (error.response?.status === 429) {
-        throw new HttpException('FIG API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
-      }
-      
-      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
-        throw new HttpException('FIG API timeout', HttpStatus.GATEWAY_TIMEOUT);
-      }
-
-      // Fallback to filtering all gymnasts
-      this.logger.log(`Falling back to filtering all gymnasts for country: ${country}`);
-      const allGymnasts = await this.getGymnasts();
-      return allGymnasts.filter(gymnast => 
-        gymnast.country.toLowerCase() === country.toLowerCase()
-      );
-    }
+    // OPTIMIZED: Always use cached data and filter in-memory for fast performance
+    this.logger.debug(`Filtering cached gymnast data for country: ${country}`);
+    const allGymnasts = await this.getGymnasts();
+    return allGymnasts.filter(gymnast => 
+      gymnast.country.toLowerCase() === country.toLowerCase()
+    );
   }
 
   async getGymnastByFigId(figId: string): Promise<GymnastDto | null> {
@@ -184,7 +141,7 @@ export class FigApiService {
       // Try to get from cache first
       const cachedData = await this.cacheManager.get<CoachDto[]>(this.COACH_CACHE_KEY);
       if (cachedData) {
-        this.logger.log('Returning cached FIG coach data');
+        this.logger.debug('Returning cached FIG coach data');
         return cachedData;
       }
 
@@ -223,53 +180,12 @@ export class FigApiService {
   }
 
   async getCoachesByCountry(country: string): Promise<CoachDto[]> {
-    try {
-      // Try to get country-specific data from cache first
-      const cacheKey = `${this.COACH_CACHE_KEY}-${country.toUpperCase()}`;
-      const cachedData = await this.cacheManager.get<CoachDto[]>(cacheKey);
-      if (cachedData) {
-        this.logger.log(`Returning cached FIG coach data for country: ${country}`);
-        return cachedData;
-      }
-
-      // Fetch with country filter from FIG API
-      this.logger.log(`Fetching coach data from FIG API for country: ${country}`);
-      const countrySpecificUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&level=&lastname=&firstname=`;
-      
-      const response: AxiosResponse<FigApiCoach[]> = await axios.get(countrySpecificUrl, {
-        timeout: this.API_TIMEOUT,
-      });
-
-      if (!Array.isArray(response.data)) {
-        throw new HttpException('FIG Coach API returned unexpected data format', HttpStatus.BAD_GATEWAY);
-      }
-
-      // Transform the data to match frontend expectations at ingestion point
-      const coaches: CoachDto[] = response.data.map(coach => this.transformFigApiCoachToDto(coach));
-
-      // Cache the country-specific result
-      await this.cacheManager.set(cacheKey, coaches, this.CACHE_TTL);
-      this.logger.log(`Cached ${coaches.length} coaches from FIG API for country: ${country}`);
-
-      return coaches;
-    } catch (error) {
-      this.logger.error(`Failed to fetch coaches from FIG API for country: ${country}`, error);
-      
-      if (error.response?.status === 429) {
-        throw new HttpException('FIG Coach API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
-      }
-      
-      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
-        throw new HttpException('FIG Coach API timeout', HttpStatus.GATEWAY_TIMEOUT);
-      }
-
-      // Fallback to filtering all coaches
-      this.logger.log(`Falling back to filtering all coaches for country: ${country}`);
-      const allCoaches = await this.getCoaches();
-      return allCoaches.filter(coach => 
-        coach.country.toLowerCase() === country.toLowerCase()
-      );
-    }
+    // OPTIMIZED: Always use cached data and filter in-memory for fast performance
+    this.logger.debug(`Filtering cached coach data for country: ${country}`);
+    const allCoaches = await this.getCoaches();
+    return allCoaches.filter(coach => 
+      coach.country.toLowerCase() === country.toLowerCase()
+    );
   }
 
   async getCoachById(id: string): Promise<CoachDto | null> {
@@ -289,7 +205,7 @@ export class FigApiService {
       // Try to get from cache first
       const cachedData = await this.cacheManager.get<JudgeDto[]>(this.JUDGE_CACHE_KEY);
       if (cachedData) {
-        this.logger.log('Returning cached FIG judge data');
+        this.logger.debug('Returning cached FIG judge data');
         return cachedData;
       }
 
@@ -328,53 +244,12 @@ export class FigApiService {
   }
 
   async getJudgesByCountry(country: string): Promise<JudgeDto[]> {
-    try {
-      // Try to get country-specific data from cache first
-      const cacheKey = `${this.JUDGE_CACHE_KEY}-${country.toUpperCase()}`;
-      const cachedData = await this.cacheManager.get<JudgeDto[]>(cacheKey);
-      if (cachedData) {
-        this.logger.log(`Returning cached FIG judge data for country: ${country}`);
-        return cachedData;
-      }
-
-      // Fetch with country filter from FIG API
-      this.logger.log(`Fetching judge data from FIG API for country: ${country}`);
-      const countrySpecificUrl = `${this.figJudgeApiUrl}?function=search&discipline=AER&country=${encodeURIComponent(country.toUpperCase())}&id=&category=&lastname=`;
-      
-      const response: AxiosResponse<FigApiJudge[]> = await axios.get(countrySpecificUrl, {
-        timeout: this.API_TIMEOUT,
-      });
-
-      if (!Array.isArray(response.data)) {
-        throw new HttpException('FIG Judge API returned unexpected data format', HttpStatus.BAD_GATEWAY);
-      }
-
-      // Transform the data to match frontend expectations at ingestion point
-      const judges: JudgeDto[] = response.data.map(judge => this.transformFigApiJudgeToDto(judge));
-
-      // Cache the country-specific result
-      await this.cacheManager.set(cacheKey, judges, this.CACHE_TTL);
-      this.logger.log(`Cached ${judges.length} judges from FIG API for country: ${country}`);
-
-      return judges;
-    } catch (error) {
-      this.logger.error(`Failed to fetch judges from FIG API for country: ${country}`, error);
-      
-      if (error.response?.status === 429) {
-        throw new HttpException('FIG Judge API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
-      }
-      
-      if (error.code === 'TIMEOUT' || error.code === 'ECONNABORTED') {
-        throw new HttpException('FIG Judge API timeout', HttpStatus.GATEWAY_TIMEOUT);
-      }
-
-      // Fallback to filtering all judges
-      this.logger.log(`Falling back to filtering all judges for country: ${country}`);
-      const allJudges = await this.getJudges();
-      return allJudges.filter(judge => 
-        judge.country.toLowerCase() === country.toLowerCase()
-      );
-    }
+    // OPTIMIZED: Always use cached data and filter in-memory for fast performance
+    this.logger.debug(`Filtering cached judge data for country: ${country}`);
+    const allJudges = await this.getJudges();
+    return allJudges.filter(judge => 
+      judge.country.toLowerCase() === country.toLowerCase()
+    );
   }
 
   async getJudgeById(id: string): Promise<JudgeDto | null> {
@@ -385,6 +260,54 @@ export class FigApiService {
   async clearJudgeCache(): Promise<void> {
     await this.cacheManager.del(this.JUDGE_CACHE_KEY);
     this.logger.log('FIG judge cache cleared');
+  }
+
+  /**
+   * Clear all FIG caches (gymnasts, coaches, judges)
+   */
+  async clearAllCaches(): Promise<void> {
+    await Promise.all([
+      this.cacheManager.del(this.CACHE_KEY),
+      this.cacheManager.del(this.COACH_CACHE_KEY),
+      this.cacheManager.del(this.JUDGE_CACHE_KEY),
+    ]);
+    this.logger.log('All FIG caches cleared');
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  async getCacheStats(): Promise<{
+    message: string;
+    cacheType: string;
+    ttl: number;
+    gymnasts: { cached: boolean; count?: number };
+    coaches: { cached: boolean; count?: number };
+    judges: { cached: boolean; count?: number };
+  }> {
+    const [gymnastsCache, coachesCache, judgesCache] = await Promise.all([
+      this.cacheManager.get<GymnastDto[]>(this.CACHE_KEY),
+      this.cacheManager.get<CoachDto[]>(this.COACH_CACHE_KEY),
+      this.cacheManager.get<JudgeDto[]>(this.JUDGE_CACHE_KEY),
+    ]);
+
+    return {
+      message: 'FIG API Cache with In-Memory Filtering',
+      cacheType: 'Pre-loaded on startup, refreshed every 12h',
+      ttl: this.CACHE_TTL,
+      gymnasts: {
+        cached: !!gymnastsCache,
+        count: gymnastsCache?.length
+      },
+      coaches: {
+        cached: !!coachesCache,
+        count: coachesCache?.length
+      },
+      judges: {
+        cached: !!judgesCache,
+        count: judgesCache?.length
+      },
+    };
   }
 
   /**

@@ -51,8 +51,10 @@ export function JudgeDataTable({
         const judges = await APIService.getJudges(country);
         setAvailableJudges(judges);
         
-        // Preload images for better UX
-        await preloadPeopleImages(judges);
+        // OPTIMIZED: Preload images in background without blocking UI
+        preloadPeopleImages(judges).catch(err => 
+          console.warn('Image preloading failed (non-critical):', err)
+        );
       } catch (error) {
         console.error('Error loading judges:', error);
         setError('Failed to load judges');
@@ -62,7 +64,7 @@ export function JudgeDataTable({
     };
 
     loadJudges();
-  }, [country]);
+  }, [country, preloadPeopleImages]); // Added preloadPeopleImages to dependencies
 
   // Filter judges based on requirements
   const filteredJudges = useMemo(() => {

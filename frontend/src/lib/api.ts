@@ -9,6 +9,13 @@ export class APIService {
   private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // Use backend URL from environment
   private static authToken: string | null = null;
   
+  // Simple in-memory cache for frontend performance
+  private static cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private static readonly DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  
+  // Request deduplication - prevent multiple simultaneous requests for same data
+  private static activeRequests = new Map<string, Promise<any>>();
+  
   /**
    * Set authentication token for API requests
    */
@@ -21,6 +28,64 @@ export class APIService {
    */
   static getAuthToken(): string | null {
     return this.authToken;
+  }
+  
+  /**
+   * Get data from cache if available and not expired
+   */
+  private static getFromCache<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (!cached) return null;
+    
+    if (Date.now() - cached.timestamp > cached.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return cached.data;
+  }
+
+  /**
+   * Store data in cache
+   */
+  private static setCache(key: string, data: any, ttl = this.DEFAULT_CACHE_TTL): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
+  }
+
+  /**
+   * Clear cache for specific key or all cache
+   */
+  static clearCache(key?: string): void {
+    if (key) {
+      this.cache.delete(key);
+    } else {
+      this.cache.clear();
+    }
+  }
+
+  /**
+   * Deduplicated fetch - prevents multiple simultaneous requests for same endpoint
+   */
+  private static async deduplicatedFetch<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
+    // Check if there's already an active request for this key
+    const activeRequest = this.activeRequests.get(key);
+    if (activeRequest) {
+      console.log(`🔄 Deduplicating request for ${key}`);
+      return activeRequest;
+    }
+    
+    // Start new request and store it
+    const requestPromise = fetchFn().finally(() => {
+      // Clean up when request completes
+      this.activeRequests.delete(key);
+    });
+    
+    this.activeRequests.set(key, requestPromise);
+    return requestPromise;
   }
   
   /**
@@ -154,14 +219,31 @@ export class APIService {
    * Get all licensed gymnasts with optional country filter
    */
   static async getGymnasts(country?: string): Promise<Gymnast[]> {
-    const endpoint = country 
-      ? `/api/v1/gymnasts?country=${encodeURIComponent(country)}`
-      : '/api/v1/gymnasts';
+    const cacheKey = `gymnasts-${country || 'all'}`;
     
-    const figGymnasts = await this.fetchAPI<any[]>(endpoint);
+    // Check cache first
+    const cached = this.getFromCache<Gymnast[]>(cacheKey);
+    if (cached) {
+      console.log(`🚀 Returning cached gymnasts for ${country || 'all countries'}`);
+      return cached;
+    }
     
-    // Transform backend data to frontend format
-    return figGymnasts.map(fig => this.transformBackendToGymnast(fig));
+    // Use deduplication to prevent multiple simultaneous requests
+    return this.deduplicatedFetch(cacheKey, async () => {
+      const endpoint = country 
+        ? `/api/v1/gymnasts?country=${encodeURIComponent(country)}`
+        : '/api/v1/gymnasts';
+      
+      const figGymnasts = await this.fetchAPI<any[]>(endpoint);
+      
+      // Transform backend data to frontend format
+      const result = figGymnasts.map(fig => this.transformBackendToGymnast(fig));
+      
+      // Cache the result
+      this.setCache(cacheKey, result);
+      
+      return result;
+    });
   }
 
   /**
@@ -188,14 +270,26 @@ export class APIService {
       body: JSON.stringify(gymnastData),
     });
     
+    // Clear gymnasts cache since we added a new one
+    this.clearCache(`gymnasts-${gymnastData.country}`);
+    this.clearCache('gymnasts-all');
+    
     return this.transformBackendToGymnast(response);
   }
 
   /**
-   * Clear gymnast cache on the backend
+   * Clear gymnast cache (used by refresh button)
    */
   static async clearGymnastCache(): Promise<void> {
-    await this.fetchAPI<void>('/api/v1/gymnasts/cache', { method: 'DELETE' });
+    // Clear frontend cache
+    for (const [key] of this.cache) {
+      if (key.startsWith('gymnasts-')) {
+        this.cache.delete(key);
+      }
+    }
+    
+    // Clear backend cache
+    await this.fetchAPI('/api/v1/gymnasts/cache', { method: 'DELETE' });
   }
 
   // ==================== COACHES ====================
@@ -204,14 +298,29 @@ export class APIService {
    * Get all licensed coaches with optional country filter
    */
   static async getCoaches(country?: string): Promise<Coach[]> {
-    const endpoint = country 
-      ? `/api/v1/coaches?country=${encodeURIComponent(country)}`
-      : '/api/v1/coaches';
+    const cacheKey = `coaches-${country || 'all'}`;
     
-    const figCoaches = await this.fetchAPI<Coach[]>(endpoint);
+    // Check cache first
+    const cached = this.getFromCache<Coach[]>(cacheKey);
+    if (cached) {
+      console.log(`🚀 Returning cached coaches for ${country || 'all countries'}`);
+      return cached;
+    }
     
-    // Data is already transformed by backend - return directly
-    return figCoaches;
+    // Use deduplication to prevent multiple simultaneous requests
+    return this.deduplicatedFetch(cacheKey, async () => {
+      const endpoint = country 
+        ? `/api/v1/coaches?country=${encodeURIComponent(country)}`
+        : '/api/v1/coaches';
+      
+      const figCoaches = await this.fetchAPI<Coach[]>(endpoint);
+      
+      // Cache the result
+      this.setCache(cacheKey, figCoaches);
+      
+      // Data is already transformed by backend - return directly
+      return figCoaches;
+    });
   }
 
   /**
@@ -224,10 +333,18 @@ export class APIService {
   }
 
   /**
-   * Clear coach cache on the backend
+   * Clear coach cache (used by refresh button)
    */
   static async clearCoachCache(): Promise<void> {
-    await this.fetchAPI<void>('/api/v1/coaches/cache', { method: 'DELETE' });
+    // Clear frontend cache
+    for (const [key] of this.cache) {
+      if (key.startsWith('coaches-')) {
+        this.cache.delete(key);
+      }
+    }
+    
+    // Clear backend cache
+    await this.fetchAPI('/api/v1/coaches/cache', { method: 'DELETE' });
   }
 
   /**
@@ -262,14 +379,29 @@ export class APIService {
    * Get all certified judges with optional country filter
    */
   static async getJudges(country?: string): Promise<Judge[]> {
-    const endpoint = country 
-      ? `/api/v1/judges?country=${encodeURIComponent(country)}`
-      : '/api/v1/judges';
+    const cacheKey = `judges-${country || 'all'}`;
     
-    const figJudges = await this.fetchAPI<Judge[]>(endpoint);
+    // Check cache first
+    const cached = this.getFromCache<Judge[]>(cacheKey);
+    if (cached) {
+      console.log(`🚀 Returning cached judges for ${country || 'all countries'}`);
+      return cached;
+    }
     
-    // Data is already transformed by backend - return directly
-    return figJudges;
+    // Use deduplication to prevent multiple simultaneous requests
+    return this.deduplicatedFetch(cacheKey, async () => {
+      const endpoint = country 
+        ? `/api/v1/judges?country=${encodeURIComponent(country)}`
+        : '/api/v1/judges';
+      
+      const figJudges = await this.fetchAPI<Judge[]>(endpoint);
+      
+      // Cache the result
+      this.setCache(cacheKey, figJudges);
+      
+      // Data is already transformed by backend - return directly
+      return figJudges;
+    });
   }
 
   /**
@@ -282,10 +414,18 @@ export class APIService {
   }
 
   /**
-   * Clear judge cache on the backend
+   * Clear judge cache (used by refresh button)
    */
   static async clearJudgeCache(): Promise<void> {
-    await this.fetchAPI<void>('/api/v1/judges/cache', { method: 'DELETE' });
+    // Clear frontend cache
+    for (const [key] of this.cache) {
+      if (key.startsWith('judges-')) {
+        this.cache.delete(key);
+      }
+    }
+    
+    // Clear backend cache
+    await this.fetchAPI('/api/v1/judges/cache', { method: 'DELETE' });
   }
 
   /**
@@ -927,12 +1067,19 @@ export class APIService {
       .filter((id): id is string => Boolean(id));
 
     if (figIds.length > 0) {
-      try {
-        await this.preloadImages(figIds);
-        console.log(`Preloaded ${figIds.length} images`);
-      } catch (error) {
-        console.warn('Failed to preload images:', error);
-      }
+      // Create a unique key for this set of images
+      const sortedIds = [...figIds].sort();
+      const preloadKey = `preload-${sortedIds.join(',')}`;
+      
+      // Use deduplication to prevent multiple preload requests for same images
+      return this.deduplicatedFetch(preloadKey, async () => {
+        try {
+          await this.preloadImages(figIds);
+          console.log(`📸 Preloaded ${figIds.length} images`);
+        } catch (error) {
+          console.warn('Failed to preload images (non-critical):', error);
+        }
+      });
     }
   }
 } 

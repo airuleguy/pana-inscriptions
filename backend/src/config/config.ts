@@ -6,7 +6,6 @@ import { Judge } from '../entities/judge.entity';
 import { User } from '../entities/user.entity';
 import { UserSession } from '../entities/user-session.entity';
 
-
 export const configuration = () => ({
   port: parseInt(process.env.PORT, 10) || 3001,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -43,12 +42,17 @@ export const configuration = () => ({
   },
   
   cache: {
-    ttl: parseInt(process.env.CACHE_TTL, 10) || 3600,
-    max: parseInt(process.env.CACHE_MAX, 10) || 100,
+    ttl: parseInt(process.env.CACHE_TTL, 10) || 43200, // 12 hours (matches refresh cycle)
+    max: parseInt(process.env.CACHE_MAX, 10) || 1000,   // Increased limit for more data
   },
   
   imageCache: {
-    ttl: parseInt(process.env.IMAGE_CACHE_TTL, 10) || 86400, // 24 hours for images
-    maxSize: parseInt(process.env.MAX_IMAGE_SIZE, 10) || 5 * 1024 * 1024, // 5MB
+    ttl: parseInt(process.env.IMAGE_CACHE_TTL, 10) || 86400, // 24 hours
+    max: parseInt(process.env.IMAGE_CACHE_MAX, 10) || 100,
+  },
+
+  figDataWarmup: {
+    enabled: process.env.FIG_WARMUP_ENABLED !== 'false', // Default enabled
+    imagePreloadLimit: parseInt(process.env.IMAGE_PRELOAD_LIMIT, 10) || 50,
   },
 }); 

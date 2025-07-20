@@ -249,24 +249,7 @@ export default function TournamentRegistrationDashboard() {
           </Card>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button 
-            size="lg" 
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4" />
-            {t('dashboard.registerNewItems')}
-          </Button>
-          <Button variant="outline" size="lg" className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            {t('dashboard.viewPending')} ({pendingRegistrations?.totals.total || 0})
-          </Button>
-          <Button variant="outline" size="lg" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
-            {t('dashboard.viewSubmitted')} ({submittedRegistrations?.totals.total || 0})
-          </Button>
-        </div>
+
 
         {/* Registration Sections */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

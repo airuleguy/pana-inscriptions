@@ -51,8 +51,10 @@ export function CoachDataTable({
         const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
         
-        // Preload images for better UX
-        await preloadPeopleImages(coaches);
+        // OPTIMIZED: Preload images in background without blocking UI
+        preloadPeopleImages(coaches).catch(err => 
+          console.warn('Image preloading failed (non-critical):', err)
+        );
       } catch (error) {
         console.error('Error loading coaches:', error);
         setError('Failed to load coaches');
@@ -62,7 +64,7 @@ export function CoachDataTable({
     };
 
     loadCoaches();
-  }, [country]);
+  }, [country, preloadPeopleImages]); // Added preloadPeopleImages to dependencies
 
   // Filter coaches based on requirements
   const filteredCoaches = useMemo(() => {

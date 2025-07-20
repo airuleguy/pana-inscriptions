@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { JwtModule } from '@nestjs/jwt';
+import { ScheduleModule } from '@nestjs/schedule';
 import { configuration } from './config/config';
 import { DatabaseConfig } from './config/database.config';
 import { Gymnast } from './entities/gymnast.entity';
@@ -35,6 +36,7 @@ import { AuthService } from './services/auth.service';
 import { JwtService } from './services/jwt.service';
 import { AuthGuard } from './guards/auth.guard';
 import { BusinessRulesFactory } from './utils/business-rules/business-rules-factory';
+import { FigDataWarmupService } from './services/fig-data-warmup.service';
 
 @Module({
   imports: [
@@ -68,6 +70,9 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
       useFactory: async (configService: ConfigService) => configService.get('cache'),
       inject: [ConfigService],
     }),
+
+    // Add scheduler for periodic warmup
+    ScheduleModule.forRoot(),
 
     // Internationalization
     i18nConfig,
@@ -108,6 +113,7 @@ import { BusinessRulesFactory } from './utils/business-rules/business-rules-fact
     JwtService,
     AuthGuard,
     BusinessRulesFactory,
+    FigDataWarmupService,
   ],
 })
 export class AppModule {}

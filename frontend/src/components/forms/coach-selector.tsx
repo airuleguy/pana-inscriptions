@@ -58,6 +58,7 @@ export function CoachSelector({
       if (!country) return;
       
       try {
+        // OPTIMIZED: Use cached data for search instead of fresh API call
         const allCoaches = await APIService.getCoaches(country);
         const results = APIService.searchCoachesLocal(allCoaches, query);
         setAvailableCoaches(results);
@@ -81,8 +82,10 @@ export function CoachSelector({
         const coaches = await APIService.getCoaches(country);
         setAvailableCoaches(coaches);
         
-        // Preload images for better UX
-        await preloadPeopleImages(coaches);
+        // OPTIMIZED: Preload images in background without blocking UI
+        preloadPeopleImages(coaches).catch(err => 
+          console.warn('Image preloading failed (non-critical):', err)
+        );
       } catch (error) {
         console.error('Failed to load coaches:', error);
         setError('Failed to load coaches from FIG database');
@@ -92,14 +95,14 @@ export function CoachSelector({
     }
 
     loadCoaches();
-  }, [country]);
+  }, [country, preloadPeopleImages]); // Added preloadPeopleImages to dependencies
 
   // Handle search query changes
   useEffect(() => {
     if (searchQuery.trim()) {
       debouncedSearch(searchQuery);
     } else if (country) {
-      // Reset to all coaches for the country
+      // OPTIMIZED: Reset to cached coaches instead of fresh API call
       APIService.getCoaches(country)
         .then(setAvailableCoaches)
         .catch((error) => {

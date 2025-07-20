@@ -61,8 +61,10 @@ export function GymnastDataTable({
         const gymnasts = await APIService.getGymnasts(countryCode);
         setAvailableGymnasts(gymnasts);
         
-        // Preload images for better UX
-        await preloadPeopleImages(gymnasts);
+        // OPTIMIZED: Preload images in background without blocking UI
+        preloadPeopleImages(gymnasts).catch(err => 
+          console.warn('Image preloading failed (non-critical):', err)
+        );
       } catch (err: unknown) {
         console.error('Failed to load gymnasts:', err);
         setError('Failed to load gymnasts from FIG database');
@@ -72,7 +74,7 @@ export function GymnastDataTable({
     }
 
     loadGymnasts();
-  }, [countryCode]);
+  }, [countryCode, preloadPeopleImages]); // Added preloadPeopleImages to dependencies
 
   // Filter gymnasts based on requirements
   const filteredGymnasts = useMemo(() => {
