@@ -42,6 +42,207 @@ interface SubmittedRegistrations {
   };
 }
 
+// Reusable Registration Summary Card Component
+interface RegistrationSummaryCardProps {
+  title: string;
+  count: number;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  variant: 'pending' | 'submitted';
+}
+
+function RegistrationSummaryCard({ title, count, label, icon: Icon, variant }: RegistrationSummaryCardProps) {
+  const colors = {
+    pending: {
+      card: 'border-orange-200 bg-orange-50',
+      icon: 'text-orange-600',
+      title: 'text-orange-900',
+      count: 'text-orange-800',
+      label: 'text-orange-700'
+    },
+    submitted: {
+      card: 'border-green-200 bg-green-50',
+      icon: 'text-green-600',
+      title: 'text-green-900',
+      count: 'text-green-800',
+      label: 'text-green-700'
+    }
+  };
+
+  const colorScheme = colors[variant];
+
+  return (
+    <Card className={colorScheme.card}>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2">
+          <Icon className={`w-5 h-5 ${colorScheme.icon}`} />
+          <h3 className={`font-semibold text-lg ${colorScheme.title}`}>{title}</h3>
+        </CardTitle>
+        <div className={`text-2xl font-bold ${colorScheme.count}`}>
+          {count} {label}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex justify-between items-center">
+          <div className={`text-sm ${colorScheme.label}`}>{variant === 'pending' ? 'Pendiente' : 'Enviado'}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Reusable Individual Registration Card Components
+interface ChoreographyCardProps {
+  choreography: Choreography;
+  status: 'pending' | 'submitted';
+  t: (key: string) => string;
+}
+
+function ChoreographyCard({ choreography, status, t }: ChoreographyCardProps) {
+  const colorScheme = status === 'pending' 
+    ? { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600', badge: 'text-blue-800' }
+    : { bg: 'bg-blue-50', border: 'border-blue-200', icon: 'text-blue-600', badge: 'text-blue-800' };
+
+  return (
+    <div className={`${colorScheme.bg} rounded-lg border ${colorScheme.border} p-4`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <Award className={`w-4 h-4 ${colorScheme.icon}`} />
+          <div>
+            <p className="font-medium">{choreography.name || choreography.category}</p>
+            <div className="flex gap-2 mt-1">
+              <Badge variant="secondary" className="text-xs">
+                {choreography.category}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
+              </Badge>
+            </div>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-gray-600">{choreography.gymnasts.length} {t('dashboard.gymnasts')}</p>
+        </div>
+      </div>
+      
+      {/* Gymnast List */}
+      {choreography.gymnasts.length > 0 && (
+        <div className="space-y-2">
+          {choreography.gymnasts.map((gymnast, index) => (
+            <div key={index} className="flex items-center justify-between text-sm">
+              <span className="font-medium">{gymnast.firstName} {gymnast.lastName}</span>
+              <span className="text-gray-500">{gymnast.country}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface CoachCardProps {
+  coach: Coach;
+  status: 'pending' | 'submitted';
+  t: (key: string) => string;
+  getCountryInfo: (code: string) => { code: string; name: string; flag: string };
+}
+
+function CoachCard({ coach, status, t, getCountryInfo }: CoachCardProps) {
+  const colorScheme = status === 'pending' 
+    ? { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600' }
+    : { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'text-purple-600' };
+
+  return (
+    <div className={`flex items-center justify-between p-3 ${colorScheme.bg} rounded-lg border ${colorScheme.border}`}>
+      <div className="flex items-center gap-3">
+        <User className={`w-4 h-4 ${colorScheme.icon}`} />
+        <div>
+          <p className="font-medium">{coach.firstName} {coach.lastName}</p>
+          <p className="text-sm text-gray-600">{t('dashboard.level')} {coach.level}</p>
+          <Badge variant="outline" className="text-xs">
+            {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
+          </Badge>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-sm text-gray-600">{getCountryInfo(coach.country).flag} {getCountryInfo(coach.country).name}</p>
+        <span className="text-xs text-gray-500">{t('dashboard.figId')}: {coach.id}</span>
+      </div>
+    </div>
+  );
+}
+
+interface JudgeCardProps {
+  judge: Judge;
+  status: 'pending' | 'submitted';
+  t: (key: string) => string;
+  getCountryInfo: (code: string) => { code: string; name: string; flag: string };
+}
+
+function JudgeCard({ judge, status, t, getCountryInfo }: JudgeCardProps) {
+  const colorScheme = status === 'pending' 
+    ? { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600' }
+    : { bg: 'bg-orange-50', border: 'border-orange-200', icon: 'text-orange-600' };
+
+  return (
+    <div className={`flex items-center justify-between p-3 ${colorScheme.bg} rounded-lg border ${colorScheme.border}`}>
+      <div className="flex items-center gap-3">
+        <User className={`w-4 h-4 ${colorScheme.icon}`} />
+        <div>
+          <p className="font-medium">{judge.firstName} {judge.lastName}</p>
+          <p className="text-sm text-gray-600">{t('dashboard.category')} {judge.category}</p>
+          <Badge variant="outline" className="text-xs">
+            {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
+          </Badge>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-sm text-gray-600">{getCountryInfo(judge.country).flag} {getCountryInfo(judge.country).name}</p>
+        <span className="text-xs text-gray-500">{t('dashboard.figId')}: {judge.id}</span>
+      </div>
+    </div>
+  );
+}
+
+// Reusable Registration Section Component
+interface RegistrationSectionProps {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  count: number;
+  status: 'pending' | 'submitted';
+  type?: 'choreography' | 'coach' | 'judge';
+}
+
+function RegistrationSection({ title, icon: Icon, children, count, status, type }: RegistrationSectionProps) {
+  const getIconColor = () => {
+    switch (type) {
+      case 'choreography': return 'text-blue-600';
+      case 'coach': return 'text-purple-600';
+      case 'judge': return 'text-orange-600';
+      default: return 'text-blue-600';
+    }
+  };
+
+  if (count === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon className={`w-5 h-5 ${getIconColor()}`} />
+          {title} ({count})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {children}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function TournamentRegistrationDashboard() {
   const router = useRouter();
   const params = useParams();
@@ -213,40 +414,22 @@ export default function TournamentRegistrationDashboard() {
         {/* Registration Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pending Registrations */}
-          <Card className="border-orange-200 bg-orange-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-orange-600" />
-                <h3 className="font-semibold text-lg text-orange-900">{t('dashboard.pendingRegistrations')}</h3>
-              </CardTitle>
-              <div className="text-2xl font-bold text-orange-800">
-                {pendingRegistrations?.totals.total || 0} {t('dashboard.itemsReadyForSubmission')}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-orange-700">{t('dashboard.pending')}</div>
-              </div>
-            </CardContent>
-          </Card>
+          <RegistrationSummaryCard 
+            title={t('dashboard.pendingRegistrations')} 
+            count={pendingRegistrations?.totals.total || 0} 
+            label={t('dashboard.itemsReadyForSubmission')} 
+            icon={Clock} 
+            variant="pending" 
+          />
 
           {/* Submitted Registrations */}
-          <Card className="border-green-200 bg-green-50">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-lg text-green-900">{t('dashboard.submittedRegistrations')}</h3>
-              </CardTitle>
-              <div className="text-2xl font-bold text-green-800">
-                {submittedRegistrations?.totals.total || 0} {t('dashboard.itemsInDatabase')}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-green-700">{t('dashboard.submitted')}</div>
-              </div>
-            </CardContent>
-          </Card>
+          <RegistrationSummaryCard 
+            title={t('dashboard.submittedRegistrations')} 
+            count={submittedRegistrations?.totals.total || 0} 
+            label={t('dashboard.itemsInDatabase')} 
+            icon={Database} 
+            variant="submitted" 
+          />
         </div>
 
 
@@ -358,8 +541,8 @@ export default function TournamentRegistrationDashboard() {
           </Card>
           <Card className="text-center">
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold text-red-800">{pendingRegistrations?.totals.judges || 0}</div>
-              <div className="text-sm text-red-700">{t('navigation.judges')}</div>
+              <div className="text-2xl font-bold text-orange-800">{pendingRegistrations?.totals.judges || 0}</div>
+              <div className="text-sm text-orange-700">{t('navigation.judges')}</div>
             </CardContent>
           </Card>
         </div>
@@ -377,100 +560,62 @@ export default function TournamentRegistrationDashboard() {
 
           <TabsContent value="pending" className="space-y-4">
             {pendingRegistrations && pendingRegistrations.choreographies.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Music className="w-5 h-5 text-blue-600" />
-                    {t('dashboard.choreographies')} ({pendingRegistrations.choreographies.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {pendingRegistrations.choreographies.map((choreography) => (
-                      <div key={choreography.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-3">
-                          <Award className="w-4 h-4 text-blue-600" />
-                          <div>
-                            <p className="font-medium">{choreography.category}</p>
-                            <Badge variant="outline" className="text-xs">
-                              {t('dashboard.pending').toUpperCase()}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">{choreography.gymnasts.length} {t('dashboard.gymnasts')}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <RegistrationSection 
+                title={t('dashboard.choreographies')} 
+                icon={Music} 
+                count={pendingRegistrations.choreographies.length} 
+                status="pending"
+                type="choreography"
+              >
+                {pendingRegistrations.choreographies.map((choreography) => (
+                  <ChoreographyCard 
+                    key={choreography.id} 
+                    choreography={choreography} 
+                    status="pending" 
+                    t={t} 
+                  />
+                ))}
+              </RegistrationSection>
             )}
 
             {pendingRegistrations && pendingRegistrations.coaches.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <GraduationCap className="w-5 h-5 text-purple-600" />
-                    {t('dashboard.pendingRegistrations')} {t('navigation.coaches')} ({pendingRegistrations.coaches.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {pendingRegistrations.coaches.map((coach) => (
-                      <div key={coach.id} className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
-                        <div className="flex items-center gap-3">
-                          <User className="w-4 h-4 text-purple-600" />
-                          <div>
-                            <p className="font-medium">{coach.firstName} {coach.lastName}</p>
-                            <p className="text-sm text-gray-600">{t('dashboard.level')} {coach.level}</p>
-                            <Badge variant="outline" className="text-xs">
-                              {t('dashboard.pending').toUpperCase()}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">{getCountryInfo(coach.country).flag} {getCountryInfo(coach.country).name}</p>
-                          <span className="text-xs text-gray-500">{t('dashboard.figId')}: {coach.id}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <RegistrationSection 
+                title={`${t('dashboard.pendingRegistrations')} ${t('navigation.coaches')}`} 
+                icon={GraduationCap} 
+                count={pendingRegistrations.coaches.length} 
+                status="pending"
+                type="coach"
+              >
+                {pendingRegistrations.coaches.map((coach) => (
+                  <CoachCard 
+                    key={coach.id} 
+                    coach={coach} 
+                    status="pending" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
             )}
 
             {pendingRegistrations && pendingRegistrations.judges.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Scale className="w-5 h-5 text-red-600" />
-                    {t('dashboard.pendingRegistrations')} {t('navigation.judges')} ({pendingRegistrations.judges.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {pendingRegistrations.judges.map((judge) => (
-                      <div key={judge.id} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                        <div className="flex items-center gap-3">
-                          <User className="w-4 h-4 text-red-600" />
-                          <div>
-                            <p className="font-medium">{judge.firstName} {judge.lastName}</p>
-                            <p className="text-sm text-gray-600">{t('dashboard.category')} {judge.category}</p>
-                            <Badge variant="outline" className="text-xs">
-                              {t('dashboard.pending').toUpperCase()}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">{getCountryInfo(judge.country).flag} {getCountryInfo(judge.country).name}</p>
-                          <span className="text-xs text-gray-500">{t('dashboard.figId')}: {judge.id}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <RegistrationSection 
+                title={`${t('dashboard.pendingRegistrations')} ${t('navigation.judges')}`} 
+                icon={Scale} 
+                count={pendingRegistrations.judges.length} 
+                status="pending"
+                type="judge"
+              >
+                {pendingRegistrations.judges.map((judge) => (
+                  <JudgeCard 
+                    key={judge.id} 
+                    judge={judge} 
+                    status="pending" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
             )}
 
             {(!pendingRegistrations || (pendingRegistrations.choreographies.length === 0 && pendingRegistrations.coaches.length === 0 && pendingRegistrations.judges.length === 0)) && (
@@ -495,19 +640,66 @@ export default function TournamentRegistrationDashboard() {
           </TabsContent>
 
           <TabsContent value="submitted" className="space-y-4">
-            {submittedRegistrations && submittedRegistrations.totals.total > 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <h3 className="text-xl font-medium text-gray-900 mb-2">{submittedRegistrations.totals.total} {t('dashboard.submittedRegistrations')}</h3>
-                  </CardTitle>
-                  <p className="text-gray-600">
-                    {submittedRegistrations.totals.total} {t('dashboard.itemsInDatabase')}
-                  </p>
-                </CardHeader>
-              </Card>
-            ) : (
+            {submittedRegistrations && submittedRegistrations.choreographies.length > 0 && (
+              <RegistrationSection 
+                title={t('dashboard.choreographies')} 
+                icon={Music} 
+                count={submittedRegistrations.choreographies.length} 
+                status="submitted"
+                type="choreography"
+              >
+                {submittedRegistrations.choreographies.map((choreography) => (
+                  <ChoreographyCard 
+                    key={choreography.id} 
+                    choreography={choreography} 
+                    status="submitted" 
+                    t={t} 
+                  />
+                ))}
+              </RegistrationSection>
+            )}
+
+            {submittedRegistrations && submittedRegistrations.coaches.length > 0 && (
+              <RegistrationSection 
+                title={`${t('dashboard.submittedRegistrations')} ${t('navigation.coaches')}`} 
+                icon={GraduationCap} 
+                count={submittedRegistrations.coaches.length} 
+                status="submitted"
+                type="coach"
+              >
+                {submittedRegistrations.coaches.map((coach) => (
+                  <CoachCard 
+                    key={coach.id} 
+                    coach={coach} 
+                    status="submitted" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
+            )}
+
+            {submittedRegistrations && submittedRegistrations.judges.length > 0 && (
+              <RegistrationSection 
+                title={`${t('dashboard.submittedRegistrations')} ${t('navigation.judges')}`} 
+                icon={Scale} 
+                count={submittedRegistrations.judges.length} 
+                status="submitted"
+                type="judge"
+              >
+                {submittedRegistrations.judges.map((judge) => (
+                  <JudgeCard 
+                    key={judge.id} 
+                    judge={judge} 
+                    status="submitted" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
+            )}
+
+            {(!submittedRegistrations || (submittedRegistrations.choreographies.length === 0 && submittedRegistrations.coaches.length === 0 && submittedRegistrations.judges.length === 0)) && (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-8">
