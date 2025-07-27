@@ -171,6 +171,7 @@ export function UnifiedNav() {
             </div>
             
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               <Button variant="ghost" size="sm" asChild>
                 <Link href={localePrefix}>{t('tournamentSelection.backToHome')}</Link>
               </Button>
@@ -320,6 +321,8 @@ export function UnifiedNav() {
 
             {/* Right side - Summary button and Auth info */}
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+              
               {/* Summary Button */}
               <Button
                 variant="outline"
