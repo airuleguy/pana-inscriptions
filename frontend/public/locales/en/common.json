@@ -335,7 +335,7 @@
   },
   "tournamentSelection": {
     "title": "Tournament Selection",
-    "subtitle": "Choose your tournament and country",
+    "subtitle": "Choose your tournament and country for registration",
     "backToHome": "Back to Home",
     "steps": {
       "tournamentSelection": "Tournament Selection",
@@ -347,13 +347,16 @@
       "emptyState": "No tournaments available at the moment.",
       "tryAgain": "Try Again",
       "active": "Active",
-      "locationTbd": "TBD"
+      "locationTbd": "TBD",
+      "noActiveTournaments": "No active tournaments available"
     },
-    "selectCountry": {
-      "title": "Select Country",
-      "placeholder": "Choose your country",
-      "eligibilityNote": "Only countries from the Americas region are eligible for Panamerican championships."
-    },
+          "selectCountry": {
+        "title": "Select Country",
+        "assignedCountry": "Your Assigned Country",
+        "placeholder": "Choose your country",
+        "eligibilityNote": "Only countries from the Americas region are eligible for Pan-American championships.",
+        "delegateNote": "Country selection is based on your user account permissions."
+      },
     "selectionSummary": {
       "title": "Selection Summary",
       "tournament": "Tournament:",

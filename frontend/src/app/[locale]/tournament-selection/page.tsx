@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,12 +12,14 @@ import { Tournament } from '@/types';
 import { countries, popularCountries } from '@/lib/countries';
 import { ProtectedRoute } from '@/components/protected-route';
 import { useTranslations } from '@/contexts/i18n-context';
+import { useAuth } from '@/contexts/auth-context';
 import { getLocalePrefix } from '@/lib/locale';
 
 function TournamentSelectionContent() {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslations('common');
+  const { state: authState } = useAuth();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string>('');
@@ -31,9 +32,20 @@ function TournamentSelectionContent() {
   // Get current locale prefix for navigation
   const localePrefix = getLocalePrefix(pathname || '');
 
+  // Check if user is admin and can select any country
+  const isAdmin = authState.user?.role === 'ADMIN';
+  const userCountry = authState.user?.country || '';
+
   useEffect(() => {
     loadTournaments();
   }, []);
+
+  // Auto-set user's country for delegates
+  useEffect(() => {
+    if (authState.user && !isAdmin && userCountry) {
+      setSelectedCountry(userCountry);
+    }
+  }, [authState.user, isAdmin, userCountry]);
 
   const loadTournaments = async () => {
     try {
@@ -191,27 +203,49 @@ function TournamentSelectionContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Globe className="w-5 h-5 text-blue-600" />
-                {t('tournamentSelection.selectCountry.title')}
+                {isAdmin ? t('tournamentSelection.selectCountry.title') : t('tournamentSelection.selectCountry.assignedCountry', 'Your Assigned Country')}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('tournamentSelection.selectCountry.placeholder')} />
+              <Select 
+                value={selectedCountry} 
+                onValueChange={setSelectedCountry}
+                disabled={!isAdmin}
+              >
+                <SelectTrigger className={`w-full ${!isAdmin ? 'opacity-75 cursor-not-allowed' : ''}`}>
+                  <SelectValue placeholder={
+                    isAdmin 
+                      ? t('tournamentSelection.selectCountry.placeholder') 
+                      : getCountryName(userCountry)
+                  } />
                 </SelectTrigger>
                 <SelectContent>
-                  {americasCountries.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
+                  {isAdmin ? (
+                    // Admin can select any Americas country
+                    americasCountries.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        <div className="flex items-center gap-2">
+                          <span>{country.flag}</span>
+                          <span>{country.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    // Delegate sees only their country
+                    <SelectItem value={userCountry}>
                       <div className="flex items-center gap-2">
-                        <span>{country.flag}</span>
-                        <span>{country.name}</span>
+                        <span>{countries.find(c => c.code === userCountry)?.flag}</span>
+                        <span>{countries.find(c => c.code === userCountry)?.name}</span>
                       </div>
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-2">
-                {t('tournamentSelection.selectCountry.eligibilityNote')}
+                {isAdmin 
+                  ? t('tournamentSelection.selectCountry.eligibilityNote')
+                  : t('tournamentSelection.selectCountry.delegateNote', 'Country selection is based on your user account permissions.')
+                }
               </p>
             </CardContent>
           </Card>

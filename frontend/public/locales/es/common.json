@@ -335,7 +335,7 @@
   },
   "tournamentSelection": {
     "title": "Selección de Torneo",
-    "subtitle": "Elige tu torneo y país",
+    "subtitle": "Elige tu torneo y país para la inscripción",
     "backToHome": "Volver al Inicio",
     "steps": {
       "tournamentSelection": "Selección de Torneo",
@@ -347,18 +347,21 @@
       "emptyState": "No hay torneos disponibles en este momento.",
       "tryAgain": "Intentar de Nuevo",
       "active": "Activo",
-      "locationTbd": "Por Definir"
+      "locationTbd": "Por Definir",
+      "noActiveTournaments": "No hay torneos activos disponibles"
     },
     "selectCountry": {
       "title": "Seleccionar País",
+      "assignedCountry": "Tu País Asignado",
       "placeholder": "Elige tu país",
-      "eligibilityNote": "Solo los países de la región de las Américas son elegibles para los campeonatos panamericanos."
+      "eligibilityNote": "Solo los países de la región de las Américas son elegibles para los campeonatos panamericanos.",
+      "delegateNote": "La selección de país se basa en los permisos de tu cuenta de usuario."
     },
     "selectionSummary": {
       "title": "Resumen de Selección",
       "tournament": "Torneo:",
       "country": "País:"
     },
-    "continueButton": "Continuar al Registro"
+    "continueButton": "Continuar a Inscripción"
   }
 }

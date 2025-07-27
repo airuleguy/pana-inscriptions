@@ -29,6 +29,7 @@ import {
   User,
   Award
 } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 interface SubmittedRegistrations {
   choreographies: Choreography[];
@@ -250,6 +251,7 @@ export default function TournamentRegistrationDashboard() {
   const tournamentId = params.tournamentId as string;
   const { state, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
   const { t } = useTranslations('common');
+  const { state: authState } = useAuth();
   
   // Get locale prefix for navigation
   const localePrefix = getLocalePrefix(pathname || '');
@@ -260,6 +262,10 @@ export default function TournamentRegistrationDashboard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Check if user is admin
+  const isAdmin = authState.user?.role === 'ADMIN';
+  const userCountry = authState.user?.country || '';
+
   // Load tournament data on mount
   useEffect(() => {
     const loadData = async () => {
@@ -267,18 +273,19 @@ export default function TournamentRegistrationDashboard() {
         const tournament = await APIService.getTournament(tournamentId);
         setSelectedTournament(tournament);
         
-        // Get country from localStorage or default to tournament country
-        const authData = localStorage.getItem('auth');
-        let userCountry = '';
-        if (authData) {
-          const { country } = JSON.parse(authData);
-          userCountry = country;
+        // Determine country based on user role
+        let countryToUse = '';
+        
+        if (isAdmin) {
+          // Admin: Check localStorage first, then use tournament country or user country as fallback
+          const storedCountry = localStorage.getItem('selectedCountry');
+          countryToUse = storedCountry || userCountry || 'URU';
+        } else {
+          // Delegate: Always use user's assigned country
+          countryToUse = userCountry;
         }
         
-        // Use user's country or default to Uruguay
-        const countryToUse = userCountry || 'URU';
         setSelectedCountry(countryToUse);
-        
         setLoading(false);
       } catch (error) {
         console.error('Error loading tournament data:', error);
@@ -286,12 +293,13 @@ export default function TournamentRegistrationDashboard() {
       }
     };
 
-    if (tournamentId) {
+    if (tournamentId && authState.user) {
       loadData();
-    } else {
+    } else if (tournamentId && !authState.isLoading) {
+      // No user available and not loading, redirect to tournament selection
       router.push(`${localePrefix}/tournament-selection`);
     }
-  }, [tournamentId, router]);
+  }, [tournamentId, router, authState.user, authState.isLoading, isAdmin, userCountry]);
 
   // Load registrations by status
   useEffect(() => {
