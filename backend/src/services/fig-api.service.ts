@@ -95,8 +95,8 @@ export class FigApiService {
         .map(athlete => this.transformFigApiGymnastToDto(athlete))
         .filter(gymnast => gymnast !== null);
 
-      // Cache the result
-      await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL);
+      // Cache the result (TTL in milliseconds for cache-manager v5)
+      await this.cacheManager.set(this.CACHE_KEY, gymnasts, this.CACHE_TTL * 1000);
       this.logger.log(`Cached ${gymnasts.length} gymnasts from FIG API`);
 
       return gymnasts;
@@ -159,8 +159,8 @@ export class FigApiService {
       // Transform the data to match frontend expectations at ingestion point
       const coaches: CoachDto[] = response.data.map(coach => this.transformFigApiCoachToDto(coach));
 
-      // Cache the result
-      await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL);
+      // Cache the result (TTL in milliseconds for cache-manager v5)
+      await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL * 1000);
       this.logger.log(`Cached ${coaches.length} coaches from FIG API`);
 
       return coaches;
@@ -223,8 +223,8 @@ export class FigApiService {
       // Transform the data to match frontend expectations at ingestion point
       const judges: JudgeDto[] = response.data.map(judge => this.transformFigApiJudgeToDto(judge));
 
-      // Cache the result
-      await this.cacheManager.set(this.JUDGE_CACHE_KEY, judges, this.CACHE_TTL);
+      // Cache the result (TTL in milliseconds for cache-manager v5)
+      await this.cacheManager.set(this.JUDGE_CACHE_KEY, judges, this.CACHE_TTL * 1000);
       this.logger.log(`Cached ${judges.length} judges from FIG API`);
 
       return judges;

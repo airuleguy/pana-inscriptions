@@ -67,7 +67,15 @@ import { FigDataWarmupService } from './services/fig-data-warmup.service';
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => configService.get('cache'),
+      useFactory: async (configService: ConfigService) => {
+        const cacheConfig = configService.get('cache');
+        return {
+          ttl: cacheConfig.ttl * 1000, // Convert to milliseconds for cache-manager v5
+          max: cacheConfig.max,
+          // Ensure we use memory store explicitly
+          store: 'memory',
+        };
+      },
       inject: [ConfigService],
     }),
 

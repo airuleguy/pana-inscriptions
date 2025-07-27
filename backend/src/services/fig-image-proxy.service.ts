@@ -98,8 +98,8 @@ export class FigImageProxyService {
         etag: response.headers['etag'],
       };
 
-      // Cache the image data
-      await this.cacheManager.set(cacheKey, imageData, this.IMAGE_CACHE_TTL);
+      // Cache the image data (TTL in milliseconds for cache-manager v5)
+      await this.cacheManager.set(cacheKey, imageData, this.IMAGE_CACHE_TTL * 1000);
       this.logger.log(`Cached image for FIG ID: ${cleanFigId} (${imageData.contentLength} bytes)`);
 
       return imageData;
