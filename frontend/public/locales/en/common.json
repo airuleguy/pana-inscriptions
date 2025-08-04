@@ -362,6 +362,14 @@
       "tournament": "Tournament:",
       "country": "Country:"
     },
-    "continueButton": "Continue to Registration"
+    "continueButton": "Continue to Registration",
+    "tournaments": {
+      "CAMPEONATO_PANAMERICANO": {
+        "description": "The premier Pan-American championship for aerobic gymnastics, featuring the highest level of competition with strict eligibility requirements and limited entries per country."
+      },
+      "COPA_PANAMERICANA": {
+        "description": "A developmental competition open to Pan-American countries and guest nations, promoting the growth of aerobic gymnastics across the region."
+      }
+    }
   }
 }

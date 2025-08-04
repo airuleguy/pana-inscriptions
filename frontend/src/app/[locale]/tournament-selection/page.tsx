@@ -175,11 +175,9 @@ function TournamentSelectionContent() {
                               <span>{tournament.location || t('tournamentSelection.selectTournament.locationTbd')}</span>
                             </div>
                           </div>
-                          {tournament.description && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              {tournament.description}
-                            </p>
-                          )}
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {t(`tournamentSelection.tournaments.${tournament.type}.description`)}
+                          </p>
                         </div>
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                           selectedTournament?.id === tournament.id

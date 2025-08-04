@@ -362,6 +362,14 @@
       "tournament": "Torneo:",
       "country": "País:"
     },
-    "continueButton": "Continuar a Inscripción"
+    "continueButton": "Continuar a Inscripción",
+    "tournaments": {
+      "CAMPEONATO_PANAMERICANO": {
+        "description": "El campeonato panamericano premier de gimnasia aeróbica, con el más alto nivel de competición con estrictos requisitos de elegibilidad y entradas limitadas por país."
+      },
+      "COPA_PANAMERICANA": {
+        "description": "Una competición de desarrollo abierta a países panamericanos y naciones invitadas, promoviendo el crecimiento de la gimnasia aeróbica en la región."
+      }
+    }
   }
 }
