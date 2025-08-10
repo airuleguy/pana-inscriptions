@@ -610,6 +610,14 @@ export class APIService {
     return tournament;
   }
 
+  /**
+   * Get upcoming tournaments (ongoing or within next 6 months)
+   */
+  static async getUpcomingTournaments(): Promise<Tournament[]> {
+    const tournaments = await this.fetchAPI<Tournament[]>('/api/v1/tournaments/upcoming');
+    return tournaments;
+  }
+
   // ==================== BATCH REGISTRATION ====================
 
   /**

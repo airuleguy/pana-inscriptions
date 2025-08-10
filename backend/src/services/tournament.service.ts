@@ -45,6 +45,20 @@ export class TournamentService {
     });
   }
 
+  async findUpcoming(): Promise<Tournament[]> {
+    const now = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(now.getMonth() + 6);
+
+    return this.tournamentRepository.createQueryBuilder('tournament')
+      .where('tournament.isActive = :isActive', { isActive: true })
+      .andWhere('tournament.endDate >= :now', { now: now.toISOString().split('T')[0] })
+      .andWhere('tournament.startDate <= :sixMonthsFromNow', { sixMonthsFromNow: sixMonthsFromNow.toISOString().split('T')[0] })
+      .orderBy('tournament.startDate', 'ASC')
+      .leftJoinAndSelect('tournament.choreographies', 'choreographies')
+      .getMany();
+  }
+
   async findOne(id: string): Promise<Tournament> {
     const tournament = await this.tournamentRepository.findOne({
       where: { id },

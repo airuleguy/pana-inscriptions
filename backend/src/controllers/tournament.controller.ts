@@ -57,6 +57,20 @@ export class TournamentController {
     return this.tournamentService.findAll();
   }
 
+  @Get('upcoming')
+  @ApiOperation({ 
+    summary: 'Get upcoming tournaments',
+    description: 'Retrieve active tournaments that are ongoing or starting within the next 6 months'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Upcoming tournaments retrieved successfully',
+    type: [Tournament]
+  })
+  findUpcoming() {
+    return this.tournamentService.findUpcoming();
+  }
+
   @Get('by-type/:type')
   @ApiOperation({ 
     summary: 'Get tournaments by type',

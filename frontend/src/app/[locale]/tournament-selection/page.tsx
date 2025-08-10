@@ -32,6 +32,14 @@ function TournamentSelectionContent() {
   // Get current locale prefix for navigation
   const localePrefix = getLocalePrefix(pathname || '');
 
+  // Format "YYYY-MM-DD" safely in local time to avoid UTC off-by-one
+  const formatLocalDate = (isoDate: string) => {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const date = new Date(y, (m || 1) - 1, d || 1);
+    return date.toLocaleDateString();
+  };
+
   // Check if user is admin and can select any country
   const isAdmin = authState.user?.role === 'ADMIN';
   const userCountry = authState.user?.country || '';
@@ -50,7 +58,7 @@ function TournamentSelectionContent() {
   const loadTournaments = async () => {
     try {
       setLoading(true);
-      const data = await APIService.getTournaments();
+      const data = await APIService.getUpcomingTournaments();
       setTournaments(data);
       
       // Auto-select the first active tournament if available
@@ -167,7 +175,7 @@ function TournamentSelectionContent() {
                             <div className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                {new Date(tournament.startDate).toLocaleDateString()} - {new Date(tournament.endDate).toLocaleDateString()}
+                                {formatLocalDate(tournament.startDate)} - {formatLocalDate(tournament.endDate)}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
