@@ -20,7 +20,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  ShieldPlus
 } from 'lucide-react';
 import { countries } from '@/lib/countries';
 
@@ -38,12 +39,13 @@ export function RegistrationSummarySidebar({
   isSubmitting = false
 }: RegistrationSummarySidebarProps) {
   const { t } = useTranslations('common');
-  const { state, removeChoreography, removeCoach, removeJudge, getTotalCount, canConfirmRegistration, getPendingCount, getRegistrationsByStatus, syncPendingRegistrations, isLoading } = useRegistration();
+  const { state, removeChoreography, removeCoach, removeJudge, removeSupportStaff, getTotalCount, canConfirmRegistration, getPendingCount, getRegistrationsByStatus, syncPendingRegistrations, isLoading } = useRegistration();
   const [syncingPending, setSyncingPending] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     choreographies: true,
     coaches: true,
     judges: true,
+    supportStaff: true,
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -319,6 +321,57 @@ export function RegistrationSummarySidebar({
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => removeJudge(judge.id)}
+                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      )}
+                    </Card>
+                  )}
+
+                  {/* Support Staff Section */}
+                  {pendingRegistrations.supportStaff && pendingRegistrations.supportStaff.length > 0 && (
+                    <Card className="border-emerald-200 bg-emerald-50">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ShieldPlus className="w-4 h-4 text-emerald-600" />
+                            <span className="text-emerald-800">{t('registrationSummary.sections.support')}</span>
+                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                              {pendingRegistrations.supportStaff.length}
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleSection('supportStaff')}
+                            className="h-6 w-6 p-0"
+                          >
+                            {expandedSections.supportStaff ? 
+                              <ChevronDown className="w-4 h-4" /> : 
+                              <ChevronRight className="w-4 h-4" />
+                            }
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      {expandedSections.supportStaff && (
+                        <CardContent className="pt-0 space-y-3">
+                          {pendingRegistrations.supportStaff.map((supportStaff) => (
+                            <div key={supportStaff.id} className="bg-white p-3 rounded-lg border border-emerald-200">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <h4 className="font-medium text-gray-900">{supportStaff.name}</h4>
+                                  <p className="text-sm text-gray-600">{supportStaff.role} • {supportStaff.country}</p>
+                                  <p className="text-xs text-gray-500">{formatDate(supportStaff.registeredAt)}</p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeSupportStaff(supportStaff.id)}
                                   className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="w-3 h-3" />

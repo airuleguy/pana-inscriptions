@@ -5,6 +5,7 @@ import { Coach } from '../entities/coach.entity';
 import { Judge } from '../entities/judge.entity';
 import { User } from '../entities/user.entity';
 import { UserSession } from '../entities/user-session.entity';
+import { SupportStaff } from '../entities/support.entity';
 
 export const configuration = () => ({
   port: parseInt(process.env.PORT, 10) || 3001,
@@ -17,7 +18,7 @@ export const configuration = () => ({
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession],
+    entities: [Gymnast, Choreography, Tournament, Coach, Judge, SupportStaff, User, UserSession],
     synchronize: true, // Temporarily enabled to add isLocal column
     dropSchema: false,
     logging: process.env.NODE_ENV !== 'production',

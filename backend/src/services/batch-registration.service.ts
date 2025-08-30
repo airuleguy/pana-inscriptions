@@ -7,6 +7,7 @@ import { CreateCoachRegistrationDto } from '../dto/create-coach-registration.dto
 import { CreateJudgeRegistrationDto } from '../dto/create-judge-registration.dto';
 import { UpdateRegistrationStatusDto, BatchStatusUpdateDto } from '../dto/update-registration-status.dto';
 import { RegistrationStatus } from '../constants/registration-status';
+import { SupportRegistrationService } from './support-registration.service';
 
 @Injectable()
 export class BatchRegistrationService {
@@ -16,6 +17,7 @@ export class BatchRegistrationService {
     private readonly choreographyService: ChoreographyService,
     private readonly coachRegistrationService: CoachRegistrationService,
     private readonly judgeRegistrationService: JudgeRegistrationService,
+    private readonly supportRegistrationService: SupportRegistrationService,
   ) {}
 
   /**

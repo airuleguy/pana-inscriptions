@@ -42,10 +42,18 @@
     "gymnasts": "Gymnasts",
     "coaches": "Coaches",
     "judges": "Judges",
+    "support": "Support",
     "choreography": "Choreography",
     "help": "Help",
     "summary": "Summary",
-    "clickToChangeTournament": "Click to change tournament"
+    "clickToChangeTournament": "Click to change tournament",
+    "registrationTypes": "Registration Types",
+    "descriptions": {
+      "coaches": "Coach registrations",
+      "judges": "Judge registrations",
+      "support": "Support personnel registrations",
+      "choreography": "Choreography details"
+    }
   },
   "dashboard": {
     "title": "Registration Dashboard",
@@ -64,9 +72,11 @@
     "choreographyRegistration": "Choreography Registration",
     "coachRegistration": "Coach Registration",
     "judgeRegistration": "Judge Registration",
+    "supportRegistration": "Support Registration",
     "choreographyDescription": "Register your gymnastic routines and compositions",
     "coachDescription": "Register certified coaches for your team",
     "judgeDescription": "Register qualified judges for the tournament",
+    "supportDescription": "Register support personnel for your delegation",
     "registered": "registered",
     "startRegistration": "Start Registration",
     "viewAndEdit": "View & Edit",
@@ -309,7 +319,8 @@
     "sections": {
       "choreographies": "Choreographies",
       "coaches": "Coaches", 
-      "judges": "Judges"
+      "judges": "Judges",
+      "support": "Support"
     },
     "choreographyCard": {
       "gymnastCount": "{count} gymnast",
@@ -332,6 +343,23 @@
       "noPendingRegistrations": "No pending registrations to submit.",
       "submissionFailed": "Failed to submit registrations. Please try again."
     }
+  },
+  "support": {
+    "title": "Support Registration",
+    "description": "Create support personnel for tournament",
+    "formTitle": "Create Support Personnel",
+    "formDescription": "Add one or more support personnel entries",
+    "registrationSuccess": "Support registered successfully",
+    "registrationFailed": "Failed to register support",
+    "registrationSuccessful": "Registration Successful!",
+    "registrationSuccessDescription": "Successfully registered {count} support staff with PENDING status in the backend.",
+    "registrationFailedTitle": "Registration failed",
+    "registrationError": "Registration error",
+    "registrationErrorDescription": "Failed to register support staff with backend. Please try again.",
+    "addingToSummary": "Adding to summary...",
+    "addToSummary": "Add to Summary",
+    "viewSummary": "View Registration Summary",
+    "missingData": "Missing tournament or country selection."
   },
   "tournamentSelection": {
     "title": "Tournament Selection",

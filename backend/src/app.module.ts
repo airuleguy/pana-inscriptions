@@ -11,6 +11,7 @@ import { Choreography } from './entities/choreography.entity';
 import { Tournament } from './entities/tournament.entity';
 import { Coach } from './entities/coach.entity';
 import { Judge } from './entities/judge.entity';
+import { SupportStaff } from './entities/support.entity';
 import { User } from './entities/user.entity';
 import { UserSession } from './entities/user-session.entity';
 import { ChoreographyController } from './controllers/choreography.controller';
@@ -19,6 +20,7 @@ import { TournamentController } from './controllers/tournament.controller';
 import { CoachController } from './controllers/coach.controller';
 import { JudgeController } from './controllers/judge.controller';
 import { TournamentRegistrationsController } from './controllers/tournament-registrations.controller';
+import { TournamentSupportController } from './controllers/tournament-support.controller';
 import { GlobalRegistrationsController } from './controllers/registrations.controller';
 import { HealthController } from './modules/health/health.controller';
 import { FigImageProxyController } from './controllers/fig-image-proxy.controller';
@@ -37,6 +39,7 @@ import { JwtService } from './services/jwt.service';
 import { AuthGuard } from './guards/auth.guard';
 import { BusinessRulesFactory } from './utils/business-rules/business-rules-factory';
 import { FigDataWarmupService } from './services/fig-data-warmup.service';
+import { SupportRegistrationService } from './services/support-registration.service';
 
 @Module({
   imports: [
@@ -54,7 +57,7 @@ import { FigDataWarmupService } from './services/fig-data-warmup.service';
     }),
     
     // Entity repositories
-    TypeOrmModule.forFeature([Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession]),
+    TypeOrmModule.forFeature([Gymnast, Choreography, Tournament, Coach, Judge, SupportStaff, User, UserSession]),
     
     // JWT Module
     JwtModule.registerAsync({
@@ -95,6 +98,7 @@ import { FigDataWarmupService } from './services/fig-data-warmup.service';
     
     // Tournament-centric registrations (primary)
     TournamentRegistrationsController,
+    TournamentSupportController,
     
     // Global cross-tournament operations
     GlobalRegistrationsController,
@@ -114,6 +118,7 @@ import { FigDataWarmupService } from './services/fig-data-warmup.service';
     CoachRegistrationService,
     JudgeRegistrationService,
     BatchRegistrationService,
+    SupportRegistrationService,
     FigApiService,
     FigImageProxyService,
     GymnastService,

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { Gymnast, Coach, Judge, Tournament, Choreography, RegistrationStatus } from '@/types';
+import type { Gymnast, Coach, Judge, SupportStaff, Tournament, Choreography, RegistrationStatus } from '@/types';
 import { APIService } from '@/lib/api';
 
 export interface RegisteredChoreography {
@@ -36,10 +36,21 @@ export interface RegisteredJudge {
   judgeData?: Judge;
 }
 
+export interface RegisteredSupportStaff {
+  id: string;
+  name: string;
+  role: string;
+  country: string;
+  registeredAt: Date;
+  status: RegistrationStatus;
+  supportData?: SupportStaff;
+}
+
 interface RegistrationState {
   choreographies: RegisteredChoreography[];
   coaches: RegisteredCoach[];
   judges: RegisteredJudge[];
+  supportStaff: RegisteredSupportStaff[];
   tournament: Tournament | null;
   country: string | null;
   isSidebarOpen: boolean;
@@ -53,6 +64,8 @@ interface RegistrationContextType {
   removeCoach: (id: string) => void;
   addJudge: (judge: RegisteredJudge) => void;
   removeJudge: (id: string) => void;
+  addSupportStaff: (supportStaff: RegisteredSupportStaff) => void;
+  removeSupportStaff: (id: string) => void;
   clearAll: () => void;
   getTotalCount: () => number;
   canConfirmRegistration: () => boolean;
@@ -67,6 +80,7 @@ interface RegistrationContextType {
     choreographies: RegisteredChoreography[];
     coaches: RegisteredCoach[];
     judges: RegisteredJudge[];
+    supportStaff: RegisteredSupportStaff[];
   };
   getPendingCount: () => number;
 }
@@ -80,6 +94,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     choreographies: [],
     coaches: [],
     judges: [],
+    supportStaff: [],
     tournament: null,
     country: null,
     isSidebarOpen: false,
@@ -117,6 +132,13 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
             status: j.status || 'PENDING', // Default to PENDING for backward compatibility
           }));
         }
+        if (parsedState.supportStaff) {
+          parsedState.supportStaff = parsedState.supportStaff.map((s: RegisteredSupportStaff) => ({
+            ...s,
+            registeredAt: new Date(s.registeredAt),
+            status: s.status || 'PENDING', // Default to PENDING for backward compatibility
+          }));
+        }
         
         setState(prev => ({ ...prev, ...parsedState }));
       } catch (error) {
@@ -131,6 +153,7 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
           ...prev,
           tournament: JSON.parse(tournamentData) as Tournament,
           country: countryData,
+          supportStaff: prev.supportStaff || [], // Ensure supportStaff is initialized
         }));
       } catch (error) {
         console.error('Error loading tournament/country data:', error);
@@ -146,8 +169,9 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       choreographies: state.choreographies,
       coaches: state.coaches,
       judges: state.judges,
+      supportStaff: state.supportStaff,
     }));
-  }, [state.choreographies, state.coaches, state.judges]);
+  }, [state.choreographies, state.coaches, state.judges, state.supportStaff]);
 
   const addChoreography = (choreography: RegisteredChoreography) => {
     setState(prev => ({
@@ -191,18 +215,33 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const addSupportStaff = (supportStaff: RegisteredSupportStaff) => {
+    setState(prev => ({
+      ...prev,
+      supportStaff: [...prev.supportStaff, supportStaff],
+    }));
+  };
+
+  const removeSupportStaff = (id: string) => {
+    setState(prev => ({
+      ...prev,
+      supportStaff: prev.supportStaff.filter(s => s.id !== id),
+    }));
+  };
+
   const clearAll = () => {
     setState(prev => ({
       ...prev,
       choreographies: [],
       coaches: [],
       judges: [],
+      supportStaff: [],
     }));
     localStorage.removeItem(STORAGE_KEY);
   };
 
   const getTotalCount = () => {
-    return state.choreographies.length + state.coaches.length + state.judges.length;
+    return state.choreographies.length + state.coaches.length + state.judges.length + state.supportStaff.length;
   };
 
   const submitRegistrations = async () => {
@@ -217,7 +256,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       
       if (pendingRegistrations.choreographies.length === 0 && 
           pendingRegistrations.coaches.length === 0 && 
-          pendingRegistrations.judges.length === 0) {
+          pendingRegistrations.judges.length === 0 &&
+          pendingRegistrations.supportStaff.length === 0) {
         throw new Error('No pending registrations to submit');
       }
 
@@ -236,6 +276,9 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         judges: prev.judges.map(j => 
           j.status === 'PENDING' ? { ...j, status: 'SUBMITTED' as RegistrationStatus } : j
         ),
+        supportStaff: prev.supportStaff.map(s => 
+          s.status === 'PENDING' ? { ...s, status: 'SUBMITTED' as RegistrationStatus } : s
+        ),
       }));
     } catch (error) {
       console.error('Failed to submit registrations:', error);
@@ -250,12 +293,13 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       choreographies: state.choreographies.filter(c => c.status === status),
       coaches: state.coaches.filter(c => c.status === status),
       judges: state.judges.filter(j => j.status === status),
+      supportStaff: state.supportStaff.filter(s => s.status === status),
     };
   };
 
   const getPendingCount = () => {
     const pending = getRegistrationsByStatus('PENDING');
-    return pending.choreographies.length + pending.coaches.length + pending.judges.length;
+    return pending.choreographies.length + pending.coaches.length + pending.judges.length + pending.supportStaff.length;
   };
 
   const canConfirmRegistration = () => {
@@ -320,11 +364,22 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         judgeData: judge,
       }));
 
+      const supportStaff: RegisteredSupportStaff[] = (data.supportStaff || []).map(support => ({
+        id: support.id,
+        name: support.fullName,
+        role: support.role,
+        country: support.country,
+        registeredAt: new Date(), // Use current date since backend might not have this
+        status: 'SUBMITTED' as RegistrationStatus,
+        supportData: support,
+      }));
+
       setState(prev => ({
         ...prev,
         choreographies,
         coaches,
         judges,
+        supportStaff,
       }));
     } catch (error) {
       console.error('Failed to load existing registrations:', error);
@@ -377,18 +432,30 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
         judgeData: judge,
       }));
 
+      const pendingSupportStaff: RegisteredSupportStaff[] = (pendingData.supportStaff || []).map(support => ({
+        id: support.id,
+        name: support.fullName,
+        role: support.role,
+        country: support.country,
+        registeredAt: new Date(support.createdAt || Date.now()),
+        status: 'PENDING' as RegistrationStatus,
+        supportData: support,
+      }));
+
       // Replace pending registrations with database state, keep submitted ones
       setState(prev => {
         // Get existing non-pending registrations (submitted/registered)
         const existingSubmitted = prev.choreographies.filter(c => c.status !== 'PENDING');
         const existingCoachesSubmitted = prev.coaches.filter(c => c.status !== 'PENDING');
         const existingJudgesSubmitted = prev.judges.filter(j => j.status !== 'PENDING');
+        const existingSupportSubmitted = prev.supportStaff.filter(s => s.status !== 'PENDING');
 
         return {
           ...prev,
           choreographies: [...existingSubmitted, ...pendingChoreographies],
           coaches: [...existingCoachesSubmitted, ...pendingCoaches],
           judges: [...existingJudgesSubmitted, ...pendingJudges],
+          supportStaff: [...existingSupportSubmitted, ...pendingSupportStaff],
         };
       });
 
@@ -418,6 +485,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     removeCoach,
     addJudge,
     removeJudge,
+    addSupportStaff,
+    removeSupportStaff,
     clearAll,
     getTotalCount,
     canConfirmRegistration,

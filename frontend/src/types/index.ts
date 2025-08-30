@@ -57,6 +57,17 @@ export interface Judge {
   updatedAt?: Date; // Last modification date
 }
 
+export interface SupportStaff {
+  id: string; // Database UUID primary key
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  role: string; // DELEGATE, MEDICAL, PHYSIO, MANAGER, SUPPORT, OTHER
+  country: string;
+  createdAt?: Date; // Registration date
+  updatedAt?: Date; // Last modification date
+}
+
 export interface Country {
   code: string; // 3-letter ISO code
   name: string;
