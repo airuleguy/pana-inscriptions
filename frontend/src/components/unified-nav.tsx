@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, Trophy, Users, UserCheck, ClipboardList, ChevronLeft, Menu, Calendar, MapPin, Globe } from 'lucide-react';
+import { LogOut, Trophy, Users, UserCheck, ClipboardList, ChevronLeft, Menu, Calendar, MapPin, Globe, ShieldPlus, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/auth-context';
 import { useRegistration } from '@/contexts/registration-context';
@@ -202,28 +202,39 @@ export function UnifiedNav() {
         label: t('navigation.dashboard', 'Dashboard'),
         href: `${localePrefix}/registration/tournament/${tournamentId}/dashboard`,
         icon: Trophy,
-        description: 'Overview & summary'
-      },
+        description: 'Overview & summary',
+        isEntity: false
+      }
+    ];
+
+    const entityItems = [
       {
         id: 'coaches',
         label: t('navigation.coaches', 'Coaches'),
         href: `${localePrefix}/registration/tournament/${tournamentId}/coaches`,
         icon: UserCheck,
-        description: 'Coach registrations'
+        description: t('navigation.descriptions.coaches', 'Coach registrations')
       },
       {
         id: 'judges',
         label: t('navigation.judges', 'Judges'),
         href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
         icon: UserCheck,
-        description: 'Judge registrations'
+        description: t('navigation.descriptions.judges', 'Judge registrations')
+      },
+      {
+        id: 'support',
+        label: t('navigation.support', 'Support'),
+        href: `${localePrefix}/registration/tournament/${tournamentId}/support`,
+        icon: ShieldPlus,
+        description: t('navigation.descriptions.support', 'Support personnel registrations')
       },
       {
         id: 'choreography',
         label: t('navigation.choreography', 'Choreography'),
         href: `${localePrefix}/registration/tournament/${tournamentId}/choreography`,
         icon: Calendar,
-        description: 'Choreography details'
+        description: t('navigation.descriptions.choreography', 'Choreography details')
       }
     ];
 
@@ -256,6 +267,7 @@ export function UnifiedNav() {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-2 ml-4">
+                {/* Dashboard Link */}
                 {navigationItems.map((item) => {
                   const isActive = pathname?.includes(item.id);
                   const Icon = item.icon;
@@ -277,6 +289,42 @@ export function UnifiedNav() {
                     </Link>
                   );
                 })}
+
+                {/* Entities Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-2 hover:bg-blue-50 text-muted-foreground hover:text-foreground"
+                    >
+                      <Users className="w-4 h-4" />
+                      {t('navigation.participants', 'Participants')}
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>{t('navigation.registrationTypes', 'Registration Types')}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {entityItems.map((item) => {
+                      const isActive = pathname?.includes(item.id);
+                      const Icon = item.icon;
+                      
+                      return (
+                        <DropdownMenuItem key={item.id} asChild>
+                          <Link href={item.href} className="w-full cursor-pointer">
+                            <Icon className="w-4 h-4 mr-2" />
+                            <div className="flex-1">
+                              <div className="font-medium">{item.label}</div>
+                              <div className="text-xs text-muted-foreground">{item.description}</div>
+                            </div>
+                            {isActive && <div className="w-2 h-2 bg-blue-600 rounded-full ml-2" />}
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Mobile Navigation */}
@@ -288,7 +336,8 @@ export function UnifiedNav() {
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="w-64">
-                    <div className="mt-6 space-y-2">
+                    <div className="mt-6 space-y-4">
+                      {/* Dashboard */}
                       {navigationItems.map((item) => {
                         const isActive = pathname?.includes(item.id);
                         const Icon = item.icon;
@@ -313,6 +362,39 @@ export function UnifiedNav() {
                           </Link>
                         );
                       })}
+
+                      {/* Entity Registration Section */}
+                      <div className="pt-2 border-t">
+                        <div className="px-2 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          {t('navigation.registrationTypes', 'Registration Types')}
+                        </div>
+                        <div className="space-y-1 mt-2">
+                          {entityItems.map((item) => {
+                            const isActive = pathname?.includes(item.id);
+                            const Icon = item.icon;
+                            
+                            return (
+                              <Link key={item.id} href={item.href}>
+                                <Button
+                                  variant={isActive ? "default" : "ghost"}
+                                  size="sm"
+                                  className={`w-full justify-start gap-2 ${
+                                    isActive 
+                                      ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                                      : "hover:bg-blue-50"
+                                  }`}
+                                >
+                                  <Icon className="w-4 h-4" />
+                                  <div className="text-left">
+                                    <div className="font-medium">{item.label}</div>
+                                    <div className="text-xs opacity-70">{item.description}</div>
+                                  </div>
+                                </Button>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   </SheetContent>
                 </Sheet>

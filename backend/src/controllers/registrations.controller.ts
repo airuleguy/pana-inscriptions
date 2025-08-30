@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@ne
 import { Request } from 'express';
 import { CoachRegistrationService } from '../services/coach-registration.service';
 import { JudgeRegistrationService } from '../services/judge-registration.service';
+import { SupportRegistrationService } from '../services/support-registration.service';
 import { ChoreographyService } from '../services/choreography.service';
 import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 
@@ -17,6 +18,7 @@ export class GlobalRegistrationsController {
     private readonly coachRegistrationService: CoachRegistrationService,
     private readonly judgeRegistrationService: JudgeRegistrationService,
     private readonly choreographyService: ChoreographyService,
+    private readonly supportRegistrationService: SupportRegistrationService,
   ) {}
 
   @Get('judges')
@@ -86,6 +88,29 @@ export class GlobalRegistrationsController {
     return this.choreographyService.findByCountry(country);
   }
 
+  @Get('support')
+  @CountryScoped()
+  @ApiOperation({ 
+    summary: 'Get support registrations across tournaments',
+    description: 'Retrieve support registrations for your country with cross-tournament filtering capabilities'
+  })
+  @ApiQuery({ name: 'tournament', required: false, description: 'Filter by tournament ID' })
+  @ApiQuery({ name: 'role', required: false, description: 'Filter by support role' })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Support registrations retrieved successfully'
+  })
+  async getAllSupportRegistrations(
+    @Req() request: Request,
+    @Query('tournament') tournamentId?: string,
+    @Query('role') role?: string
+  ) {
+    const country = (request as any).userCountry;
+    this.logger.log(`Getting global support registrations for ${country} with filters: tournament=${tournamentId}, role=${role}`);
+    const list = await this.supportRegistrationService.findAll(country, tournamentId);
+    return role ? list.filter(s => s.role === role) : list;
+  }
+
   @Get('summary')
   @CountryScoped()
   @ApiOperation({ 
@@ -134,6 +159,8 @@ export class GlobalRegistrationsController {
       }
       tournamentStats[tournamentId].choreographies++;
     });
+
+    // Support staff omitted from summary counts in simplified model
 
     return {
       totals: {

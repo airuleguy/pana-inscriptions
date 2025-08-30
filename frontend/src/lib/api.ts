@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Judge, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
+import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
 import { ChoreographyCategory } from '@/constants/categories';
 
 /**
@@ -651,10 +651,12 @@ export class APIService {
     choreographies: Choreography[];
     coaches: Coach[];
     judges: Judge[];
+    supportStaff: SupportStaff[];
     totals: {
       choreographies: number;
       coaches: number;
       judges: number;
+      supportStaff: number;
       total: number;
     };
   }> {
@@ -699,6 +701,7 @@ export class APIService {
       choreographies: Choreography[];
       coaches: Coach[];
       judges: Judge[];
+      supportStaff: SupportStaff[];
     };
     errors?: string[];
   }> {
@@ -718,10 +721,12 @@ export class APIService {
     choreographies: Choreography[];
     coaches: Coach[];
     judges: Judge[];
+    supportStaff: SupportStaff[];
     totals: {
       choreographies: number;
       coaches: number;
       judges: number;
+      supportStaff: number;
       total: number;
     };
   }> {
@@ -735,10 +740,12 @@ export class APIService {
     choreographies: Choreography[];
     coaches: Coach[];
     judges: Judge[];
+    supportStaff: SupportStaff[];
     totals: {
       choreographies: number;
       coaches: number;
       judges: number;
+      supportStaff: number;
       total: number;
     };
   }> {
@@ -765,6 +772,37 @@ export class APIService {
         status,
         notes,
       }),
+    });
+  }
+
+  // ==================== SUPPORT ====================
+
+  static async createSupport(
+    tournamentId: string,
+    payload: Array<{
+      firstName: string;
+      lastName: string;
+      fullName?: string;
+      role: string;
+      gender?: 'MALE' | 'FEMALE';
+      email?: string;
+      phone?: string;
+      notes?: string;
+    }> | {
+      firstName: string;
+      lastName: string;
+      fullName?: string;
+      role: string;
+      gender?: 'MALE' | 'FEMALE';
+      email?: string;
+      phone?: string;
+      notes?: string;
+    }
+  ): Promise<{ success: boolean; results: any[]; errors?: string[] }> {
+    const body = Array.isArray(payload) ? payload : [payload];
+    return await this.fetchAPI(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/support`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   }
 

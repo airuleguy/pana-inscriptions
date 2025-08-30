@@ -7,6 +7,7 @@ import { Coach } from './src/entities/coach.entity';
 import { Judge } from './src/entities/judge.entity';
 import { User } from './src/entities/user.entity';
 import { UserSession } from './src/entities/user-session.entity';
+import { SupportStaff } from './src/entities/support.entity';
 
 // Load environment variables
 config();
@@ -18,7 +19,7 @@ export const AppDataSource = new DataSource({
   username: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
-  entities: [Gymnast, Choreography, Tournament, Coach, Judge, User, UserSession],
+  entities: [Gymnast, Choreography, Tournament, Coach, Judge, SupportStaff, User, UserSession],
   migrations: ['src/migrations/*.ts'],
   migrationsRun: false,
   migrationsTableName: 'migrations',

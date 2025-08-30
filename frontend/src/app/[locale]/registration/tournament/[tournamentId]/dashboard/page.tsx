@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Tournament, Choreography, Coach, Judge } from '@/types';
+import type { Tournament, Choreography, Coach, Judge, SupportStaff } from '@/types';
 import { useRegistration } from '@/contexts/registration-context';
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
@@ -27,7 +27,8 @@ import {
   RefreshCw,
   Database,
   User,
-  Award
+  Award,
+  ShieldPlus
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -35,10 +36,12 @@ interface SubmittedRegistrations {
   choreographies: Choreography[];
   coaches: Coach[];
   judges: Judge[];
+  supportStaff: SupportStaff[];
   totals: {
     choreographies: number;
     coaches: number;
     judges: number;
+    supportStaff: number;
     total: number;
   };
 }
@@ -205,6 +208,37 @@ function JudgeCard({ judge, status, t, getCountryInfo }: JudgeCardProps) {
   );
 }
 
+interface SupportCardProps {
+  supportStaff: SupportStaff;
+  status: 'pending' | 'submitted';
+  t: (key: string) => string;
+  getCountryInfo: (code: string) => { code: string; name: string; flag: string };
+}
+
+function SupportCard({ supportStaff, status, t, getCountryInfo }: SupportCardProps) {
+  const colorScheme = status === 'pending' 
+    ? { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'text-emerald-600' }
+    : { bg: 'bg-emerald-50', border: 'border-emerald-200', icon: 'text-emerald-600' };
+
+  return (
+    <div className={`flex items-center justify-between p-3 ${colorScheme.bg} rounded-lg border ${colorScheme.border}`}>
+      <div className="flex items-center gap-3">
+        <ShieldPlus className={`w-4 h-4 ${colorScheme.icon}`} />
+        <div>
+          <p className="font-medium">{supportStaff.firstName} {supportStaff.lastName}</p>
+          <p className="text-sm text-gray-600">{supportStaff.role}</p>
+          <Badge variant="outline" className="text-xs">
+            {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
+          </Badge>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-sm text-gray-600">{getCountryInfo(supportStaff.country).flag} {getCountryInfo(supportStaff.country).name}</p>
+      </div>
+    </div>
+  );
+}
+
 // Reusable Registration Section Component
 interface RegistrationSectionProps {
   title: string;
@@ -212,7 +246,7 @@ interface RegistrationSectionProps {
   children: React.ReactNode;
   count: number;
   status: 'pending' | 'submitted';
-  type?: 'choreography' | 'coach' | 'judge';
+  type?: 'choreography' | 'coach' | 'judge' | 'support';
 }
 
 function RegistrationSection({ title, icon: Icon, children, count, status, type }: RegistrationSectionProps) {
@@ -221,6 +255,7 @@ function RegistrationSection({ title, icon: Icon, children, count, status, type 
       case 'choreography': return 'text-blue-600';
       case 'coach': return 'text-purple-600';
       case 'judge': return 'text-orange-600';
+      case 'support': return 'text-emerald-600';
       default: return 'text-blue-600';
     }
   };
@@ -392,6 +427,17 @@ export default function TournamentRegistrationDashboard() {
       href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
       count: state.judges.length,
       isCompleted: state.judges.length > 0
+    },
+    {
+      id: 'support',
+      title: t('dashboard.supportRegistration'),
+      description: t('dashboard.supportDescription'),
+      icon: ShieldPlus,
+      color: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      href: `${localePrefix}/registration/tournament/${tournamentId}/support`,
+      count: state.supportStaff.length,
+      isCompleted: state.supportStaff.length > 0
     }
   ];
 
@@ -443,8 +489,8 @@ export default function TournamentRegistrationDashboard() {
 
 
         {/* Registration Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {registrationSections.map((section) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {registrationSections.map((section) => (
             <Card 
               key={section.id}
               className={`cursor-pointer transition-all duration-200 ${section.color}`}
@@ -499,7 +545,7 @@ export default function TournamentRegistrationDashboard() {
                   </div>
                 </div>
               </div>
-            ) : state.choreographies.length > 0 || state.coaches.length > 0 || state.judges.length > 0 ? (
+            ) : state.choreographies.length > 0 || state.coaches.length > 0 || state.judges.length > 0 || state.supportStaff.length > 0 ? (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
@@ -528,7 +574,7 @@ export default function TournamentRegistrationDashboard() {
         </Card>
 
         {/* Statistics Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="text-center">
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-orange-800">{pendingRegistrations?.totals.total || 0}</div>
@@ -551,6 +597,12 @@ export default function TournamentRegistrationDashboard() {
             <CardContent className="pt-6">
               <div className="text-2xl font-bold text-orange-800">{pendingRegistrations?.totals.judges || 0}</div>
               <div className="text-sm text-orange-700">{t('navigation.judges')}</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-emerald-800">{pendingRegistrations?.totals.supportStaff || 0}</div>
+              <div className="text-sm text-emerald-700">{t('navigation.support')}</div>
             </CardContent>
           </Card>
         </div>
@@ -626,7 +678,27 @@ export default function TournamentRegistrationDashboard() {
               </RegistrationSection>
             )}
 
-            {(!pendingRegistrations || (pendingRegistrations.choreographies.length === 0 && pendingRegistrations.coaches.length === 0 && pendingRegistrations.judges.length === 0)) && (
+            {pendingRegistrations && pendingRegistrations.supportStaff && pendingRegistrations.supportStaff.length > 0 && (
+              <RegistrationSection 
+                title={`${t('dashboard.pendingRegistrations')} ${t('navigation.support')}`} 
+                icon={ShieldPlus} 
+                count={pendingRegistrations.supportStaff.length} 
+                status="pending"
+                type="support"
+              >
+                {pendingRegistrations.supportStaff.map((supportStaff) => (
+                  <SupportCard 
+                    key={supportStaff.id} 
+                    supportStaff={supportStaff} 
+                    status="pending" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
+            )}
+
+            {(!pendingRegistrations || (pendingRegistrations.choreographies.length === 0 && pendingRegistrations.coaches.length === 0 && pendingRegistrations.judges.length === 0 && (!pendingRegistrations.supportStaff || pendingRegistrations.supportStaff.length === 0))) && (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-8">
@@ -707,7 +779,27 @@ export default function TournamentRegistrationDashboard() {
               </RegistrationSection>
             )}
 
-            {(!submittedRegistrations || (submittedRegistrations.choreographies.length === 0 && submittedRegistrations.coaches.length === 0 && submittedRegistrations.judges.length === 0)) && (
+            {submittedRegistrations && submittedRegistrations.supportStaff && submittedRegistrations.supportStaff.length > 0 && (
+              <RegistrationSection 
+                title={`${t('dashboard.submittedRegistrations')} ${t('navigation.support')}`} 
+                icon={ShieldPlus} 
+                count={submittedRegistrations.supportStaff.length} 
+                status="submitted"
+                type="support"
+              >
+                {submittedRegistrations.supportStaff.map((supportStaff) => (
+                  <SupportCard 
+                    key={supportStaff.id} 
+                    supportStaff={supportStaff} 
+                    status="submitted" 
+                    t={t} 
+                    getCountryInfo={getCountryInfo} 
+                  />
+                ))}
+              </RegistrationSection>
+            )}
+
+            {(!submittedRegistrations || (submittedRegistrations.choreographies.length === 0 && submittedRegistrations.coaches.length === 0 && submittedRegistrations.judges.length === 0 && (!submittedRegistrations.supportStaff || submittedRegistrations.supportStaff.length === 0))) && (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center py-8">

@@ -58,7 +58,11 @@ function TournamentRegistrationLayoutContent({
     return null; // Will redirect in useEffect
   }
 
-  return <RegistrationLayout>{children}</RegistrationLayout>;
+  return (
+    <RegistrationLayout>
+      {children}
+    </RegistrationLayout>
+  );
 }
 
 export default function TournamentRegistrationLayout({

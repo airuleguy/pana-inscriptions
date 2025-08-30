@@ -42,10 +42,18 @@
     "gymnasts": "Gimnastas",
     "coaches": "Entrenadores",
     "judges": "Jueces",
+    "support": "Soporte",
     "choreography": "Coreografía",
     "help": "Ayuda",
     "summary": "Resumen",
-    "clickToChangeTournament": "Clic para cambiar torneo"
+    "clickToChangeTournament": "Clic para cambiar torneo",
+    "registrationTypes": "Tipos de Registro",
+    "descriptions": {
+      "coaches": "Registro de entrenadores",
+      "judges": "Registro de jueces",
+      "support": "Registro de personal de soporte",
+      "choreography": "Detalles de coreografía"
+    }
   },
   "dashboard": {
     "title": "Panel de Registro",
@@ -64,9 +72,11 @@
     "choreographyRegistration": "Registro de Coreografía",
     "coachRegistration": "Registro de Entrenadores",
     "judgeRegistration": "Registro de Jueces",
+    "supportRegistration": "Registro de Personal de Soporte",
     "choreographyDescription": "Registra tus rutinas gimnásticas y composiciones",
     "coachDescription": "Registra entrenadores certificados para tu equipo",
     "judgeDescription": "Registra jueces calificados para el torneo",
+    "supportDescription": "Registra personal de soporte para tu delegación",
     "registered": "registrado",
     "startRegistration": "Iniciar Registro",
     "viewAndEdit": "Ver y Editar",
@@ -309,7 +319,8 @@
     "sections": {
       "choreographies": "Coreografías",
       "coaches": "Entrenadores", 
-      "judges": "Jueces"
+      "judges": "Jueces",
+      "support": "Soporte"
     },
     "choreographyCard": {
       "gymnastCount": "{count} gimnasta",
@@ -332,6 +343,23 @@
       "noPendingRegistrations": "No hay registros pendientes para enviar.",
       "submissionFailed": "Error al enviar registros. Por favor intenta de nuevo."
     }
+  },
+  "support": {
+    "title": "Registro de Personal de Soporte",
+    "description": "Crear personal de soporte para el torneo",
+    "formTitle": "Crear Personal de Soporte",
+    "formDescription": "Agregar una o más entradas de personal de soporte",
+    "registrationSuccess": "Personal de soporte registrado exitosamente",
+    "registrationFailed": "Error al registrar personal de soporte",
+    "registrationSuccessful": "¡Registro Exitoso!",
+    "registrationSuccessDescription": "Se registraron exitosamente {count} personal de soporte con estado PENDIENTE en el backend.",
+    "registrationFailedTitle": "Falló el registro",
+    "registrationError": "Error de registro",
+    "registrationErrorDescription": "Falló el registro de personal de soporte con el backend. Por favor intenta de nuevo.",
+    "addingToSummary": "Agregando al resumen...",
+    "addToSummary": "Agregar al Resumen",
+    "viewSummary": "Ver Resumen de Registro",
+    "missingData": "Falta la selección del torneo o país."
   },
   "tournamentSelection": {
     "title": "Selección de Torneo",
