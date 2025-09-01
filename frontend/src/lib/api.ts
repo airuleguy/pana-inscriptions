@@ -576,8 +576,13 @@ export class APIService {
   /**
    * Delete choreography
    */
-  static async deleteChoreography(id: string): Promise<void> {
-    await this.fetchAPI<void>(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
+  static async deleteChoreography(choreographyId: string, tournamentId?: string): Promise<void> {
+    // Use tournament-specific endpoint if tournamentId is provided, otherwise use general endpoint
+    const endpoint = tournamentId 
+      ? `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/choreographies/${encodeURIComponent(choreographyId)}`
+      : `/api/v1/choreographies/${encodeURIComponent(choreographyId)}`;
+      
+    await this.fetchAPI<void>(endpoint, {
       method: 'DELETE',
     });
   }

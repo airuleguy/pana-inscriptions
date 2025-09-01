@@ -175,55 +175,61 @@ export function RegistrationSummarySidebar({
                       {expandedSections.choreographies && (
                         <CardContent className="pt-0 space-y-3">
                           {pendingRegistrations.choreographies.map((choreo) => (
-                            <div key={choreo.id} className="bg-white p-3 rounded-lg border border-purple-200">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-medium text-gray-900">{choreo.name}</h4>
-                                    <Badge variant="outline">
-                                      {choreo.status}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                                    <Badge variant="default">
-                                      {choreo.category}
-                                    </Badge>
-                                                                         <span>{choreo.type}</span>
-                                    <span className="flex items-center gap-1">
-                                      <Users className="w-3 h-3" />
-                                      <span>
-                                        {choreo.gymnastsCount === 1 
-                                          ? t('registrationSummary.choreographyCard.gymnastCount').replace('{count}', choreo.gymnastsCount.toString())
-                                          : t('registrationSummary.choreographyCard.gymnastCountPlural').replace('{count}', choreo.gymnastsCount.toString())
-                                        }
-                                      </span>
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Calendar className="w-3 h-3" />
-                                      {formatDate(choreo.registeredAt)}
-                                    </span>
-                                  </div>
-                                  {/* Gymnast List */}
-                                  {choreo.gymnasts && choreo.gymnasts.length > 0 && (
-                                    <div className="text-sm text-gray-600">
-                                      {choreo.gymnasts.map((gymnast, index) => (
-                                        <span key={gymnast.figId}>
-                                          {gymnast.firstName} {gymnast.lastName}
-                                          {index < choreo.gymnasts.length - 1 ? ', ' : ''}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
+                            <div key={choreo.id} className="bg-white p-3 rounded-lg border border-purple-200 relative">
+                              <div className="flex-1 pr-10">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-medium text-gray-900">{choreo.name}</h4>
+                                  <Badge variant="outline">
+                                    {choreo.status}
+                                  </Badge>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => removeChoreography(choreo.id)}
-                                  className="ml-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                  <Badge variant="default">
+                                    {choreo.category}
+                                  </Badge>
+                                                                       <span>{choreo.type}</span>
+                                  <span className="flex items-center gap-1">
+                                    <Users className="w-3 h-3" />
+                                    <span>
+                                      {choreo.gymnastsCount === 1 
+                                        ? t('registrationSummary.choreographyCard.gymnastCount').replace('{count}', choreo.gymnastsCount.toString())
+                                        : t('registrationSummary.choreographyCard.gymnastCountPlural').replace('{count}', choreo.gymnastsCount.toString())
+                                      }
+                                    </span>
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {formatDate(choreo.registeredAt)}
+                                  </span>
+                                </div>
+                                {/* Gymnast List */}
+                                {choreo.gymnasts && choreo.gymnasts.length > 0 && (
+                                  <div className="text-sm text-gray-600">
+                                    {choreo.gymnasts.map((gymnast, index) => (
+                                      <span key={gymnast.figId}>
+                                        {gymnast.firstName} {gymnast.lastName}
+                                        {index < choreo.gymnasts.length - 1 ? ', ' : ''}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={async () => {
+                                  try {
+                                    await removeChoreography(choreo.id);
+                                  } catch (error) {
+                                    console.error('Failed to remove choreography:', error);
+                                    // Could add toast notification here in the future
+                                  }
+                                }}
+                                className="absolute bottom-2 right-2 h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full border border-red-200 hover:border-red-300 bg-white shadow-sm"
+                                title={t('registrationSummary.removeChoreography') || 'Remove choreography'}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           ))}
                         </CardContent>
