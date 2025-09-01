@@ -151,7 +151,7 @@ The system integrates with the official FIG athlete database:
 1. **Gymnast Selection**: Only licensed AER gymnasts from FIG database
 2. **Team Composition**: 1, 2, 3, 5, or 8 gymnasts per choreography
 3. **Category Assignment**: Based on oldest gymnast's age
-4. **Registration Limits**: Up to 10 choreographies max per country per category (varies by tournament type)
+4. **Registration Limits**: 4 choreographies max per country per category per choreography type
 5. **Naming Convention**: Surnames joined with hyphens (e.g., "SMITH-JONES-BROWN")
 
 ## 🏃‍♀️ Development

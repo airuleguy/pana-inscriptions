@@ -130,11 +130,12 @@ export class ChoreographyService {
     // Get the appropriate business rules strategy for this tournament
     const strategy = this.businessRulesFactory.getStrategy(tournament.type);
 
-    // Count existing choreographies for this country, category, and tournament
+    // Count existing choreographies for this country, category, type, and tournament
     const existingCount = await this.choreographyRepository.count({
       where: {
         country: dto.country.toUpperCase(),
         category: dto.category,
+        type: dto.type,
         tournament: { id: tournament.id },
       },
     });
