@@ -206,19 +206,19 @@ export const TOURNAMENT_TYPE_INFO = {
   CAMPEONATO_PANAMERICANO: { 
     name: "Campeonato Panamericano de Gimnasia Aeróbica",
     shortName: "Campeonato Panamericano",
-    maxChoreographiesPerCategory: 4,
+    maxChoreographiesPerCategoryPerType: 4,
     description: "Premier Pan-American championship with strict eligibility"
   },
   COPA_PANAMERICANA: { 
     name: "Copa Panamericana de Gimnasia Aeróbica",
     shortName: "Copa Panamericana", 
-    maxChoreographiesPerCategory: 4,
+    maxChoreographiesPerCategoryPerType: 4,
     description: "Developmental competition open to Pan-American and guest countries"
   }
 } as const;
 
-// Maximum choreographies per country per category (varies by tournament)
-export const MAX_CHOREOGRAPHIES_PER_CATEGORY = {
+// Maximum choreographies per country per category per choreography type (varies by tournament)
+export const MAX_CHOREOGRAPHIES_PER_CATEGORY_PER_TYPE = {
   CAMPEONATO_PANAMERICANO: 4,
   COPA_PANAMERICANA: 4,
 } as const;

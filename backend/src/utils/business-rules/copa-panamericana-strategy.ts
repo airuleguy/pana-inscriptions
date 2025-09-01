@@ -11,11 +11,11 @@ export class CopaPanamericanaStrategy implements BusinessRulesStrategy {
     request: CreateChoreographyRequest, 
     existingChoreographiesCount: number
   ): Promise<void> {
-    // Copa Panamericana allows maximum 4 choreographies per country per category
+    // Copa Panamericana allows maximum 4 choreographies per country per category per choreography type
     const maxAllowed = this.getMaxChoreographiesPerCountryPerCategory();
     if (existingChoreographiesCount >= maxAllowed) {
       throw new BadRequestException(
-        `Copa Panamericana allows maximum ${maxAllowed} choreographies per country per category. ${request.country} already has ${existingChoreographiesCount} in ${request.category} category.`
+        `Copa Panamericana allows maximum ${maxAllowed} choreographies per country per category per choreography type. ${request.country} already has ${existingChoreographiesCount} in ${request.category} ${request.type}.`
       );
     }
 
@@ -28,7 +28,7 @@ export class CopaPanamericanaStrategy implements BusinessRulesStrategy {
 
   getAdditionalValidationRules(): string[] {
     return [
-      'Maximum 4 choreographies per country per category',
+      'Maximum 4 choreographies per country per category per choreography type',
       'More flexible country eligibility',
       'Standard licensing requirements',
       'Open to development countries'

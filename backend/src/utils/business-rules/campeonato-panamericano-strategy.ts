@@ -11,11 +11,11 @@ export class CampeonatoPanamericanoStrategy implements BusinessRulesStrategy {
     request: CreateChoreographyRequest, 
     existingChoreographiesCount: number
   ): Promise<void> {
-    // Campeonato Panamericano allows maximum 4 choreographies per country per category
+    // Campeonato Panamericano allows maximum 4 choreographies per country per category per choreography type
     const maxAllowed = this.getMaxChoreographiesPerCountryPerCategory();
     if (existingChoreographiesCount >= maxAllowed) {
       throw new BadRequestException(
-        `Campeonato Panamericano allows maximum ${maxAllowed} choreographies per country per category. ${request.country} already has ${existingChoreographiesCount} in ${request.category} category.`
+        `Campeonato Panamericano allows maximum ${maxAllowed} choreographies per country per category per choreography type. ${request.country} already has ${existingChoreographiesCount} in ${request.category} ${request.type}.`
       );
     }
 
@@ -28,7 +28,7 @@ export class CampeonatoPanamericanoStrategy implements BusinessRulesStrategy {
 
   getAdditionalValidationRules(): string[] {
     return [
-      'Maximum 4 choreographies per country per category',
+      'Maximum 4 choreographies per country per category per choreography type',
       'All gymnasts must be from the same country',
       'Stricter age verification requirements',
       'Enhanced licensing validation'
