@@ -7,6 +7,7 @@ import { GymnastDto } from '../dto/gymnast.dto';
 import { CoachDto } from '../dto/coach.dto';
 import { JudgeDto } from '../dto/judge.dto';
 import { FigImageUtil } from '../utils/fig-image.util';
+import { calculateCategory } from '../constants/categories';
 
 interface FigApiGymnast {
   idgymnastlicense: string;
@@ -442,10 +443,8 @@ export class FigApiService {
       age--;
     }
     
-    // Determine category based on age
-    let category: 'YOUTH' | 'JUNIOR' | 'SENIOR' = 'SENIOR';
-    if (age <= 15) category = 'YOUTH';
-    else if (age <= 17) category = 'JUNIOR';
+    // Determine category based on age using centralized logic
+    const category = calculateCategory(age) as 'YOUTH' | 'JUNIOR' | 'SENIOR';
     
     // Transform gender to frontend format
     const gender: 'MALE' | 'FEMALE' = athlete.gender === 'male' ? 'MALE' : 'FEMALE';

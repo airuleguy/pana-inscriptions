@@ -25,6 +25,7 @@ import { GlobalRegistrationsController } from './controllers/registrations.contr
 import { HealthController } from './modules/health/health.controller';
 import { FigImageProxyController } from './controllers/fig-image-proxy.controller';
 import { AuthController } from './controllers/auth.controller';
+import { CategoriesController } from './controllers/categories.controller';
 import { ChoreographyService } from './services/choreography.service';
 import { TournamentService } from './services/tournament.service';
 import { CoachRegistrationService } from './services/coach-registration.service';
@@ -108,6 +109,9 @@ import { SupportRegistrationService } from './services/support-registration.serv
     
     // Authentication
     AuthController,
+    
+    // Categories utility
+    CategoriesController,
     
     // Health check
     HealthController,

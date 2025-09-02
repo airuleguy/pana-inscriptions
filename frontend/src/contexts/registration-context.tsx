@@ -59,7 +59,7 @@ interface RegistrationState {
 interface RegistrationContextType {
   state: RegistrationState;
   addChoreography: (choreography: RegisteredChoreography) => void;
-  removeChoreography: (id: string) => void;
+  removeChoreography: (id: string) => Promise<void>;
   addCoach: (coach: RegisteredCoach) => void;
   removeCoach: (id: string) => void;
   addJudge: (judge: RegisteredJudge) => void;
@@ -180,11 +180,28 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const removeChoreography = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      choreographies: prev.choreographies.filter(c => c.id !== id),
-    }));
+  const removeChoreography = async (id: string) => {
+    try {
+      // Only remove from backend if it's a PENDING registration
+      const choreography = state.choreographies.find(c => c.id === id);
+      if (choreography && choreography.status === 'PENDING' && state.tournament) {
+        await APIService.deleteChoreography(id, state.tournament.id);
+      }
+      
+      // Remove from local state
+      setState(prev => ({
+        ...prev,
+        choreographies: prev.choreographies.filter(c => c.id !== id),
+      }));
+    } catch (error) {
+      console.error('Failed to remove choreography:', error);
+      // Still remove from local state even if API call fails
+      setState(prev => ({
+        ...prev,
+        choreographies: prev.choreographies.filter(c => c.id !== id),
+      }));
+      throw error;
+    }
   };
 
   const addCoach = (coach: RegisteredCoach) => {

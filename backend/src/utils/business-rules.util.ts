@@ -1,19 +1,9 @@
-import { ChoreographyCategory, ChoreographyType } from '../entities/choreography.entity';
+import { ChoreographyCategory, ChoreographyType, calculateCategory } from '../constants/categories';
 import { BusinessRulesFactory } from './business-rules/business-rules-factory';
 import { TournamentType } from '../entities/tournament.entity';
 
-/**
- * Calculate the category based on the oldest gymnast's age
- */
-export function calculateCategory(oldestAge: number): ChoreographyCategory {
-  if (oldestAge <= 15) {
-    return ChoreographyCategory.YOUTH;
-  } else if (oldestAge <= 17) {
-    return ChoreographyCategory.JUNIOR;
-  } else {
-    return ChoreographyCategory.SENIOR;
-  }
-}
+// Re-export the centralized category calculation function
+export { calculateCategory };
 
 /**
  * Get business rules for a specific tournament type

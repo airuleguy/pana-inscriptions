@@ -13,7 +13,7 @@ import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
 import { useTranslations } from '@/contexts/i18n-context';
-import { ChoreographyCategory, AGE_LIMITS } from '@/constants/categories';
+import { ChoreographyCategory, AGE_LIMITS, calculateCategory } from '@/constants/categories';
 
 interface CreateGymnastFormProps {
   open: boolean;
@@ -171,19 +171,11 @@ export function CreateGymnastForm({
     return age;
   };
 
-  // Calculate category for preview using proper business rules
-  const calculateCategory = (age: number): ChoreographyCategory => {
-    if (age >= AGE_LIMITS[ChoreographyCategory.YOUTH].min && age <= AGE_LIMITS[ChoreographyCategory.YOUTH].max) {
-      return ChoreographyCategory.YOUTH;
-    }
-    if (age >= AGE_LIMITS[ChoreographyCategory.JUNIOR].min && age <= AGE_LIMITS[ChoreographyCategory.JUNIOR].max) {
-      return ChoreographyCategory.JUNIOR;
-    }
-    return ChoreographyCategory.SENIOR;
-  };
+  // Use centralized category calculation logic
+  const calculateCategoryForPreview = calculateCategory;
 
   const previewAge = formData.dateOfBirth ? calculateAge(formData.dateOfBirth) : null;
-  const previewCategory = previewAge ? calculateCategory(previewAge) : null;
+  const previewCategory = previewAge ? calculateCategoryForPreview(previewAge) : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

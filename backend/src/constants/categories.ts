@@ -31,4 +31,26 @@ export const CHOREOGRAPHY_TYPE_INFO = {
 } as const;
 
 export const VALID_CATEGORIES = Object.values(ChoreographyCategory);
-export const VALID_CHOREOGRAPHY_TYPES = Object.values(ChoreographyType); 
+export const VALID_CHOREOGRAPHY_TYPES = Object.values(ChoreographyType);
+
+/**
+ * Calculate the category based on the oldest gymnast's age
+ * This is the single source of truth for category calculation logic
+ */
+export function calculateCategory(oldestAge: number): ChoreographyCategory {
+  if (oldestAge <= 14) {
+    return ChoreographyCategory.YOUTH;
+  } else if (oldestAge <= 17) {
+    return ChoreographyCategory.JUNIOR;
+  } else {
+    return ChoreographyCategory.SENIOR;
+  }
+}
+
+/**
+ * Validate if an age falls within the specified category
+ */
+export function isAgeInCategory(age: number, category: ChoreographyCategory): boolean {
+  const limits = AGE_LIMITS[category];
+  return age >= limits.min && age <= limits.max;
+} 

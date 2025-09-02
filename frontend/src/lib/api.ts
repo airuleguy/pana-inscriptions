@@ -1,5 +1,5 @@
 import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
-import { ChoreographyCategory } from '@/constants/categories';
+import { ChoreographyCategory, calculateCategory } from '@/constants/categories';
 
 /**
  * API service for communicating with the backend
@@ -576,8 +576,13 @@ export class APIService {
   /**
    * Delete choreography
    */
-  static async deleteChoreography(id: string): Promise<void> {
-    await this.fetchAPI<void>(`/api/v1/choreographies/${encodeURIComponent(id)}`, {
+  static async deleteChoreography(choreographyId: string, tournamentId?: string): Promise<void> {
+    // Use tournament-specific endpoint if tournamentId is provided, otherwise use general endpoint
+    const endpoint = tournamentId 
+      ? `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/choreographies/${encodeURIComponent(choreographyId)}`
+      : `/api/v1/choreographies/${encodeURIComponent(choreographyId)}`;
+      
+    await this.fetchAPI<void>(endpoint, {
       method: 'DELETE',
     });
   }
@@ -882,9 +887,8 @@ export class APIService {
   }
 
   private static determineCategory(age: number): ChoreographyCategory {
-    if (age <= 15) return ChoreographyCategory.YOUTH;
-    if (age <= 17) return ChoreographyCategory.JUNIOR;
-    return ChoreographyCategory.SENIOR;
+    // Use centralized logic from constants
+    return calculateCategory(age);
   }
 
   /**
