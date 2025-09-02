@@ -161,6 +161,10 @@ export class GymnastService {
    * Transform gymnast entity to DTO
    */
   private transformEntityToDto(gymnast: Gymnast): GymnastDto {
+    // Recalculate age and category to ensure they're always current
+    const currentAge = this.calculateAge(gymnast.dateOfBirth);
+    const currentCategory = this.calculateCategoryFromAge(currentAge);
+    
     return {
       id: gymnast.id,
       figId: gymnast.figId,
@@ -173,8 +177,8 @@ export class GymnastService {
       discipline: gymnast.discipline,
       licenseValid: gymnast.licenseValid,
       licenseExpiryDate: gymnast.licenseExpiryDate,
-      age: gymnast.age,
-      category: gymnast.category,
+      age: currentAge,
+      category: currentCategory,
       isLocal: gymnast.isLocal,
     };
   }

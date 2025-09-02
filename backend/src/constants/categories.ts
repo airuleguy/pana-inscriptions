@@ -38,7 +38,7 @@ export const VALID_CHOREOGRAPHY_TYPES = Object.values(ChoreographyType);
  * This is the single source of truth for category calculation logic
  */
 export function calculateCategory(oldestAge: number): ChoreographyCategory {
-  if (oldestAge <= 15) {
+  if (oldestAge <= 14) {
     return ChoreographyCategory.YOUTH;
   } else if (oldestAge <= 17) {
     return ChoreographyCategory.JUNIOR;
