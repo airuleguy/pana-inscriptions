@@ -1,5 +1,5 @@
 import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
-import { ChoreographyCategory } from '@/constants/categories';
+import { ChoreographyCategory, calculateCategory } from '@/constants/categories';
 
 /**
  * API service for communicating with the backend
@@ -887,9 +887,8 @@ export class APIService {
   }
 
   private static determineCategory(age: number): ChoreographyCategory {
-    if (age <= 15) return ChoreographyCategory.YOUTH;
-    if (age <= 17) return ChoreographyCategory.JUNIOR;
-    return ChoreographyCategory.SENIOR;
+    // Use centralized logic from constants
+    return calculateCategory(age);
   }
 
   /**

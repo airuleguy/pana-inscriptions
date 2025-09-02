@@ -6,6 +6,7 @@ import { FigApiService } from './fig-api.service';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CreateGymnastDto } from '../dto/create-gymnast.dto';
 import { UpdateGymnastDto } from '../dto/update-gymnast.dto';
+import { calculateCategory } from '../constants/categories';
 
 @Injectable()
 export class GymnastService {
@@ -67,7 +68,7 @@ export class GymnastService {
     // Calculate age and category from date of birth
     const dateOfBirth = new Date(createGymnastDto.dateOfBirth);
     const age = this.calculateAge(dateOfBirth);
-    const category = this.calculateCategory(age);
+    const category = this.calculateCategoryFromAge(age);
 
     // Create gymnast entity
     const gymnast = this.gymnastRepository.create({
@@ -106,7 +107,7 @@ export class GymnastService {
     if (updateGymnastDto.dateOfBirth) {
       const dateOfBirth = new Date(updateGymnastDto.dateOfBirth);
       updateGymnastDto.age = this.calculateAge(dateOfBirth);
-      updateGymnastDto.category = this.calculateCategory(updateGymnastDto.age);
+      updateGymnastDto.category = this.calculateCategoryFromAge(updateGymnastDto.age);
     }
 
     // Update full name if first or last name changed
@@ -194,12 +195,10 @@ export class GymnastService {
   }
 
   /**
-   * Calculate category based on age
+   * Calculate category based on age using centralized logic
    */
-  private calculateCategory(age: number): 'YOUTH' | 'JUNIOR' | 'SENIOR' {
-    if (age <= 15) return 'YOUTH';
-    if (age <= 17) return 'JUNIOR';
-    return 'SENIOR';
+  private calculateCategoryFromAge(age: number): 'YOUTH' | 'JUNIOR' | 'SENIOR' {
+    return calculateCategory(age) as 'YOUTH' | 'JUNIOR' | 'SENIOR';
   }
 
   /**
