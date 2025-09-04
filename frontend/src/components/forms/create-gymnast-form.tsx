@@ -13,7 +13,7 @@ import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
 import { useTranslations } from '@/contexts/i18n-context';
-import { ChoreographyCategory, AGE_LIMITS, calculateCategory } from '@/constants/categories';
+import { ChoreographyCategory, AGE_LIMITS, calculateCategory, calculateCompetitionYearAge } from '@/constants/categories';
 
 interface CreateGymnastFormProps {
   open: boolean;
@@ -174,7 +174,7 @@ export function CreateGymnastForm({
   // Use centralized category calculation logic
   const calculateCategoryForPreview = calculateCategory;
 
-  const previewAge = formData.dateOfBirth ? calculateAge(formData.dateOfBirth) : null;
+  const previewAge = formData.dateOfBirth ? calculateCompetitionYearAge(formData.dateOfBirth) : null;
   const previewCategory = previewAge ? calculateCategoryForPreview(previewAge) : null;
 
   return (

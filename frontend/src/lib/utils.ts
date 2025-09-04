@@ -78,6 +78,13 @@ export function calculateAge(dateOfBirth: Date): number {
 }
 
 /**
+ * Calculate the age a person will turn during the competition year (current year)
+ * This follows gymnastics competition rules where category is based on age during the year
+ * Re-exports the centralized logic from constants
+ */
+export { calculateCompetitionYearAge, calculateCategoryFromDateOfBirth } from '@/constants/categories';
+
+/**
  * Calculate category based on the oldest gymnast's age
  * Re-exports the centralized logic from constants
  */

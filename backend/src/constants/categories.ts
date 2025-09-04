@@ -34,8 +34,21 @@ export const VALID_CATEGORIES = Object.values(ChoreographyCategory);
 export const VALID_CHOREOGRAPHY_TYPES = Object.values(ChoreographyType);
 
 /**
- * Calculate the category based on the oldest gymnast's age
+ * Calculate the age a person will turn during the competition year (current year)
+ * This follows gymnastics competition rules where category is based on age during the year
+ * Handles timezone issues by using UTC date components
+ */
+export function calculateCompetitionYearAge(dateOfBirth: Date, competitionYear?: number): number {
+  // Use UTC to avoid timezone issues with date parsing
+  const birthYear = dateOfBirth.getUTCFullYear();
+  const currentYear = competitionYear || new Date().getUTCFullYear();
+  return currentYear - birthYear;
+}
+
+/**
+ * Calculate the category based on the oldest gymnast's competition year age
  * This is the single source of truth for category calculation logic
+ * Uses age during competition year, not current age
  */
 export function calculateCategory(oldestAge: number): ChoreographyCategory {
   if (oldestAge <= 14) {
@@ -45,6 +58,14 @@ export function calculateCategory(oldestAge: number): ChoreographyCategory {
   } else {
     return ChoreographyCategory.SENIOR;
   }
+}
+
+/**
+ * Calculate category directly from date of birth using competition year age
+ */
+export function calculateCategoryFromDateOfBirth(dateOfBirth: Date, competitionYear?: number): ChoreographyCategory {
+  const competitionAge = calculateCompetitionYearAge(dateOfBirth, competitionYear);
+  return calculateCategory(competitionAge);
 }
 
 /**
