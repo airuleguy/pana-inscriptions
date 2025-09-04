@@ -6,7 +6,7 @@ import { FigApiService } from './fig-api.service';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CreateGymnastDto } from '../dto/create-gymnast.dto';
 import { UpdateGymnastDto } from '../dto/update-gymnast.dto';
-import { calculateCategory } from '../constants/categories';
+import { calculateCategory, calculateCompetitionYearAge, calculateCategoryFromDateOfBirth } from '../constants/categories';
 
 @Injectable()
 export class GymnastService {
@@ -65,16 +65,16 @@ export class GymnastService {
       throw new BadRequestException(`Gymnast with FIG ID ${createGymnastDto.figId} already exists`);
     }
 
-    // Calculate age and category from date of birth
+    // Calculate competition year age and category from date of birth
     const dateOfBirth = new Date(createGymnastDto.dateOfBirth);
-    const age = this.calculateAge(dateOfBirth);
-    const category = this.calculateCategoryFromAge(age);
+    const competitionAge = calculateCompetitionYearAge(dateOfBirth);
+    const category = calculateCategory(competitionAge);
 
     // Create gymnast entity
     const gymnast = this.gymnastRepository.create({
       ...createGymnastDto,
       dateOfBirth,
-      age,
+      age: competitionAge,
       category,
       fullName: `${createGymnastDto.firstName} ${createGymnastDto.lastName}`,
       discipline: 'AER', // Default to aerobic
@@ -106,8 +106,9 @@ export class GymnastService {
     // Update age and category if date of birth changed
     if (updateGymnastDto.dateOfBirth) {
       const dateOfBirth = new Date(updateGymnastDto.dateOfBirth);
-      updateGymnastDto.age = this.calculateAge(dateOfBirth);
-      updateGymnastDto.category = this.calculateCategoryFromAge(updateGymnastDto.age);
+      const competitionAge = calculateCompetitionYearAge(dateOfBirth);
+      updateGymnastDto.age = competitionAge;
+      updateGymnastDto.category = calculateCategory(competitionAge);
     }
 
     // Update full name if first or last name changed
@@ -161,9 +162,9 @@ export class GymnastService {
    * Transform gymnast entity to DTO
    */
   private transformEntityToDto(gymnast: Gymnast): GymnastDto {
-    // Recalculate age and category to ensure they're always current
-    const currentAge = this.calculateAge(gymnast.dateOfBirth);
-    const currentCategory = this.calculateCategoryFromAge(currentAge);
+    // Calculate competition year age and category using centralized logic
+    const competitionAge = calculateCompetitionYearAge(gymnast.dateOfBirth);
+    const competitionCategory = calculateCategory(competitionAge);
     
     return {
       id: gymnast.id,
@@ -177,8 +178,8 @@ export class GymnastService {
       discipline: gymnast.discipline,
       licenseValid: gymnast.licenseValid,
       licenseExpiryDate: gymnast.licenseExpiryDate,
-      age: currentAge,
-      category: currentCategory,
+      age: competitionAge,
+      category: competitionCategory,
       isLocal: gymnast.isLocal,
     };
   }
@@ -198,12 +199,6 @@ export class GymnastService {
     return age;
   }
 
-  /**
-   * Calculate category based on age using centralized logic
-   */
-  private calculateCategoryFromAge(age: number): 'YOUTH' | 'JUNIOR' | 'SENIOR' {
-    return calculateCategory(age) as 'YOUTH' | 'JUNIOR' | 'SENIOR';
-  }
 
   /**
    * Clear FIG API cache

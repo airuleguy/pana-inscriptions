@@ -14,7 +14,7 @@ import { ChoreographyCategory } from '@/constants/categories';
 import { useRegistration, RegisteredChoreography } from '@/contexts/registration-context';
 import { useTranslations } from '@/contexts/i18n-context';
 import { APIService } from '@/lib/api';
-import { generateChoreographyName, calculateAge, calculateCategory, determineChoreographyType } from '@/lib/utils';
+import { generateChoreographyName, calculateAge, calculateCategory, calculateCompetitionYearAge, determineChoreographyType } from '@/lib/utils';
 import { getLocalePrefix } from '@/lib/locale';
 import { Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -108,10 +108,10 @@ export default function ChoreographyRegistrationPage() {
         const autoType = determineChoreographyType(gymnasts.length, gymnasts);
         setChoreographyType(autoType as ChoreographyType);
 
-        // Auto-calculate category based on oldest gymnast age
-        const ages = gymnasts.map(gymnast => calculateAge(gymnast.dateOfBirth));
-        const oldestAge = Math.max(...ages);
-        const autoCategory = calculateCategory(oldestAge);
+        // Auto-calculate category based on oldest gymnast's competition year age
+        const competitionAges = gymnasts.map(gymnast => calculateCompetitionYearAge(gymnast.dateOfBirth));
+        const oldestCompetitionAge = Math.max(...competitionAges);
+        const autoCategory = calculateCategory(oldestCompetitionAge);
         setCategory(autoCategory as ChoreographyCategory);
 
         // Show success message for valid combinations

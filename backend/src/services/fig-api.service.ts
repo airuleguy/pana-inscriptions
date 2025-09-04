@@ -7,7 +7,7 @@ import { GymnastDto } from '../dto/gymnast.dto';
 import { CoachDto } from '../dto/coach.dto';
 import { JudgeDto } from '../dto/judge.dto';
 import { FigImageUtil } from '../utils/fig-image.util';
-import { calculateCategory } from '../constants/categories';
+import { calculateCategory, calculateCompetitionYearAge } from '../constants/categories';
 
 interface FigApiGymnast {
   idgymnastlicense: string;
@@ -435,16 +435,11 @@ export class FigApiService {
     // Parse birth date
     const dateOfBirth = new Date(athlete.birth + 'T00:00:00Z');
     
-    // Calculate age
-    const today = new Date();
-    let age = today.getFullYear() - dateOfBirth.getFullYear();
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      age--;
-    }
+    // Calculate competition year age (age athlete will turn during current year)
+    const competitionAge = calculateCompetitionYearAge(dateOfBirth);
     
-    // Determine category based on age using centralized logic
-    const category = calculateCategory(age) as 'YOUTH' | 'JUNIOR' | 'SENIOR';
+    // Determine category based on competition year age using centralized logic
+    const category = calculateCategory(competitionAge) as 'YOUTH' | 'JUNIOR' | 'SENIOR';
     
     // Transform gender to frontend format
     const gender: 'MALE' | 'FEMALE' = athlete.gender === 'male' ? 'MALE' : 'FEMALE';
@@ -467,7 +462,7 @@ export class FigApiService {
       discipline: athlete.discipline,
       licenseValid: isLicenseValid,
       licenseExpiryDate,
-      age,
+      age: competitionAge,
       category,
       imageUrl,
     };
