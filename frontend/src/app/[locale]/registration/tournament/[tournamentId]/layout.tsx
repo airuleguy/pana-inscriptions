@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { RegistrationLayout } from '@/components/registration-layout';
 import { ProtectedRoute } from '@/components/protected-route';
+import { useRegistration } from '@/contexts/registration-context';
 import type { Tournament } from '@/types';
 import { APIService } from '@/lib/api';
 
@@ -15,6 +16,7 @@ function TournamentRegistrationLayoutContent({
   const router = useRouter();
   const params = useParams();
   const tournamentId = params.tournamentId as string;
+  const { updateTournamentAndCountry } = useRegistration();
   const [loading, setLoading] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
 
@@ -25,8 +27,11 @@ function TournamentRegistrationLayoutContent({
         const tournamentData = await APIService.getTournament(tournamentId);
         setTournament(tournamentData);
         
-        // Store tournament data in localStorage for consistency
-        localStorage.setItem('selectedTournament', JSON.stringify(tournamentData));
+        // Get country from localStorage (should be set by tournament selection)
+        const storedCountry = localStorage.getItem('selectedCountry') || 'URU';
+        
+        // Update the registration context with the current tournament and country
+        updateTournamentAndCountry(tournamentData, storedCountry);
         
         setLoading(false);
       } catch (error) {
@@ -41,7 +46,7 @@ function TournamentRegistrationLayoutContent({
     } else {
       router.push('/tournament-selection');
     }
-  }, [tournamentId, router]);
+  }, [tournamentId, router, updateTournamentAndCountry]);
 
   if (loading) {
     return (

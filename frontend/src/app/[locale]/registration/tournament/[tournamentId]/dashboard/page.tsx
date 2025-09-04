@@ -284,7 +284,7 @@ export default function TournamentRegistrationDashboard() {
   const params = useParams();
   const pathname = usePathname();
   const tournamentId = params.tournamentId as string;
-  const { state, canConfirmRegistration, getPendingCount, getRegistrationsByStatus } = useRegistration();
+  const { state, canConfirmRegistration, getPendingCount, getRegistrationsByStatus, refreshRegistrations, updateTournamentAndCountry } = useRegistration();
   const { t } = useTranslations('common');
   const { state: authState } = useAuth();
   
@@ -321,6 +321,10 @@ export default function TournamentRegistrationDashboard() {
         }
         
         setSelectedCountry(countryToUse);
+        
+        // Update the registration context with the current tournament and country
+        updateTournamentAndCountry(tournament, countryToUse);
+        
         setLoading(false);
       } catch (error) {
         console.error('Error loading tournament data:', error);
@@ -334,14 +338,30 @@ export default function TournamentRegistrationDashboard() {
       // No user available and not loading, redirect to tournament selection
       router.push(`${localePrefix}/tournament-selection`);
     }
-  }, [tournamentId, router, authState.user, authState.isLoading, isAdmin, userCountry]);
+  }, [tournamentId, router, authState.user, authState.isLoading, isAdmin, userCountry, updateTournamentAndCountry]);
 
-  // Load registrations by status
+  // Load registrations by status and refresh registration context on pageview
   useEffect(() => {
     if (selectedTournament && selectedCountry) {
       loadRegistrationsByStatus();
+      // Also refresh the registration context to ensure sidebar is up to date
+      refreshRegistrations();
     }
-  }, [selectedTournament, selectedCountry]);
+  }, [selectedTournament, selectedCountry, refreshRegistrations]);
+
+  // Refresh when page becomes visible (user returns to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && selectedTournament && selectedCountry) {
+        console.log('Page became visible, refreshing registrations...');
+        refreshRegistrations();
+        loadRegistrationsByStatus();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [selectedTournament, selectedCountry, refreshRegistrations]);
 
   const loadRegistrationsByStatus = async () => {
     if (!selectedTournament || !selectedCountry) return;
@@ -362,9 +382,18 @@ export default function TournamentRegistrationDashboard() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadRegistrationsByStatus();
-    setRefreshing(false);
-    toast.success('Registrations refreshed successfully');
+    try {
+      await Promise.all([
+        loadRegistrationsByStatus(),
+        refreshRegistrations()
+      ]);
+      toast.success('Registrations refreshed successfully');
+    } catch (error) {
+      console.error('Failed to refresh registrations:', error);
+      toast.error('Failed to refresh registrations');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const formatDate = (date: string | Date) => {
