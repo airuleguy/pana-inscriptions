@@ -71,6 +71,8 @@ interface RegistrationContextType {
   canConfirmRegistration: () => boolean;
   loadExistingRegistrations: () => Promise<void>;
   syncPendingRegistrations: () => Promise<void>;
+  refreshRegistrations: () => Promise<void>;
+  updateTournamentAndCountry: (tournament: Tournament, country: string) => void;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   isLoading: boolean;
@@ -87,7 +89,26 @@ interface RegistrationContextType {
 
 const RegistrationContext = createContext<RegistrationContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'pana-registration-summary';
+const getStorageKey = (tournamentId?: string) => {
+  return tournamentId ? `pana-registration-summary-${tournamentId}` : 'pana-registration-summary';
+};
+
+// Clean up old tournament registration data from localStorage
+const cleanupOldTournamentData = (currentTournamentId: string) => {
+  const keysToRemove: string[] = [];
+  
+  // Find all registration summary keys in localStorage
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('pana-registration-summary-') && key !== getStorageKey(currentTournamentId)) {
+      keysToRemove.push(key);
+    }
+  }
+  
+  // Remove old tournament data and legacy key
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  localStorage.removeItem('pana-registration-summary'); // Remove legacy key
+};
 
 export function RegistrationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<RegistrationState>({
@@ -100,61 +121,75 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     isSidebarOpen: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [previousTournamentId, setPreviousTournamentId] = useState<string | null>(null);
 
-  // Load state from localStorage on mount
+  // Load tournament and country first, then load tournament-specific registrations
   useEffect(() => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
     const tournamentData = localStorage.getItem('selectedTournament');
     const countryData = localStorage.getItem('selectedCountry');
 
-    if (savedState) {
-      try {
-        const parsedState: Partial<RegistrationState> = JSON.parse(savedState);
-        // Convert date strings back to Date objects
-        if (parsedState.choreographies) {
-          parsedState.choreographies = parsedState.choreographies.map((c: RegisteredChoreography) => ({
-            ...c,
-            registeredAt: new Date(c.registeredAt),
-            status: c.status || 'PENDING', // Default to PENDING for backward compatibility
-          }));
-        }
-        if (parsedState.coaches) {
-          parsedState.coaches = parsedState.coaches.map((c: RegisteredCoach) => ({
-            ...c,
-            registeredAt: new Date(c.registeredAt),
-            status: c.status || 'PENDING', // Default to PENDING for backward compatibility
-          }));
-        }
-        if (parsedState.judges) {
-          parsedState.judges = parsedState.judges.map((j: RegisteredJudge) => ({
-            ...j,
-            registeredAt: new Date(j.registeredAt),
-            status: j.status || 'PENDING', // Default to PENDING for backward compatibility
-          }));
-        }
-        if (parsedState.supportStaff) {
-          parsedState.supportStaff = parsedState.supportStaff.map((s: RegisteredSupportStaff) => ({
-            ...s,
-            registeredAt: new Date(s.registeredAt),
-            status: s.status || 'PENDING', // Default to PENDING for backward compatibility
-          }));
-        }
-        
-        setState(prev => ({ ...prev, ...parsedState }));
-      } catch (error) {
-        console.error('Error loading registration state:', error);
-      }
-    }
-
-    // Load tournament and country
+    // Load tournament and country first
     if (tournamentData && countryData) {
       try {
+        const tournament = JSON.parse(tournamentData) as Tournament;
         setState(prev => ({
           ...prev,
-          tournament: JSON.parse(tournamentData) as Tournament,
+          tournament,
           country: countryData,
           supportStaff: prev.supportStaff || [], // Ensure supportStaff is initialized
         }));
+
+        // Clean up old tournament data to prevent cross-tournament pollution
+        cleanupOldTournamentData(tournament.id);
+
+        // Now load tournament-specific registration data
+        const tournamentStorageKey = getStorageKey(tournament.id);
+        const savedState = localStorage.getItem(tournamentStorageKey);
+        
+        if (savedState) {
+          try {
+            const parsedState: Partial<RegistrationState> = JSON.parse(savedState);
+            // Convert date strings back to Date objects
+            if (parsedState.choreographies) {
+              parsedState.choreographies = parsedState.choreographies.map((c: RegisteredChoreography) => ({
+                ...c,
+                registeredAt: new Date(c.registeredAt),
+                status: c.status || 'PENDING', // Default to PENDING for backward compatibility
+              }));
+            }
+            if (parsedState.coaches) {
+              parsedState.coaches = parsedState.coaches.map((c: RegisteredCoach) => ({
+                ...c,
+                registeredAt: new Date(c.registeredAt),
+                status: c.status || 'PENDING', // Default to PENDING for backward compatibility
+              }));
+            }
+            if (parsedState.judges) {
+              parsedState.judges = parsedState.judges.map((j: RegisteredJudge) => ({
+                ...j,
+                registeredAt: new Date(j.registeredAt),
+                status: j.status || 'PENDING', // Default to PENDING for backward compatibility
+              }));
+            }
+            if (parsedState.supportStaff) {
+              parsedState.supportStaff = parsedState.supportStaff.map((s: RegisteredSupportStaff) => ({
+                ...s,
+                registeredAt: new Date(s.registeredAt),
+                status: s.status || 'PENDING', // Default to PENDING for backward compatibility
+              }));
+            }
+            
+            setState(prev => ({ 
+              ...prev, 
+              choreographies: parsedState.choreographies || [],
+              coaches: parsedState.coaches || [],
+              judges: parsedState.judges || [],
+              supportStaff: parsedState.supportStaff || []
+            }));
+          } catch (error) {
+            console.error('Error loading tournament-specific registration state:', error);
+          }
+        }
       } catch (error) {
         console.error('Error loading tournament/country data:', error);
       }
@@ -163,15 +198,18 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
 
 
 
-  // Save state to localStorage whenever it changes
+  // Save state to localStorage whenever it changes (tournament-specific)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      choreographies: state.choreographies,
-      coaches: state.coaches,
-      judges: state.judges,
-      supportStaff: state.supportStaff,
-    }));
-  }, [state.choreographies, state.coaches, state.judges, state.supportStaff]);
+    if (state.tournament) {
+      const tournamentStorageKey = getStorageKey(state.tournament.id);
+      localStorage.setItem(tournamentStorageKey, JSON.stringify({
+        choreographies: state.choreographies,
+        coaches: state.coaches,
+        judges: state.judges,
+        supportStaff: state.supportStaff,
+      }));
+    }
+  }, [state.choreographies, state.coaches, state.judges, state.supportStaff, state.tournament]);
 
   const addChoreography = (choreography: RegisteredChoreography) => {
     setState(prev => ({
@@ -254,7 +292,15 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
       judges: [],
       supportStaff: [],
     }));
-    localStorage.removeItem(STORAGE_KEY);
+    
+    // Remove tournament-specific storage
+    if (state.tournament) {
+      const tournamentStorageKey = getStorageKey(state.tournament.id);
+      localStorage.removeItem(tournamentStorageKey);
+    }
+    
+    // Also remove legacy storage key for backward compatibility
+    localStorage.removeItem('pana-registration-summary');
   };
 
   const getTotalCount = () => {
@@ -484,15 +530,61 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }
   }, [state.tournament, state.country]);
 
-  // Auto-sync pending registrations when tournament and country are available
+  // Auto-sync pending registrations when tournament changes or on initial load
   useEffect(() => {
     if (state.tournament && state.country) {
+      const currentTournamentId = state.tournament.id;
+      
+      // Check if tournament has changed
+      if (previousTournamentId !== currentTournamentId) {
+        console.log(`Tournament changed from ${previousTournamentId} to ${currentTournamentId}. Clearing registrations and refreshing...`);
+        
+        // Clear registrations first when tournament changes
+        setState(prev => ({
+          ...prev,
+          choreographies: [],
+          coaches: [],
+          judges: [],
+          supportStaff: [],
+        }));
+        
+        // Update previous tournament ID
+        setPreviousTournamentId(currentTournamentId);
+      }
+      
       // Always sync from database since all pending registrations are immediately persisted to DB
       // localStorage is just a cache/mirror of the database state
       console.log('Auto-refreshing pending registrations from database...');
       syncPendingRegistrations();
     }
-  }, [state.tournament, state.country, syncPendingRegistrations]);
+  }, [state.tournament, state.country, syncPendingRegistrations, previousTournamentId]);
+
+  // Manual refresh method for pageview or user-triggered refreshes
+  const refreshRegistrations = useCallback(async () => {
+    if (!state.tournament || !state.country) {
+      console.log('Cannot refresh registrations: missing tournament or country');
+      return;
+    }
+
+    console.log('Manually refreshing registrations from database...');
+    await Promise.all([
+      syncPendingRegistrations(),
+      loadExistingRegistrations()
+    ]);
+  }, [state.tournament, state.country, syncPendingRegistrations, loadExistingRegistrations]);
+
+  // Method to update tournament and country (used by pages to sync context)
+  const updateTournamentAndCountry = useCallback((tournament: Tournament, country: string) => {
+    setState(prev => ({
+      ...prev,
+      tournament,
+      country,
+    }));
+    
+    // Update localStorage as well for consistency
+    localStorage.setItem('selectedTournament', JSON.stringify(tournament));
+    localStorage.setItem('selectedCountry', country);
+  }, []);
 
   const value: RegistrationContextType = {
     state,
@@ -509,6 +601,8 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     canConfirmRegistration,
     loadExistingRegistrations,
     syncPendingRegistrations,
+    refreshRegistrations,
+    updateTournamentAndCountry,
     toggleSidebar,
     closeSidebar,
     isLoading,
