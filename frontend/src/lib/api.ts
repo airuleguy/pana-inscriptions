@@ -6,7 +6,7 @@ import { ChoreographyCategory, calculateCategory } from '@/constants/categories'
  * Replaces direct FIG API calls with backend endpoints
  */
 export class APIService {
-  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // Use backend URL from environment
+  private static readonly BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'; // Use backend URL from environment
   private static authToken: string | null = null;
   
   // Simple in-memory cache for frontend performance
