@@ -139,6 +139,9 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
           supportStaff: prev.supportStaff || [], // Ensure supportStaff is initialized
         }));
 
+        // Set the previous tournament ID to prevent unnecessary clearing on initial load
+        setPreviousTournamentId(tournament.id);
+
         // Clean up old tournament data to prevent cross-tournament pollution
         cleanupOldTournamentData(tournament.id);
 
@@ -530,34 +533,15 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }
   }, [state.tournament, state.country]);
 
-  // Auto-sync pending registrations when tournament changes or on initial load
+  // Auto-sync pending registrations when tournament or country changes
   useEffect(() => {
     if (state.tournament && state.country) {
-      const currentTournamentId = state.tournament.id;
-      
-      // Check if tournament has changed
-      if (previousTournamentId !== currentTournamentId) {
-        console.log(`Tournament changed from ${previousTournamentId} to ${currentTournamentId}. Clearing registrations and refreshing...`);
-        
-        // Clear registrations first when tournament changes
-        setState(prev => ({
-          ...prev,
-          choreographies: [],
-          coaches: [],
-          judges: [],
-          supportStaff: [],
-        }));
-        
-        // Update previous tournament ID
-        setPreviousTournamentId(currentTournamentId);
-      }
-      
       // Always sync from database since all pending registrations are immediately persisted to DB
       // localStorage is just a cache/mirror of the database state
       console.log('Auto-refreshing pending registrations from database...');
       syncPendingRegistrations();
     }
-  }, [state.tournament, state.country, syncPendingRegistrations, previousTournamentId]);
+  }, [state.tournament, state.country, syncPendingRegistrations]);
 
   // Manual refresh method for pageview or user-triggered refreshes
   const refreshRegistrations = useCallback(async () => {
@@ -575,11 +559,34 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
 
   // Method to update tournament and country (used by pages to sync context)
   const updateTournamentAndCountry = useCallback((tournament: Tournament, country: string) => {
-    setState(prev => ({
-      ...prev,
-      tournament,
-      country,
-    }));
+    setState(prev => {
+      // Check if tournament is actually changing
+      const isTournamentChanging = prev.tournament?.id !== tournament.id;
+      
+      if (isTournamentChanging) {
+        console.log(`Tournament changing from ${prev.tournament?.id} to ${tournament.id}. Clearing registrations...`);
+        // Clear registrations when tournament changes
+        return {
+          ...prev,
+          tournament,
+          country,
+          choreographies: [],
+          coaches: [],
+          judges: [],
+          supportStaff: [],
+        };
+      } else {
+        // Just update tournament and country if no change
+        return {
+          ...prev,
+          tournament,
+          country,
+        };
+      }
+    });
+    
+    // Update previous tournament ID to reflect the change
+    setPreviousTournamentId(tournament.id);
     
     // Update localStorage as well for consistency
     localStorage.setItem('selectedTournament', JSON.stringify(tournament));

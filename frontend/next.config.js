@@ -5,7 +5,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    outputFileTracingRoot: undefined,
     turbo: {
       rules: {
         '*.svg': {

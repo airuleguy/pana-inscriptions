@@ -174,7 +174,7 @@ export function CreateGymnastForm({
   // Use centralized category calculation logic
   const calculateCategoryForPreview = calculateCategory;
 
-  const previewAge = formData.dateOfBirth ? calculateCompetitionYearAge(formData.dateOfBirth) : null;
+  const previewAge = formData.dateOfBirth ? calculateCompetitionYearAge(new Date(formData.dateOfBirth)) : null;
   const previewCategory = previewAge ? calculateCategoryForPreview(previewAge) : null;
 
   return (
