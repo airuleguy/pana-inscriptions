@@ -11,11 +11,6 @@ RUN npm ci
 COPY . .
 # Ensure public directory exists for Next.js
 RUN mkdir -p public
-
-# Allow backend URL to be provided at build time for rewrites (optional)
-ARG BACKEND_URL
-ENV BACKEND_URL=${BACKEND_URL}
-
 RUN npm run build
 
 FROM --platform=linux/amd64 node:20-alpine AS runner
