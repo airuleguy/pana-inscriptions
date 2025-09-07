@@ -6,7 +6,6 @@ import { ChoreographyCategory, calculateCategory } from '@/constants/categories'
  * Replaces direct FIG API calls with backend endpoints
  */
 export class APIService {
-  private static readonly BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'; // Use backend URL from environment
   private static authToken: string | null = null;
   
   // Simple in-memory cache for frontend performance
@@ -92,7 +91,7 @@ export class APIService {
    * Generic fetch wrapper with error handling
    */
   private static async fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${this.BASE_URL}${endpoint}`;
+    const url = endpoint;
     
     // Add authentication header if token is available
     const headers: Record<string, string> = {
@@ -1053,7 +1052,7 @@ export class APIService {
     if (options?.quality) params.append('quality', options.quality.toString());
     
     const queryString = params.toString();
-    const baseUrl = `${this.BASE_URL}/api/v1/images/fig/${figId}`;
+    const baseUrl = `/api/v1/images/fig/${figId}`;
     
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }
