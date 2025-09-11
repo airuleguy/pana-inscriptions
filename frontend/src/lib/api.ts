@@ -361,6 +361,7 @@ export class APIService {
       fullName: coach.fullName,
       gender: coach.gender,
       country: coach.country,
+      club: coach.club,
       level: coach.level,
       levelDescription: coach.levelDescription,
       tournamentId: tournamentId,
@@ -443,6 +444,7 @@ export class APIService {
       birth: judge.birth,
       gender: judge.gender,
       country: judge.country,
+      club: judge.club,
       category: judge.category,
       categoryDescription: judge.categoryDescription,
       tournamentId: tournamentId,
@@ -788,6 +790,7 @@ export class APIService {
       lastName: string;
       fullName?: string;
       role: string;
+      club?: string;
       gender?: 'MALE' | 'FEMALE';
       email?: string;
       phone?: string;
@@ -797,6 +800,7 @@ export class APIService {
       lastName: string;
       fullName?: string;
       role: string;
+      club?: string;
       gender?: 'MALE' | 'FEMALE';
       email?: string;
       phone?: string;

@@ -35,6 +35,7 @@ export interface Coach {
   fullName: string;
   gender: 'MALE' | 'FEMALE';
   country: string;
+  club?: string; // Optional club name for non-country-level tournaments
   level: string; // L1, L2, L3, LHB, LBR
   levelDescription: string; // Human-readable level description
   createdAt?: Date; // Registration date
@@ -50,6 +51,7 @@ export interface Judge {
   dateOfBirth: Date;
   gender: 'MALE' | 'FEMALE';
   country: string;
+  club?: string; // Optional club name for non-country-level tournaments
   category: string; // 1, 2, 3, 4
   categoryDescription: string; // Human-readable category description
   age: number; // Calculated age
@@ -64,6 +66,7 @@ export interface SupportStaff {
   fullName: string;
   role: string; // DELEGATE, MEDICAL, PHYSIO, MANAGER, SUPPORT, OTHER
   country: string;
+  club?: string; // Optional club name for non-country-level tournaments
   createdAt?: Date; // Registration date
   updatedAt?: Date; // Last modification date
 }
@@ -108,6 +111,7 @@ export interface Choreography {
   category: ChoreographyCategory;
   type: ChoreographyType; // Auto-determined from gymnast count and gender
   country: string; // Changed from countryCode to match backend
+  club?: string; // Optional club name for non-country-level tournaments
   tournament: Tournament;
   gymnasts: Gymnast[]; // Changed from selectedGymnasts to match backend
   gymnastCount: 1 | 2 | 3 | 5 | 8;
@@ -212,7 +216,7 @@ export const TOURNAMENT_TYPE_INFO = {
   COPA_PANAMERICANA: { 
     name: "Copa Panamericana de Gimnasia Aeróbica",
     shortName: "Copa Panamericana", 
-    maxChoreographiesPerCategoryPerType: 4,
+    maxChoreographiesPerCategoryPerType: null, // No limit for Copa Panamericana
     description: "Developmental competition open to Pan-American and guest countries"
   }
 } as const;
@@ -220,7 +224,7 @@ export const TOURNAMENT_TYPE_INFO = {
 // Maximum choreographies per country per category per choreography type (varies by tournament)
 export const MAX_CHOREOGRAPHIES_PER_CATEGORY_PER_TYPE = {
   CAMPEONATO_PANAMERICANO: 4,
-  COPA_PANAMERICANA: 4,
+  COPA_PANAMERICANA: null, // No limit for Copa Panamericana
 } as const;
 
 // Choreography types - updated to match backend enum

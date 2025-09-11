@@ -30,6 +30,7 @@ export default function JudgeRegistrationPage() {
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedJudges, setSelectedJudges] = useState<Judge[]>([]);
+  const [clubName, setClubName] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{
@@ -94,8 +95,14 @@ export default function JudgeRegistrationPage() {
 
     setSubmitting(true);
     try {
+      // Add club information to selected judges
+      const judgesWithClub = selectedJudges.map(judge => ({
+        ...judge,
+        club: clubName.trim() || undefined
+      }));
+      
       // Register judges with backend API immediately
-      const response = await APIService.saveJudgeSelections(selectedJudges, selectedTournament.id);
+      const response = await APIService.saveJudgeSelections(judgesWithClub, selectedTournament.id);
 
       if (response.success && response.results.length > 0) {
         // Create registration entries for local state with actual backend data
@@ -119,6 +126,7 @@ export default function JudgeRegistrationPage() {
 
         // Reset form
         setSelectedJudges([]);
+        setClubName('');
       } else {
         // Handle API errors
         const errorMessage = response.errors?.join(', ') || t('judges.registrationErrorDescription');
@@ -207,6 +215,30 @@ export default function JudgeRegistrationPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Club Information */}
+          {selectedJudges.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Club Information (Optional)</CardTitle>
+                <CardDescription>
+                  Specify club name for all selected judges. Leave empty for country-level tournaments.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="club">Club Name</Label>
+                  <Input
+                    id="club"
+                    placeholder="Enter club name (optional)"
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">This club name will be applied to all selected judges</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Additional Notes */}
           {selectedJudges.length > 0 && (

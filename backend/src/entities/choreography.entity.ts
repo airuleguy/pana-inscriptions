@@ -22,6 +22,10 @@ export class Choreography {
   @Column()
   country: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @Column({ nullable: true })
+  club?: string;
+
   @Column({
     type: 'enum',
     enum: ChoreographyCategory

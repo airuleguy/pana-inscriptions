@@ -26,6 +26,11 @@ export class CreateCoachRegistrationDto {
   @IsString()
   country: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @IsOptional()
+  @IsString()
+  club?: string;
+
   @ApiProperty({ description: 'Coach level', example: 'L1, L2' })
   @IsString()
   level: string;

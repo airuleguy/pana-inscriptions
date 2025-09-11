@@ -30,6 +30,11 @@ export class CreateJudgeRegistrationDto {
   @IsString()
   country: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @IsOptional()
+  @IsString()
+  club?: string;
+
   @ApiProperty({ description: 'Judge category', example: '3' })
   @IsString()
   category: string;

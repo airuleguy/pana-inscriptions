@@ -19,6 +19,7 @@ interface SupportFormRow {
   firstName: string;
   lastName: string;
   role?: string;
+  club?: string;
 }
 
 export default function SupportRegistrationPage() {
@@ -37,7 +38,7 @@ export default function SupportRegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{ success: boolean; message: string } | null>(null);
   const [rows, setRows] = useState<SupportFormRow[]>([
-    { firstName: '', lastName: '' },
+    { firstName: '', lastName: '', club: '' },
   ]);
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function SupportRegistrationPage() {
     setRows(prev => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   };
 
-  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '' }]);
+  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', club: '' }]);
   const removeRow = (index: number) => setRows(prev => prev.filter((_, i) => i !== index));
 
   const validate = (): boolean => {
@@ -104,6 +105,7 @@ export default function SupportRegistrationPage() {
         lastName: r.lastName.trim(),
         fullName: `${r.firstName} ${r.lastName}`.trim(),
         role: roleLabel,
+        club: r.club?.trim() || undefined,
       }));
 
       const response = await APIService.createSupport(selectedTournament.id, payload);
@@ -134,7 +136,7 @@ export default function SupportRegistrationPage() {
         });
 
         // Reset form
-        setRows([{ firstName: '', lastName: '' }]);
+        setRows([{ firstName: '', lastName: '', club: '' }]);
       } else {
         // Handle API errors
         setRegistrationResult({
@@ -193,7 +195,7 @@ export default function SupportRegistrationPage() {
         <CardContent>
           <div className="space-y-6">
             {rows.map((row, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end border-b pb-4">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b pb-4">
                 <div className="space-y-2">
                   <Label>First name</Label>
                   <Input value={row.firstName} onChange={(e) => handleChange(index, 'firstName', e.target.value)} />
@@ -203,10 +205,18 @@ export default function SupportRegistrationPage() {
                   <Input value={row.lastName} onChange={(e) => handleChange(index, 'lastName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
+                  <Label>Club name (Optional)</Label>
+                  <Input 
+                    value={row.club || ''} 
+                    onChange={(e) => handleChange(index, 'club', e.target.value)} 
+                    placeholder="Enter club name"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label>Role</Label>
                   <Input value={currentLocale === 'es' ? 'SOPORTE' : 'SUPPORT'} disabled />
                 </div>
-                <div className="md:col-span-3 flex justify-end">
+                <div className="md:col-span-4 flex justify-end">
                   {rows.length > 1 && (
                     <Button variant="outline" onClick={() => removeRow(index)}>Remove</Button>
                   )}

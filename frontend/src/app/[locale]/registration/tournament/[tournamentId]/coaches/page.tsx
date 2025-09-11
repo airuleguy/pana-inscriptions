@@ -30,6 +30,7 @@ export default function CoachRegistrationPage() {
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCoaches, setSelectedCoaches] = useState<Coach[]>([]);
+  const [clubName, setClubName] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{
@@ -96,8 +97,14 @@ export default function CoachRegistrationPage() {
 
     setSubmitting(true);
     try {
+      // Add club information to selected coaches
+      const coachesWithClub = selectedCoaches.map(coach => ({
+        ...coach,
+        club: clubName.trim() || undefined
+      }));
+      
       // Register coaches with backend API immediately
-      const response = await APIService.saveCoachSelections(selectedCoaches, selectedTournament.id);
+      const response = await APIService.saveCoachSelections(coachesWithClub, selectedTournament.id);
 
       if (response.success && response.results.length > 0) {
         // Create registration entries for local state with actual backend data
@@ -121,6 +128,7 @@ export default function CoachRegistrationPage() {
 
         // Reset form
         setSelectedCoaches([]);
+        setClubName('');
       } else {
         // Handle API errors
         const errorMessage = response.errors?.join(', ') || t('coaches.registrationErrorDescription');
@@ -209,6 +217,30 @@ export default function CoachRegistrationPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Club Information */}
+          {selectedCoaches.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Club Information (Optional)</CardTitle>
+                <CardDescription>
+                  Specify club name for all selected coaches. Leave empty for country-level tournaments.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="club">Club Name</Label>
+                  <Input
+                    id="club"
+                    placeholder="Enter club name (optional)"
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">This club name will be applied to all selected coaches</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Additional Notes */}
           {selectedCoaches.length > 0 && (

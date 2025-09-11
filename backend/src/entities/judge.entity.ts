@@ -37,6 +37,10 @@ export class Judge {
   @Column()
   country: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @Column({ nullable: true })
+  club?: string;
+
   @ApiProperty({ description: 'Judge category', example: '3' })
   @Column()
   category: string;
