@@ -5,6 +5,7 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "delete": "Delete",
+    "remove": "Remove",
     "add": "Add",
     "create": "Create",
     "update": "Update",
@@ -21,6 +22,8 @@
     "actions": "Actions",
     "status": "Status",
     "name": "Name",
+    "firstName": "First name",
+    "lastName": "Last name",
     "email": "Email",
     "phone": "Phone",
     "country": "Country",
@@ -359,7 +362,16 @@
     "addingToSummary": "Adding to summary...",
     "addToSummary": "Add to Summary",
     "viewSummary": "View Registration Summary",
-    "missingData": "Missing tournament or country selection."
+    "backToDashboard": "Back to Dashboard",
+    "addAnother": "Add another",
+    "missingData": "Missing tournament or country selection.",
+    "roles": {
+      "DELEGATION_LEADER": "Delegation Leader",
+      "MEDIC": "Medic",
+      "COMPANION": "Companion"
+    },
+    "roleLabel": "Role",
+    "rolePlaceholder": "Select a role"
   },
   "tournamentSelection": {
     "title": "Tournament Selection",

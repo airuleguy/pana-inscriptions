@@ -32,8 +32,6 @@ export class TournamentSupportController {
       item.tournamentId = tournamentId;
       item.country = userCountry;
       if (!item.fullName) item.fullName = `${item.firstName} ${item.lastName}`.trim();
-      // Force role from locale: controller is neutral, default to SUPPORT if not provided
-      if (!item.role) item.role = 'SUPPORT';
     });
 
     const results: SupportStaff[] = [];

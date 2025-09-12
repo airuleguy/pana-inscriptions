@@ -14,21 +14,17 @@ import { getCountryByCode } from '@/lib/countries';
 import { getLocalePrefix } from '@/lib/locale';
 import { toast } from 'sonner';
 import { 
-  Trophy, 
-  Users, 
-  GraduationCap, 
-  Scale, 
-  Music, 
-  Plus, 
   CheckCircle,
   Clock,
   AlertCircle,
-  ArrowRight,
   RefreshCw,
   Database,
   User,
   Award,
-  ShieldPlus
+  ShieldPlus,
+  Music,
+  GraduationCap,
+  Scale
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -226,7 +222,7 @@ function SupportCard({ supportStaff, status, t, getCountryInfo }: SupportCardPro
         <ShieldPlus className={`w-4 h-4 ${colorScheme.icon}`} />
         <div>
           <p className="font-medium">{supportStaff.firstName} {supportStaff.lastName}</p>
-          <p className="text-sm text-gray-600">{supportStaff.role}</p>
+          <p className="text-sm text-gray-600">{t(`support.roles.${supportStaff.role}`)}</p>
           <Badge variant="outline" className="text-xs">
             {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
           </Badge>
@@ -423,53 +419,6 @@ export default function TournamentRegistrationDashboard() {
     );
   }
 
-  const registrationSections = [
-    {
-      id: 'choreography',
-      title: t('dashboard.choreographyRegistration'),
-      description: t('dashboard.choreographyDescription'),
-      icon: Music,
-      color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-      iconColor: 'text-blue-600',
-      href: `${localePrefix}/registration/tournament/${tournamentId}/choreography`,
-      count: state.choreographies.length,
-      isCompleted: state.choreographies.length > 0
-    },
-    {
-      id: 'coaches',
-      title: t('dashboard.coachRegistration'),
-      description: t('dashboard.coachDescription'),
-      icon: GraduationCap,
-      color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
-      iconColor: 'text-purple-600',
-      href: `${localePrefix}/registration/tournament/${tournamentId}/coaches`,
-      count: state.coaches.length,
-      isCompleted: state.coaches.length > 0
-    },
-    {
-      id: 'judges',
-      title: t('dashboard.judgeRegistration'),
-      description: t('dashboard.judgeDescription'),
-      icon: Scale,
-      color: 'bg-red-50 border-red-200 hover:bg-red-100',
-      iconColor: 'text-red-600',
-      href: `${localePrefix}/registration/tournament/${tournamentId}/judges`,
-      count: state.judges.length,
-      isCompleted: state.judges.length > 0
-    },
-    {
-      id: 'support',
-      title: t('dashboard.supportRegistration'),
-      description: t('dashboard.supportDescription'),
-      icon: ShieldPlus,
-      color: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100',
-      iconColor: 'text-emerald-600',
-      href: `${localePrefix}/registration/tournament/${tournamentId}/support`,
-      count: state.supportStaff.length,
-      isCompleted: state.supportStaff.length > 0
-    }
-  ];
-
   const pendingCount = getPendingCount();
 
   return (
@@ -513,44 +462,6 @@ export default function TournamentRegistrationDashboard() {
             icon={Database} 
             variant="submitted" 
           />
-        </div>
-
-
-
-        {/* Registration Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {registrationSections.map((section) => (
-            <Card 
-              key={section.id}
-              className={`cursor-pointer transition-all duration-200 ${section.color}`}
-              onClick={() => router.push(section.href)}
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <section.icon className={`w-6 h-6 ${section.iconColor}`} />
-                    <div>
-                      <h3 className="font-semibold">{section.title}</h3>
-                      <p className="text-sm text-gray-600 font-normal mt-1">
-                        {section.count} {t('dashboard.registered')}
-                      </p>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-gray-400" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-gray-600 mb-4">{section.description}</p>
-                <Button 
-                  variant={section.isCompleted ? "outline" : "default"}
-                  size="sm" 
-                  className="w-full"
-                >
-                  {section.isCompleted ? t('dashboard.viewAndEdit') : t('dashboard.startRegistration')}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
         </div>
 
         {/* Registration Status */}
