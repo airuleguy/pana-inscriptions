@@ -116,6 +116,21 @@
       "updated": "Juez actualizado exitosamente"
     }
   },
+  "support": {
+    "title": "Agregar Personal de Apoyo",
+    "description": "Registrar personal de apoyo para este torneo",
+    "fields": {
+      "role": {
+        "label": "Rol",
+        "placeholder": "Seleccionar rol",
+        "options": {
+          "DELEGATION_LEADER": "Líder de Delegación",
+          "MEDIC": "Médico",
+          "COMPANION": "Acompañante"
+        }
+      }
+    }
+  },
   "choreography": {
     "title": "Registrar Coreografía",
     "description": "Registrar una coreografía para el torneo",

@@ -47,6 +47,7 @@ export default function ChoreographyRegistrationPage() {
   const [choreographyType, setChoreographyType] = useState<ChoreographyType | ''>('');
   const [category, setCategory] = useState<ChoreographyCategory | ''>('');
   const [gymnasts, setGymnasts] = useState<Gymnast[]>([]);
+  const [clubName, setClubName] = useState('');
   const [registrationResult, setRegistrationResult] = useState<{
     success: boolean;
     message: string;
@@ -173,6 +174,7 @@ export default function ChoreographyRegistrationPage() {
         category: category as ChoreographyCategory,
         type: choreographyType as ChoreographyType,
         country: selectedCountry,
+        club: clubName.trim() || undefined,
         tournament: selectedTournament,
         gymnasts: gymnasts,
         gymnastCount: expectedGymnastCount as 1 | 2 | 3 | 5 | 8,
@@ -232,6 +234,7 @@ export default function ChoreographyRegistrationPage() {
       setChoreographyName('');
       setChoreographyType('');
       setCategory('');
+      setClubName('');
       setGymnasts([]);
       
     } catch (err) {
@@ -391,6 +394,16 @@ export default function ChoreographyRegistrationPage() {
                 {gymnasts.length > 0 && (
                   <p className="text-xs text-green-600">{t('choreography.autoDetectedFromAge')}</p>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="club">{t('fields.club.name')}</Label>
+                <Input
+                  id="club"
+                  placeholder={t('fields.club.placeholder')}
+                  value={clubName}
+                  onChange={(e) => setClubName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">{t('fields.club.description')}</p>
               </div>
             </CardContent>
           </Card>

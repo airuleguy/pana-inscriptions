@@ -5,6 +5,7 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { CoachDataTable } from '@/components/forms/coach-data-table';
 import { getCountryByCode } from '@/lib/countries';
@@ -30,6 +31,7 @@ export default function CoachRegistrationPage() {
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedCoaches, setSelectedCoaches] = useState<Coach[]>([]);
+  const [clubName, setClubName] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{
@@ -96,8 +98,14 @@ export default function CoachRegistrationPage() {
 
     setSubmitting(true);
     try {
+      // Add club information to selected coaches
+      const coachesWithClub = selectedCoaches.map(coach => ({
+        ...coach,
+        club: clubName.trim() || undefined
+      }));
+      
       // Register coaches with backend API immediately
-      const response = await APIService.saveCoachSelections(selectedCoaches, selectedTournament.id);
+      const response = await APIService.saveCoachSelections(coachesWithClub, selectedTournament.id);
 
       if (response.success && response.results.length > 0) {
         // Create registration entries for local state with actual backend data
@@ -121,6 +129,7 @@ export default function CoachRegistrationPage() {
 
         // Reset form
         setSelectedCoaches([]);
+        setClubName('');
       } else {
         // Handle API errors
         const errorMessage = response.errors?.join(', ') || t('coaches.registrationErrorDescription');
@@ -209,6 +218,30 @@ export default function CoachRegistrationPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Club Information */}
+          {selectedCoaches.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Club Information (Optional)</CardTitle>
+                <CardDescription>
+                  Specify club name for all selected coaches. Leave empty for country-level tournaments.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <Label htmlFor="club">{t('fields.club.name')}</Label>
+                  <Input
+                    id="club"
+                    placeholder={t('fields.club.placeholder')}
+                    value={clubName}
+                    onChange={(e) => setClubName(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">{t('fields.club.descriptionBulk')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Additional Notes */}
           {selectedCoaches.length > 0 && (

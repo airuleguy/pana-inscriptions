@@ -35,6 +35,10 @@ export class SupportStaff {
   @Column()
   country: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @Column({ nullable: true })
+  club?: string;
+
   @ApiProperty({ description: 'Tournament the support staff is registered for' })
   @ManyToOne(() => Tournament, tournament => tournament.id, { eager: true })
   @JoinColumn({ name: 'tournament_id' })

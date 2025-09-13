@@ -34,6 +34,11 @@ export class CreateSupportRegistrationDto {
   @IsString()
   country?: string;
 
+  @ApiProperty({ description: 'Club name (optional for country-level tournaments)', example: 'Elite Gymnastics Club', required: false })
+  @IsOptional()
+  @IsString()
+  club?: string;
+
   @ApiProperty({ description: 'Email address', required: false })
   @IsOptional()
   @IsEmail()

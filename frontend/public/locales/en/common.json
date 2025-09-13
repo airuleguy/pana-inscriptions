@@ -58,6 +58,14 @@
       "choreography": "Choreography details"
     }
   },
+  "fields": {
+    "club": {
+      "name": "Club Name (Optional)",
+      "placeholder": "Enter club name (optional)",
+      "description": "Optional field for tournaments that require club information",
+      "descriptionBulk": "This club name will be applied to all selected items"
+    }
+  },
   "dashboard": {
     "title": "Registration Dashboard",
     "loadingMessage": "Loading registration dashboard...",

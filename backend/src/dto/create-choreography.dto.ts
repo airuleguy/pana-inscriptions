@@ -18,6 +18,15 @@ export class CreateChoreographyDto {
   country: string;
 
   @ApiProperty({ 
+    description: 'Club name (optional for country-level tournaments)', 
+    example: 'Elite Gymnastics Club',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  club?: string;
+
+  @ApiProperty({ 
     description: 'Category based on oldest gymnast age',
     enum: ChoreographyCategory,
     example: ChoreographyCategory.SENIOR
