@@ -1,5 +1,7 @@
-import { Controller, Get, Query, Param, HttpStatus, Delete, Post, Body, Patch, ValidationPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody } from '@nestjs/swagger';
+import { Controller, Get, Query, Param, HttpStatus, Delete, Post, Body, Patch, ValidationPipe, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { GymnastService } from '../services/gymnast.service';
 import { GymnastDto } from '../dto/gymnast.dto';
 import { CreateGymnastDto } from '../dto/create-gymnast.dto';
@@ -129,5 +131,58 @@ export class GymnastController {
   })
   async remove(@Param('id') id: string): Promise<void> {
     return this.gymnastService.remove(id);
+  }
+
+  @Post(':id/image')
+  @ApiOperation({ 
+    summary: 'Upload gymnast image',
+    description: 'Upload an image for a local gymnast (FIG API gymnasts cannot have images uploaded)'
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Database ID of the gymnast', example: 'uuid-string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file (JPEG, PNG, or GIF)',
+        },
+      },
+    },
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Image successfully uploaded',
+    type: GymnastDto
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Gymnast not found'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Invalid image format or cannot upload for FIG API gymnasts'
+  })
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|gif)$/)) {
+        return callback(new BadRequestException('Only JPEG, PNG, and GIF files are allowed'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  async uploadImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<GymnastDto> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.gymnastService.uploadImage(id, file.buffer);
   }
 } 

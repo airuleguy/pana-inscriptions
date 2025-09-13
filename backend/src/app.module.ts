@@ -24,9 +24,11 @@ import { TournamentSupportController } from './controllers/tournament-support.co
 import { GlobalRegistrationsController } from './controllers/registrations.controller';
 import { HealthController } from './modules/health/health.controller';
 import { FigImageProxyController } from './controllers/fig-image-proxy.controller';
+import { ImageController } from './controllers/image.controller';
 import { AuthController } from './controllers/auth.controller';
 import { CategoriesController } from './controllers/categories.controller';
 import { ChoreographyService } from './services/choreography.service';
+import { ImageService } from './services/image.service';
 import { TournamentService } from './services/tournament.service';
 import { CoachRegistrationService } from './services/coach-registration.service';
 import { JudgeRegistrationService } from './services/judge-registration.service';
@@ -41,6 +43,9 @@ import { AuthGuard } from './guards/auth.guard';
 import { BusinessRulesFactory } from './utils/business-rules/business-rules-factory';
 import { FigDataWarmupService } from './services/fig-data-warmup.service';
 import { SupportRegistrationService } from './services/support-registration.service';
+import { S3Service } from './services/s3.service';
+import { LocalStorageService } from './services/local-storage.service';
+import { StorageFactory } from './services/storage.factory';
 
 @Module({
   imports: [
@@ -104,8 +109,9 @@ import { SupportRegistrationService } from './services/support-registration.serv
     // Global cross-tournament operations
     GlobalRegistrationsController,
     
-    // Image proxy
+    // Image handling
     FigImageProxyController,
+    ImageController,
     
     // Authentication
     AuthController,
@@ -125,12 +131,16 @@ import { SupportRegistrationService } from './services/support-registration.serv
     SupportRegistrationService,
     FigApiService,
     FigImageProxyService,
+    ImageService,
     GymnastService,
     AuthService,
     JwtService,
     AuthGuard,
     BusinessRulesFactory,
     FigDataWarmupService,
+    S3Service,
+    LocalStorageService,
+    StorageFactory,
   ],
 })
 export class AppModule {}

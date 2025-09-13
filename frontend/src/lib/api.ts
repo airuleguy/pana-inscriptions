@@ -841,6 +841,33 @@ export class APIService {
     });
   }
 
+  /**
+   * Upload image for support staff
+   */
+  static async uploadSupportImage(
+    tournamentId: string,
+    supportId: string,
+    imageFile: File
+  ): Promise<SupportStaff> {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    // Remove default content-type header as FormData sets its own
+    const headers: Record<string, string> = {};
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+
+    return await this.fetchAPI<SupportStaff>(
+      `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/support/${encodeURIComponent(supportId)}/image`,
+      {
+        method: 'POST',
+        headers,
+        body: formData,
+      }
+    );
+  }
+
   // ==================== EXISTING BATCH SUBMISSION ====================
 
   // ==================== HEALTH ====================
@@ -1125,6 +1152,29 @@ export class APIService {
   static async clearImageCache(figId?: string): Promise<void> {
     const endpoint = figId ? `/api/v1/images/cache/${figId}` : '/api/v1/images/cache';
     await this.fetchAPI(endpoint, { method: 'DELETE' });
+  }
+
+  /**
+   * Upload image for gymnast
+   */
+  static async uploadGymnastImage(
+    gymnastId: string,
+    formData: FormData
+  ): Promise<Gymnast> {
+    // Remove default content-type header as FormData sets its own
+    const headers: Record<string, string> = {};
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+
+    return await this.fetchAPI<Gymnast>(
+      `/api/v1/gymnasts/${encodeURIComponent(gymnastId)}/image`,
+      {
+        method: 'POST',
+        headers,
+        body: formData,
+      }
+    );
   }
 
   /**

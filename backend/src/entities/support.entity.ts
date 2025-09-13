@@ -60,6 +60,10 @@ export class SupportStaff {
   @ApiProperty({ description: 'Last modification date' })
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ApiProperty({ description: 'URL of the support staff image in S3', required: false })
+  @Column({ name: 'image_url', nullable: true })
+  imageUrl?: string;
 }
 
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Loader2, UserPlus, Info } from 'lucide-react';
+import { AlertCircle, Loader2, UserPlus, Info, Upload, X } from 'lucide-react';
 import { APIService } from '@/lib/api';
 import { CreateGymnastRequest, Gymnast } from '@/types';
 import { toast } from 'sonner';
@@ -43,6 +43,9 @@ export function CreateGymnastForm({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when dialog opens/closes
   const handleOpenChange = (newOpen: boolean) => {
@@ -57,6 +60,8 @@ export function CreateGymnastForm({
         dateOfBirth: '',
       });
       setFormErrors({});
+      setSelectedImage(null);
+      setImagePreview(null);
     }
   };
 
@@ -118,6 +123,40 @@ export function CreateGymnastForm({
     return Object.keys(errors).length === 0;
   };
 
+  // Handle image selection
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error(t('gymnast.validation.invalidImageType'));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('gymnast.validation.imageTooLarge'));
+        return;
+      }
+
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image removal
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Handle form submission
   const handleSubmit = async () => {
     if (!validateForm()) {
@@ -128,6 +167,21 @@ export function CreateGymnastForm({
     try {
       // Create the gymnast via API
       const newGymnast = await APIService.createLocalGymnast(formData);
+
+      // Upload image if selected
+      if (selectedImage) {
+        try {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+          await APIService.uploadGymnastImage(newGymnast.id, formData);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          toast.error(t('gymnast.errors.imageUploadFailed'), {
+            description: t('gymnast.errors.imageUploadFailedDescription'),
+            duration: 5000,
+          });
+        }
+      }
       
       // Notify parent component
       onGymnastCreated(newGymnast);
@@ -179,7 +233,7 @@ export function CreateGymnastForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[50vw] min-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-blue-600" />
@@ -299,6 +353,48 @@ export function CreateGymnastForm({
                   {formErrors.dateOfBirth}
                 </p>
               )}
+            </div>
+
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{t('gymnast.labels.image')}</Label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                  ref={fileInputRef}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  {t('gymnast.buttons.uploadImage')}
+                </Button>
+                {imagePreview && (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt={t('gymnast.preview.imagePreview')}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 w-6 h-6"
+                      onClick={handleImageRemove}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">{t('gymnast.labels.imageHelp')}</p>
             </div>
 
             {/* Preview */}

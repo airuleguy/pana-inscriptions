@@ -1,7 +1,7 @@
 {
   "gymnast": {
     "title": "Crear Nuevo Gimnasta",
-    "description": "Registrar un gimnasta que aún no está en la base de datos FUG",
+    "description": "Registrar un gimnasta que aún no está en la base de datos FIG",
     "fields": {
       "figId": "ID FIG",
       "firstName": "Nombre",
@@ -18,7 +18,10 @@
       "firstName": "Ingresa el nombre",
       "lastName": "Ingresa el apellido",
       "dateOfBirth": "Selecciona fecha de nacimiento",
-      "passportNumber": "Ingresa número de pasaporte"
+      "passportNumber": "Ingresa número de pasaporte",
+      "figIdExample": "ej. FIG123456",
+      "firstNamePlaceholder": "Nombre",
+      "lastNamePlaceholder": "Apellido"
     },
     "validation": {
       "figIdRequired": "El ID FIG es obligatorio",
@@ -33,19 +36,18 @@
       "firstNameMinLength": "El nombre debe tener al menos 2 caracteres",
       "lastNameMinLength": "El apellido debe tener al menos 2 caracteres",
       "ageRange": "La edad debe estar entre 10 y 50 años",
-      "figIdExists": "Ya existe un gimnasta con este ID FIG"
+      "figIdExists": "Ya existe un gimnasta con este ID FIG",
+      "invalidImageType": "Formato de imagen inválido. Por favor sube un archivo JPEG, PNG o GIF.",
+      "imageTooLarge": "El tamaño de la imagen debe ser menor a 5MB"
     },
     "labels": {
       "figIdRequired": "ID FIG *",
       "firstNameRequired": "Nombre *",
       "lastNameRequired": "Apellido *",
       "genderRequired": "Género *",
-      "dateOfBirthRequired": "Fecha de Nacimiento *"
-    },
-    "placeholders": {
-      "figIdExample": "ej. FIG123456",
-      "firstNamePlaceholder": "Nombre",
-      "lastNamePlaceholder": "Apellido"
+      "dateOfBirthRequired": "Fecha de Nacimiento *",
+      "image": "Imagen de Perfil",
+      "imageHelp": "Sube una imagen de perfil (JPEG, PNG o GIF, máx 5MB)"
     },
     "genderOptions": {
       "female": "Femenino",
@@ -53,7 +55,7 @@
     },
     "licenseNotice": {
       "title": "Aviso de Estado de Licencia",
-      "description": "Los gimnastas locales se marcan como \"licencia por verificar\" por defecto. Por favor verifica su estado de registro FUG antes del torneo."
+      "description": "Los gimnastas locales se marcan como \"licencia por verificar\" por defecto. Por favor verifica su estado de registro FIG antes del torneo."
     },
     "preview": {
       "title": "Vista Previa del Gimnasta:",
@@ -62,12 +64,14 @@
       "category": "Categoría:",
       "licenseStatus": "Estado de Licencia:",
       "toCheck": "Por Verificar",
-      "years": "años"
+      "years": "años",
+      "imagePreview": "Vista previa de la imagen de perfil"
     },
     "buttons": {
       "cancel": "Cancelar",
       "create": "Crear Gimnasta",
-      "creating": "Creando..."
+      "creating": "Creando...",
+      "uploadImage": "Subir Imagen"
     },
     "success": {
       "created": "Gimnasta creado exitosamente",
@@ -76,7 +80,9 @@
     },
     "errors": {
       "createFailed": "Falló la creación del gimnasta",
-      "createFailedDescription": "Por favor verifica tu entrada e intenta de nuevo."
+      "createFailedDescription": "Por favor verifica tu entrada e intenta de nuevo.",
+      "imageUploadFailed": "Falló la subida de la imagen",
+      "imageUploadFailedDescription": "El gimnasta fue creado pero falló la subida de la imagen. Puedes intentar subir la imagen más tarde."
     }
   },
   "coach": {

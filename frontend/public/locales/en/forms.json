@@ -1,7 +1,7 @@
 {
   "gymnast": {
     "title": "Create New Gymnast",
-    "description": "Register a gymnast who is not yet in the FUG database",
+    "description": "Register a gymnast who is not yet in the FIG database",
     "fields": {
       "figId": "FIG ID",
       "firstName": "First Name",
@@ -18,7 +18,10 @@
       "firstName": "Enter first name",
       "lastName": "Enter last name",
       "dateOfBirth": "Select date of birth",
-      "passportNumber": "Enter passport number"
+      "passportNumber": "Enter passport number",
+      "figIdExample": "e.g. FIG123456",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name"
     },
     "validation": {
       "figIdRequired": "FIG ID is required",
@@ -33,19 +36,18 @@
       "firstNameMinLength": "First name must be at least 2 characters",
       "lastNameMinLength": "Last name must be at least 2 characters",
       "ageRange": "Age must be between 10 and 50 years",
-      "figIdExists": "A gymnast with this FIG ID already exists"
+      "figIdExists": "A gymnast with this FIG ID already exists",
+      "invalidImageType": "Invalid image format. Please upload a JPEG, PNG, or GIF file.",
+      "imageTooLarge": "Image size must be less than 5MB"
     },
     "labels": {
       "figIdRequired": "FIG ID *",
       "firstNameRequired": "First Name *",
       "lastNameRequired": "Last Name *",
       "genderRequired": "Gender *",
-      "dateOfBirthRequired": "Date of Birth *"
-    },
-    "placeholders": {
-      "figIdExample": "e.g. FIG123456",
-      "firstNamePlaceholder": "First name",
-      "lastNamePlaceholder": "Last name"
+      "dateOfBirthRequired": "Date of Birth *",
+      "image": "Profile Image",
+      "imageHelp": "Upload a profile image (JPEG, PNG, or GIF, max 5MB)"
     },
     "genderOptions": {
       "female": "Female",
@@ -53,7 +55,7 @@
     },
     "licenseNotice": {
       "title": "License Status Notice",
-      "description": "Local gymnasts are marked as \"license to check\" by default. Please verify their FUG registration status before the tournament."
+      "description": "Local gymnasts are marked as \"license to check\" by default. Please verify their FIG registration status before the tournament."
     },
     "preview": {
       "title": "Gymnast Preview:",
@@ -62,12 +64,14 @@
       "category": "Category:",
       "licenseStatus": "License Status:",
       "toCheck": "To Check",
-      "years": "years"
+      "years": "years",
+      "imagePreview": "Profile image preview"
     },
     "buttons": {
       "cancel": "Cancel",
       "create": "Create Gymnast",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "uploadImage": "Upload Image"
     },
     "success": {
       "created": "Gymnast created successfully",
@@ -76,7 +80,9 @@
     },
     "errors": {
       "createFailed": "Failed to create gymnast",
-      "createFailedDescription": "Please check your input and try again."
+      "createFailedDescription": "Please check your input and try again.",
+      "imageUploadFailed": "Failed to upload image",
+      "imageUploadFailedDescription": "The gymnast was created but the image upload failed. You can try uploading the image again later."
     }
   },
   "coach": {

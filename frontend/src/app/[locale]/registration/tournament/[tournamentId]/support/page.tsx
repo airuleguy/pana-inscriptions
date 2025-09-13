@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useTranslations } from '@/contexts/i18n-context';
 import { useRegistration, RegisteredSupportStaff } from '@/contexts/registration-context';
 import { APIService } from '@/lib/api';
 import { getLocalePrefix } from '@/lib/locale';
-import { UserPlus, Save, Loader2, ShieldPlus, AlertCircle } from 'lucide-react';
+import { UserPlus, Save, Loader2, ShieldPlus, AlertCircle, Upload, Image } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SupportFormRow {
@@ -21,6 +21,9 @@ interface SupportFormRow {
   lastName: string;
   role?: SupportRole;
   club?: string;
+  imageFile?: File;
+  imageFileName?: string;
+  imagePreview?: string;
 }
 
 export default function SupportRegistrationPage() {
@@ -39,7 +42,7 @@ export default function SupportRegistrationPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [rows, setRows] = useState<SupportFormRow[]>([
-    { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '' },
+    { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '', imageFileName: '' },
   ]);
 
   useEffect(() => {
@@ -66,11 +69,27 @@ export default function SupportRegistrationPage() {
     if (tournamentId) loadData(); else router.push(`${localePrefix}/tournament-selection`);
   }, [tournamentId, router]);
 
-  const handleChange = (index: number, field: keyof SupportFormRow, value: string | SupportRole) => {
-    setRows(prev => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
+  const handleChange = (index: number, field: keyof SupportFormRow, value: string | SupportRole | File | undefined) => {
+    setRows(prev => prev.map((r, i) => {
+      if (i !== index) return r;
+      
+      // Handle image file upload
+      if (field === 'imageFile' && value instanceof File) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setRows(current => current.map((cr, ci) => 
+            ci === index ? { ...cr, imagePreview: reader.result as string } : cr
+          ));
+        };
+        reader.readAsDataURL(value);
+        return { ...r, [field]: value, imageFileName: value.name };
+      }
+      
+      return { ...r, [field]: value };
+    }));
   };
 
-  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '' }]);
+  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '', imageFileName: '' }]);
   const removeRow = (index: number) => setRows(prev => prev.filter((_, i) => i !== index));
 
   const validate = (): boolean => {
@@ -111,6 +130,29 @@ export default function SupportRegistrationPage() {
       const response = await APIService.createSupport(selectedTournament.id, payload);
 
       if (response.success && response.results.length > 0) {
+        // Upload images for each support staff member
+        for (let i = 0; i < response.results.length; i++) {
+          const supportStaff = response.results[i];
+          const imageFile = rows[i].imageFile;
+
+          if (imageFile) {
+            try {
+              const updatedSupport = await APIService.uploadSupportImage(
+                selectedTournament.id,
+                supportStaff.id,
+                imageFile
+              );
+              // Update the response result with the image URL
+              response.results[i] = updatedSupport;
+            } catch (error) {
+              console.error(`Failed to upload image for support staff ${supportStaff.id}:`, error);
+              toast.error(t('support.imageUploadError') || 'Failed to upload image', {
+                description: error instanceof Error ? error.message : undefined,
+              });
+            }
+          }
+        }
+
         // Create registration entries for local state with actual backend data
         const registrationData: RegisteredSupportStaff[] = response.results.map(supportStaff => ({
           id: supportStaff.id,
@@ -180,16 +222,16 @@ export default function SupportRegistrationPage() {
         <CardContent>
           <div className="space-y-6">
             {rows.map((row, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b pb-4">
-                <div className="space-y-2">
+              <div key={index} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end border-b pb-4">
+                <div className="space-y-2 md:col-span-1">
                   <Label>{t('general.firstName')}</Label>
                   <Input value={row.firstName} onChange={(e) => handleChange(index, 'firstName', e.target.value)} />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-1">
                   <Label>{t('general.lastName')}</Label>
                   <Input value={row.lastName} onChange={(e) => handleChange(index, 'lastName', e.target.value)} />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-1">
                   <Label>{t('fields.club.name')}</Label>
                   <Input 
                     value={row.club || ''} 
@@ -197,7 +239,7 @@ export default function SupportRegistrationPage() {
                     placeholder={t('fields.club.placeholder')}
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-1">
                   <Label>{tf('support.fields.role.label')}</Label>
                   <Select value={row.role || SupportRole.COMPANION} onValueChange={(value) => handleChange(index, 'role', value as SupportRole)}>
                     <SelectTrigger>
@@ -216,9 +258,44 @@ export default function SupportRegistrationPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="md:col-span-4 flex justify-end">
+                <div className="space-y-2 md:col-span-1">
+                  <Label>{t('support.fields.image.label')}</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-40">
+                      <Input
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleChange(index, 'imageFile', file);
+                          }
+                        }}
+                        placeholder={currentLocale === 'es' ? 'Subir archivo' : 'Choose file'}
+                        className={`w-full ${row.imageFileName ? 'opacity-0 absolute inset-0 cursor-pointer' : ''}`}
+                      />
+                      {row.imageFileName && (
+                        <div className="truncate text-sm text-muted-foreground">
+                          {row.imageFileName}
+                        </div>
+                      )}
+                    </div>
+                    {row.imagePreview && (
+                      <div className="relative w-10 h-10 rounded-lg overflow-hidden border">
+                        <img
+                          src={row.imagePreview}
+                          alt={`Preview for ${row.firstName} ${row.lastName}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-2 md:col-span-1 flex items-end">
                   {rows.length > 1 && (
-                    <Button variant="outline" onClick={() => removeRow(index)}>{t('general.remove')}</Button>
+                    <Button variant="outline" onClick={() => removeRow(index)} className="h-10">
+                      {t('general.remove')}
+                    </Button>
                   )}
                 </div>
               </div>

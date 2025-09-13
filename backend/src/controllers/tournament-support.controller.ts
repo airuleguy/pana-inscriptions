@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, Logger, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, Logger, UseGuards, Req, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { CountryAuthGuard, CountryScoped } from '../guards/country-auth.guard';
 import { SupportRegistrationService } from '../services/support-registration.service';
@@ -96,6 +97,26 @@ export class TournamentSupportController {
     @Param('supportId') supportId: string,
   ): Promise<void> {
     return this.supportService.remove(supportId);
+  }
+
+  @Post(':supportId/image')
+  @CountryScoped()
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Upload support staff image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'tournamentId', description: 'Tournament UUID' })
+  @ApiParam({ name: 'supportId', description: 'Support registration UUID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Image uploaded successfully', type: SupportStaff })
+  async uploadImage(
+    @Param('tournamentId') tournamentId: string,
+    @Param('supportId') supportId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SupportStaff> {
+    if (!file) {
+      throw new BadRequestException('No image file provided');
+    }
+
+    return this.supportService.uploadImage(supportId, file.buffer);
   }
 }
 

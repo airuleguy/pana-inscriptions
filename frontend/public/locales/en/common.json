@@ -379,7 +379,12 @@
       "COMPANION": "Companion"
     },
     "roleLabel": "Role",
-    "rolePlaceholder": "Select a role"
+    "rolePlaceholder": "Select a role",
+    "fields": {
+      "image": {
+        "label": "Image"
+      }
+    }
   },
   "tournamentSelection": {
     "title": "Tournament Selection",

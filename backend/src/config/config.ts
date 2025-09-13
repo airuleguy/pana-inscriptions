@@ -56,4 +56,14 @@ export const configuration = () => ({
     enabled: process.env.FIG_WARMUP_ENABLED !== 'false', // Default enabled
     imagePreloadLimit: parseInt(process.env.IMAGE_PRELOAD_LIMIT, 10) || 50,
   },
+
+  aws: {
+    region: process.env.AWS_REGION || 'us-east-1',
+    s3: {
+      bucket: process.env.AWS_S3_BUCKET,
+      baseUrl: process.env.AWS_S3_BASE_URL,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  },
 }); 
