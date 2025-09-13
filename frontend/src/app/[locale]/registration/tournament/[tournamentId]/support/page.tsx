@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Tournament } from '@/types';
+import { SupportRole } from '@/types';
 import { useTranslations } from '@/contexts/i18n-context';
 import { useRegistration, RegisteredSupportStaff } from '@/contexts/registration-context';
 import { APIService } from '@/lib/api';
@@ -65,7 +66,7 @@ export default function SupportRegistrationPage() {
     if (tournamentId) loadData(); else router.push(`${localePrefix}/tournament-selection`);
   }, [tournamentId, router]);
 
-  const handleChange = (index: number, field: keyof SupportFormRow, value: string) => {
+  const handleChange = (index: number, field: keyof SupportFormRow, value: string | SupportRole) => {
     setRows(prev => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   };
 
@@ -99,7 +100,6 @@ export default function SupportRegistrationPage() {
     setSubmitting(true);
     try {
       // Register support staff with backend API immediately
-      const roleLabel = currentLocale === 'es' ? 'SOPORTE' : 'SUPPORT';
       const payload = rows.map(r => ({
         firstName: r.firstName.trim(),
         lastName: r.lastName.trim(),
@@ -197,11 +197,11 @@ export default function SupportRegistrationPage() {
             {rows.map((row, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end border-b pb-4">
                 <div className="space-y-2">
-                  <Label>First name</Label>
+                  <Label>{t('general.firstName')}</Label>
                   <Input value={row.firstName} onChange={(e) => handleChange(index, 'firstName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Last name</Label>
+                  <Label>{t('general.lastName')}</Label>
                   <Input value={row.lastName} onChange={(e) => handleChange(index, 'lastName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
@@ -218,7 +218,7 @@ export default function SupportRegistrationPage() {
                 </div>
                 <div className="md:col-span-4 flex justify-end">
                   {rows.length > 1 && (
-                    <Button variant="outline" onClick={() => removeRow(index)}>Remove</Button>
+                    <Button variant="outline" onClick={() => removeRow(index)}>{t('general.remove')}</Button>
                   )}
                 </div>
               </div>
@@ -249,7 +249,7 @@ export default function SupportRegistrationPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-6">
-              <Button variant="outline" onClick={addRow}>Add another</Button>
+              <Button variant="outline" onClick={addRow}>{t('support.addAnother')}</Button>
               <Button
                 onClick={handleSaveSelected}
                 disabled={!isFormValid || submitting}
@@ -277,7 +277,7 @@ export default function SupportRegistrationPage() {
                 size="lg" 
                 onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/dashboard`)}
               >
-                Back to Dashboard
+                {t('support.backToDashboard')}
               </Button>
             </div>
           </div>

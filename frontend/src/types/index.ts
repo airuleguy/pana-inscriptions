@@ -59,12 +59,18 @@ export interface Judge {
   updatedAt?: Date; // Last modification date
 }
 
+export enum SupportRole {
+  DELEGATION_LEADER = 'DELEGATION_LEADER',
+  MEDIC = 'MEDIC',
+  COMPANION = 'COMPANION'
+}
+
 export interface SupportStaff {
   id: string; // Database UUID primary key
   firstName: string;
   lastName: string;
   fullName: string;
-  role: string; // DELEGATE, MEDICAL, PHYSIO, MANAGER, SUPPORT, OTHER
+  role: SupportRole;
   country: string;
   club?: string; // Optional club name for non-country-level tournaments
   createdAt?: Date; // Registration date

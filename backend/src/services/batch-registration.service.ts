@@ -27,10 +27,11 @@ export class BatchRegistrationService {
     this.logger.log(`Getting existing registrations for country: ${country}, tournament: ${tournamentId}`);
 
     try {
-      const [choreographies, coaches, judges] = await Promise.all([
+      const [choreographies, coaches, judges, supportStaff] = await Promise.all([
         this.choreographyService.findAll(),
         this.coachRegistrationService.findAll(country, tournamentId),
         this.judgeRegistrationService.findAll(country, tournamentId),
+        this.supportRegistrationService.findAll(country, tournamentId),
       ]);
 
       // Filter choreographies by country and tournament
@@ -42,11 +43,13 @@ export class BatchRegistrationService {
         choreographies: filteredChoreographies,
         coaches,
         judges,
+        supportStaff,
         totals: {
           choreographies: filteredChoreographies.length,
           coaches: coaches.length,
           judges: judges.length,
-          total: filteredChoreographies.length + coaches.length + judges.length,
+          supportStaff: supportStaff.length,
+          total: filteredChoreographies.length + coaches.length + judges.length + supportStaff.length,
         }
       };
     } catch (error) {
@@ -211,21 +214,24 @@ export class BatchRegistrationService {
     this.logger.log(`Getting ${status} registrations for country: ${country}, tournament: ${tournamentId}`);
 
     try {
-      const [choreographies, coaches, judges] = await Promise.all([
+      const [choreographies, coaches, judges, supportStaff] = await Promise.all([
         this.choreographyService.findByStatus(status, country, tournamentId),
         this.coachRegistrationService.findByStatus(status, country, tournamentId),
         this.judgeRegistrationService.findByStatus(status, country, tournamentId),
+        this.supportRegistrationService.findByStatus(status, country, tournamentId),
       ]);
 
       return {
         choreographies,
         coaches,
         judges,
+        supportStaff,
         totals: {
           choreographies: choreographies.length,
           coaches: coaches.length,
           judges: judges.length,
-          total: choreographies.length + coaches.length + judges.length,
+          supportStaff: supportStaff.length,
+          total: choreographies.length + coaches.length + judges.length + supportStaff.length,
         }
       };
     } catch (error) {
@@ -247,6 +253,7 @@ export class BatchRegistrationService {
       choreographies: number;
       coaches: number;
       judges: number;
+      supportStaff: number;
       total: number;
     };
     errors?: string[];
@@ -258,6 +265,7 @@ export class BatchRegistrationService {
       choreographies: 0,
       coaches: 0,
       judges: 0,
+      supportStaff: 0,
       total: 0,
     };
 
@@ -292,7 +300,17 @@ export class BatchRegistrationService {
       );
       updatedCounts.judges = judgeCount;
 
-      updatedCounts.total = updatedCounts.choreographies + updatedCounts.coaches + updatedCounts.judges;
+      // Update support staff
+      const supportCount = await this.supportRegistrationService.updateStatusBatch(
+        RegistrationStatus.PENDING,
+        RegistrationStatus.SUBMITTED,
+        country,
+        tournamentId,
+        notes
+      );
+      updatedCounts.supportStaff = supportCount;
+
+      updatedCounts.total = updatedCounts.choreographies + updatedCounts.coaches + updatedCounts.judges + updatedCounts.supportStaff;
 
       this.logger.log(`Successfully submitted ${updatedCounts.total} registrations`);
 
