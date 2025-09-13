@@ -35,7 +35,7 @@
       "figIdMinLength": "El ID FIG debe tener al menos 3 caracteres",
       "firstNameMinLength": "El nombre debe tener al menos 2 caracteres",
       "lastNameMinLength": "El apellido debe tener al menos 2 caracteres",
-      "ageRange": "La edad debe estar entre 10 y 50 años",
+      "ageRange": "La edad debe estar entre 9 y 50 años",
       "figIdExists": "Ya existe un gimnasta con este ID FIG",
       "invalidImageType": "Formato de imagen inválido. Por favor sube un archivo JPEG, PNG o GIF.",
       "imageTooLarge": "El tamaño de la imagen debe ser menor a 5MB"

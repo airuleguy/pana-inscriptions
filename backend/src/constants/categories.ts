@@ -1,4 +1,5 @@
 export enum ChoreographyCategory {
+  NATDEV = 'NATDEV',
   YOUTH = 'YOUTH',
   JUNIOR = 'JUNIOR',
   SENIOR = 'SENIOR'
@@ -15,7 +16,8 @@ export enum ChoreographyType {
 
 // Age limits for categories (based on FIG rules)
 export const AGE_LIMITS = {
-  [ChoreographyCategory.YOUTH]: { min: 0, max: 14 },
+  [ChoreographyCategory.NATDEV]: { min: 9, max: 11 },
+  [ChoreographyCategory.YOUTH]: { min: 12, max: 14 },
   [ChoreographyCategory.JUNIOR]: { min: 15, max: 17 },
   [ChoreographyCategory.SENIOR]: { min: 18, max: 100 }
 } as const;
@@ -51,7 +53,9 @@ export function calculateCompetitionYearAge(dateOfBirth: Date, competitionYear?:
  * Uses age during competition year, not current age
  */
 export function calculateCategory(oldestAge: number): ChoreographyCategory {
-  if (oldestAge <= 14) {
+  if (oldestAge <= 11) {
+    return ChoreographyCategory.NATDEV;
+  } else if (oldestAge <= 14) {
     return ChoreographyCategory.YOUTH;
   } else if (oldestAge <= 17) {
     return ChoreographyCategory.JUNIOR;

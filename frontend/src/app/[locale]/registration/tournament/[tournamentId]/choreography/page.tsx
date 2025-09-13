@@ -386,6 +386,7 @@ export default function ChoreographyRegistrationPage() {
                     <SelectValue placeholder={t('choreography.categoryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="NATDEV">{t('choreography.natdevCategory')}</SelectItem>
                     <SelectItem value="YOUTH">{t('choreography.youthCategory')}</SelectItem>
                     <SelectItem value="JUNIOR">{t('choreography.juniorCategory')}</SelectItem>
                     <SelectItem value="SENIOR">{t('choreography.seniorCategory')}</SelectItem>

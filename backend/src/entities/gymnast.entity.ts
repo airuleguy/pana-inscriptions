@@ -40,7 +40,7 @@ export class Gymnast {
   age: number;
 
   @Column()
-  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  category: 'NATDEV' | 'YOUTH' | 'JUNIOR' | 'SENIOR';
 
   @Column({ default: false })
   isLocal: boolean;

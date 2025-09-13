@@ -35,7 +35,7 @@
       "figIdMinLength": "FIG ID must be at least 3 characters",
       "firstNameMinLength": "First name must be at least 2 characters",
       "lastNameMinLength": "Last name must be at least 2 characters",
-      "ageRange": "Age must be between 10 and 50 years",
+      "ageRange": "Age must be between 9 and 50 years",
       "figIdExists": "A gymnast with this FIG ID already exists",
       "invalidImageType": "Invalid image format. Please upload a JPEG, PNG, or GIF file.",
       "imageTooLarge": "Image size must be less than 5MB"
