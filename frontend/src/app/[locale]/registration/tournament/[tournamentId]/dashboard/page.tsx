@@ -621,7 +621,7 @@ export default function TournamentRegistrationDashboard() {
         <Tabs defaultValue="pending" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="pending">
-              {t('dashboard.pendingRegistrations')} {t('dashboard.choreographies')} ({pendingRegistrations?.choreographies.length || 0})
+              {t('dashboard.pendingRegistrations')} ({pendingRegistrations?.totals.total || 0})
             </TabsTrigger>
             <TabsTrigger value="submitted">
               {t('dashboard.submittedRegistrations')} ({submittedRegistrations?.totals.total || 0})
