@@ -17,7 +17,7 @@ import type { Gymnast } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CreateGymnastForm } from './create-gymnast-form';
-import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { EntityAvatar } from '@/components/entity-image';
 
 interface GymnastDataTableProps {
   countryCode: string;
@@ -45,8 +45,6 @@ export function GymnastDataTable({
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Image preloading hook
-  const { preloadPeopleImages } = useFigImagePreloader();
 
   // Load gymnasts on component mount and country change
   useEffect(() => {
@@ -61,10 +59,6 @@ export function GymnastDataTable({
         const gymnasts = await APIService.getGymnasts(countryCode);
         setAvailableGymnasts(gymnasts);
         
-        // OPTIMIZED: Preload images in background without blocking UI
-        preloadPeopleImages(gymnasts).catch(err => 
-          console.warn('Image preloading failed (non-critical):', err)
-        );
       } catch (err: unknown) {
         console.error('Failed to load gymnasts:', err);
         setError('Failed to load gymnasts from FIG database');
@@ -74,7 +68,7 @@ export function GymnastDataTable({
     }
 
     loadGymnasts();
-  }, [countryCode, preloadPeopleImages]); // Added preloadPeopleImages to dependencies
+  }, [countryCode]);
 
   // Filter gymnasts based on requirements
   const filteredGymnasts = useMemo(() => {
@@ -180,8 +174,8 @@ export function GymnastDataTable({
           const gymnast = row.original;
           return (
             <div className="flex items-center gap-3">
-              <FigAvatar
-                figId={gymnast.figId}
+              <EntityAvatar
+                id={gymnast.id || gymnast.figId}
                 name={gymnast.fullName || t('gymnasts.table.unknown')}
                 size="sm"
               />
@@ -387,8 +381,8 @@ export function GymnastDataTable({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {gymnasts.map((gymnast) => (
                 <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                  <FigAvatar
-                    figId={gymnast.figId}
+                  <EntityAvatar
+                    id={gymnast.id || gymnast.figId}
                     name={gymnast.fullName || t('gymnasts.table.unknown')}
                     size="sm"
                     className="w-6 h-6"

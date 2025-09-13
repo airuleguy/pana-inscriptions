@@ -7,6 +7,8 @@ import { GymnastDto } from '../dto/gymnast.dto';
 import { CreateGymnastDto } from '../dto/create-gymnast.dto';
 import { UpdateGymnastDto } from '../dto/update-gymnast.dto';
 import { calculateCategory, calculateCompetitionYearAge, calculateCategoryFromDateOfBirth } from '../constants/categories';
+import { StorageFactory } from './storage.factory';
+import { getMimeTypeFromBuffer } from '../utils/file-utils';
 
 @Injectable()
 export class GymnastService {
@@ -16,6 +18,7 @@ export class GymnastService {
     @InjectRepository(Gymnast)
     private gymnastRepository: Repository<Gymnast>,
     private figApiService: FigApiService,
+    private readonly storageFactory: StorageFactory,
   ) {}
 
   /**
@@ -181,6 +184,7 @@ export class GymnastService {
       age: competitionAge,
       category: competitionCategory,
       isLocal: gymnast.isLocal,
+      imageUrl: gymnast.imageUrl,
     };
   }
 
@@ -205,5 +209,60 @@ export class GymnastService {
    */
   async clearCache(): Promise<void> {
     return this.figApiService.clearCache();
+  }
+
+  /**
+   * Uploads an image for a gymnast
+   * @param id The ID of the gymnast
+   * @param imageBuffer The image file buffer
+   * @returns The updated gymnast entity
+   */
+  async uploadImage(id: string, imageBuffer: Buffer): Promise<GymnastDto> {
+    const gymnast = await this.gymnastRepository.findOne({ where: { id } });
+    if (!gymnast) {
+      throw new NotFoundException(`Gymnast with ID ${id} not found`);
+    }
+
+    // Only allow uploading images for local gymnasts
+    if (!gymnast.isLocal) {
+      throw new BadRequestException('Cannot upload images for FIG API gymnasts');
+    }
+
+    // Delete existing image if present
+    if (gymnast.imageUrl) {
+      try {
+        await this.storageFactory.getStorage().deleteFile(gymnast.imageUrl);
+      } catch (error) {
+        // Log error but continue with new upload
+        this.logger.error(`Failed to delete existing image for gymnast ${id}:`, error);
+      }
+    }
+
+    // Validate image buffer
+    if (!this.isValidImageBuffer(imageBuffer)) {
+      throw new BadRequestException('Invalid image format. Only JPEG, PNG, and GIF are supported.');
+    }
+
+    // Upload new image
+    const imageUrl = await this.storageFactory.getStorage().uploadFile(
+      imageBuffer,
+      'gymnasts',
+      gymnast.id,
+    );
+
+    // Update gymnast record
+    gymnast.imageUrl = imageUrl;
+    const savedGymnast = await this.gymnastRepository.save(gymnast);
+    return this.transformEntityToDto(savedGymnast);
+  }
+
+  /**
+   * Validates that the buffer contains a supported image format
+   * @param buffer The file buffer to validate
+   * @returns boolean indicating if the buffer is a valid image
+   */
+  private isValidImageBuffer(buffer: Buffer): boolean {
+    const mimeType = getMimeTypeFromBuffer(buffer);
+    return mimeType !== 'application/octet-stream';
   }
 } 

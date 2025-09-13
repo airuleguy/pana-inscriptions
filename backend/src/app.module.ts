@@ -24,9 +24,11 @@ import { TournamentSupportController } from './controllers/tournament-support.co
 import { GlobalRegistrationsController } from './controllers/registrations.controller';
 import { HealthController } from './modules/health/health.controller';
 import { FigImageProxyController } from './controllers/fig-image-proxy.controller';
+import { ImageController } from './controllers/image.controller';
 import { AuthController } from './controllers/auth.controller';
 import { CategoriesController } from './controllers/categories.controller';
 import { ChoreographyService } from './services/choreography.service';
+import { ImageService } from './services/image.service';
 import { TournamentService } from './services/tournament.service';
 import { CoachRegistrationService } from './services/coach-registration.service';
 import { JudgeRegistrationService } from './services/judge-registration.service';
@@ -107,8 +109,9 @@ import { StorageFactory } from './services/storage.factory';
     // Global cross-tournament operations
     GlobalRegistrationsController,
     
-    // Image proxy
+    // Image handling
     FigImageProxyController,
+    ImageController,
     
     // Authentication
     AuthController,
@@ -128,6 +131,7 @@ import { StorageFactory } from './services/storage.factory';
     SupportRegistrationService,
     FigApiService,
     FigImageProxyService,
+    ImageService,
     GymnastService,
     AuthService,
     JwtService,

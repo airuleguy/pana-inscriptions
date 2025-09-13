@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
 import { IStorageService } from './interfaces/storage.interface';
 import { getMimeTypeFromBuffer, getExtensionFromMimeType } from '../utils/file-utils';
@@ -65,4 +65,26 @@ export class S3Service implements IStorageService {
     );
   }
 
+  /**
+   * Gets a file from S3
+   * @param url The URL of the file to get
+   * @returns The file buffer
+   */
+  async getFile(url: string): Promise<Buffer> {
+    const key = url.replace(`${this.baseUrl}/`, '');
+    
+    const response = await this.s3Client.send(
+      new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      }),
+    );
+
+    // Convert stream to buffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  }
 }

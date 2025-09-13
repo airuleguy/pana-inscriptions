@@ -1155,6 +1155,29 @@ export class APIService {
   }
 
   /**
+   * Upload image for gymnast
+   */
+  static async uploadGymnastImage(
+    gymnastId: string,
+    formData: FormData
+  ): Promise<Gymnast> {
+    // Remove default content-type header as FormData sets its own
+    const headers: Record<string, string> = {};
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+
+    return await this.fetchAPI<Gymnast>(
+      `/api/v1/gymnasts/${encodeURIComponent(gymnastId)}/image`,
+      {
+        method: 'POST',
+        headers,
+        body: formData,
+      }
+    );
+  }
+
+  /**
    * Get image cache statistics
    */
   static async getImageCacheStats(): Promise<{

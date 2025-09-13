@@ -58,4 +58,18 @@ export class LocalStorageService implements IStorageService {
       }
     }
   }
+
+  async getFile(url: string): Promise<Buffer> {
+    const relativePath = url.replace(this.baseUrl, '').replace(/^\//, '');
+    const filePath = path.join(this.uploadDir, relativePath);
+
+    try {
+      return await fs.readFile(filePath);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new Error('File not found');
+      }
+      throw error;
+    }
+  }
 }
