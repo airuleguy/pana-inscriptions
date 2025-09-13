@@ -41,6 +41,9 @@ import { AuthGuard } from './guards/auth.guard';
 import { BusinessRulesFactory } from './utils/business-rules/business-rules-factory';
 import { FigDataWarmupService } from './services/fig-data-warmup.service';
 import { SupportRegistrationService } from './services/support-registration.service';
+import { S3Service } from './services/s3.service';
+import { LocalStorageService } from './services/local-storage.service';
+import { StorageFactory } from './services/storage.factory';
 
 @Module({
   imports: [
@@ -131,6 +134,9 @@ import { SupportRegistrationService } from './services/support-registration.serv
     AuthGuard,
     BusinessRulesFactory,
     FigDataWarmupService,
+    S3Service,
+    LocalStorageService,
+    StorageFactory,
   ],
 })
 export class AppModule {}

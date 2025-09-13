@@ -841,6 +841,33 @@ export class APIService {
     });
   }
 
+  /**
+   * Upload image for support staff
+   */
+  static async uploadSupportImage(
+    tournamentId: string,
+    supportId: string,
+    imageFile: File
+  ): Promise<SupportStaff> {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    // Remove default content-type header as FormData sets its own
+    const headers: Record<string, string> = {};
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+
+    return await this.fetchAPI<SupportStaff>(
+      `/api/v1/tournaments/${encodeURIComponent(tournamentId)}/support/${encodeURIComponent(supportId)}/image`,
+      {
+        method: 'POST',
+        headers,
+        body: formData,
+      }
+    );
+  }
+
   // ==================== EXISTING BATCH SUBMISSION ====================
 
   // ==================== HEALTH ====================

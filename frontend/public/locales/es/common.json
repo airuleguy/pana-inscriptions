@@ -379,7 +379,12 @@
       "COMPANION": "Acompañante"
     },
     "roleLabel": "Rol",
-    "rolePlaceholder": "Selecciona un rol"
+    "rolePlaceholder": "Selecciona un rol",
+    "fields": {
+      "image": {
+        "label": "Foto"
+      }
+    }
   },
   "tournamentSelection": {
     "title": "Selección de Torneo",

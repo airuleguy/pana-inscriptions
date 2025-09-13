@@ -3,6 +3,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as express from 'express';
 import { seedTournaments } from './utils/seed-tournaments';
 import { DataSource } from 'typeorm';
 
@@ -25,6 +26,11 @@ async function bootstrap() {
 
   // Global prefix for API routes
   app.setGlobalPrefix('api/v1');
+
+  // Serve static files from uploads directory in development
+  if (process.env.NODE_ENV === 'development') {
+    app.use('/uploads', express.static('uploads'));
+  }
 
   // CORS configuration
   app.enableCors({

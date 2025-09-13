@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SupportStaff } from '../entities/support.entity';
 import { Tournament } from '../entities/tournament.entity';
 import { CreateSupportRegistrationDto } from '../dto/create-support-registration.dto';
 import { RegistrationStatus } from '../constants/registration-status';
+import { StorageFactory } from './storage.factory';
+import { getMimeTypeFromBuffer } from '../utils/file-utils';
 
 @Injectable()
 export class SupportRegistrationService {
@@ -13,6 +15,7 @@ export class SupportRegistrationService {
     private readonly supportRepository: Repository<SupportStaff>,
     @InjectRepository(Tournament)
     private readonly tournamentRepository: Repository<Tournament>,
+    private readonly storageFactory: StorageFactory,
   ) {}
 
   async create(dto: CreateSupportRegistrationDto): Promise<SupportStaff> {
@@ -100,6 +103,52 @@ export class SupportRegistrationService {
     }
     await this.supportRepository.save(supports);
     return supports.length;
+  }
+
+  /**
+   * Uploads an image for a support staff member
+   * @param id The ID of the support staff
+   * @param imageBuffer The image file buffer
+   * @returns The updated support staff entity
+   */
+  async uploadImage(id: string, imageBuffer: Buffer): Promise<SupportStaff> {
+    const support = await this.findOne(id);
+
+    // Delete existing image if present
+    if (support.imageUrl) {
+      try {
+        await this.storageFactory.getStorage().deleteFile(support.imageUrl);
+      } catch (error) {
+        // Log error but continue with new upload
+        console.error(`Failed to delete existing image for support ${id}:`, error);
+      }
+    }
+
+    // Validate image buffer
+    if (!this.isValidImageBuffer(imageBuffer)) {
+      throw new BadRequestException('Invalid image format. Only JPEG, PNG, and GIF are supported.');
+    }
+
+    // Upload new image
+    const imageUrl = await this.storageFactory.getStorage().uploadFile(
+      imageBuffer,
+      'support',
+      support.id,
+    );
+
+    // Update support staff record
+    support.imageUrl = imageUrl;
+    return await this.supportRepository.save(support);
+  }
+
+  /**
+   * Validates that the buffer contains a supported image format
+   * @param buffer The file buffer to validate
+   * @returns boolean indicating if the buffer is a valid image
+   */
+  private isValidImageBuffer(buffer: Buffer): boolean {
+    const mimeType = getMimeTypeFromBuffer(buffer);
+    return mimeType !== 'application/octet-stream';
   }
 }
 
