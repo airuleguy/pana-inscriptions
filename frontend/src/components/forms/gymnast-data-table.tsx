@@ -24,7 +24,7 @@ interface GymnastDataTableProps {
   gymnasts: Gymnast[];
   onSelectionChange: (gymnasts: Gymnast[]) => void;
   maxSelection?: 1 | 2 | 3 | 5 | 8;
-  requiredCategory?: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  requiredCategory?: 'NATDEV' | 'YOUTH' | 'JUNIOR' | 'SENIOR';
   disabled?: boolean;
 }
 
@@ -335,6 +335,7 @@ export function GymnastDataTable({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('gymnasts.table.allCategories')}</SelectItem>
+                <SelectItem value="NATDEV">{t('gymnasts.table.natdev')}</SelectItem>
                 <SelectItem value="YOUTH">{t('gymnasts.table.youth')}</SelectItem>
                 <SelectItem value="JUNIOR">{t('gymnasts.table.junior')}</SelectItem>
                 <SelectItem value="SENIOR">{t('gymnasts.table.senior')}</SelectItem>

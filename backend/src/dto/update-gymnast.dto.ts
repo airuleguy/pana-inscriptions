@@ -43,6 +43,6 @@ export class UpdateGymnastDto {
   age?: number;
 
   @IsOptional()
-  @IsEnum(['YOUTH', 'JUNIOR', 'SENIOR'])
-  category?: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  @IsEnum(['NATDEV', 'YOUTH', 'JUNIOR', 'SENIOR'])
+  category?: 'NATDEV' | 'YOUTH' | 'JUNIOR' | 'SENIOR';
 } 

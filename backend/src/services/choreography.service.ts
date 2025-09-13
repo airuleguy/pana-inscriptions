@@ -258,6 +258,7 @@ export class ChoreographyService {
     const stats = {
       totalChoreographies: choreographies.length,
       byCategory: {
+        [ChoreographyCategory.NATDEV]: 0,
         [ChoreographyCategory.YOUTH]: 0,
         [ChoreographyCategory.JUNIOR]: 0,
         [ChoreographyCategory.SENIOR]: 0,

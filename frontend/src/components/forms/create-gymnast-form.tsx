@@ -114,7 +114,7 @@ export function CreateGymnastForm({
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       
-      if (age < 10 || age > 50) {
+      if (age < 9 || age > 50) {
         errors.dateOfBirth = t('gymnast.validation.ageRange');
       }
     }

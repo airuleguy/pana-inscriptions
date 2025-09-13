@@ -7,7 +7,7 @@ import { APIService } from '@/lib/api';
 export interface RegisteredChoreography {
   id: string;
   name: string;
-  category: 'YOUTH' | 'JUNIOR' | 'SENIOR';
+  category: 'NATDEV' | 'YOUTH' | 'JUNIOR' | 'SENIOR';
   type: string;
   gymnastsCount: number;
   gymnasts: Gymnast[];
