@@ -814,6 +814,33 @@ export class APIService {
     });
   }
 
+  /**
+   * Delete coach registration
+   */
+  static async deleteCoach(coachId: string, tournamentId: string): Promise<void> {
+    await this.fetchAPI<void>(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/coaches/${encodeURIComponent(coachId)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Delete judge registration
+   */
+  static async deleteJudge(judgeId: string, tournamentId: string): Promise<void> {
+    await this.fetchAPI<void>(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/registrations/judges/${encodeURIComponent(judgeId)}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Delete support staff registration
+   */
+  static async deleteSupportStaff(supportId: string, tournamentId: string): Promise<void> {
+    await this.fetchAPI<void>(`/api/v1/tournaments/${encodeURIComponent(tournamentId)}/support/${encodeURIComponent(supportId)}`, {
+      method: 'DELETE',
+    });
+  }
+
   // ==================== EXISTING BATCH SUBMISSION ====================
 
   // ==================== HEALTH ====================
