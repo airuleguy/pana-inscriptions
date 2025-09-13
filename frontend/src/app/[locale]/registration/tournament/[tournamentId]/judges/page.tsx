@@ -5,6 +5,7 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { JudgeDataTable } from '@/components/forms/judge-data-table';
 import { getCountryByCode } from '@/lib/countries';
@@ -227,14 +228,14 @@ export default function JudgeRegistrationPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="club">Club Name</Label>
+                  <Label htmlFor="club">{t('fields.club.name')}</Label>
                   <Input
                     id="club"
-                    placeholder="Enter club name (optional)"
+                    placeholder={t('fields.club.placeholder')}
                     value={clubName}
                     onChange={(e) => setClubName(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground">This club name will be applied to all selected judges</p>
+                  <p className="text-xs text-muted-foreground">{t('fields.club.descriptionBulk')}</p>
                 </div>
               </CardContent>
             </Card>

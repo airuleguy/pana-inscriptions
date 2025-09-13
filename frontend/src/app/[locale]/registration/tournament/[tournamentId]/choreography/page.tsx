@@ -396,14 +396,14 @@ export default function ChoreographyRegistrationPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="club">Club Name (Optional)</Label>
+                <Label htmlFor="club">{t('fields.club.name')}</Label>
                 <Input
                   id="club"
-                  placeholder="Enter club name (optional for country-level tournaments)"
+                  placeholder={t('fields.club.placeholder')}
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
                 />
-                <p className="text-xs text-muted-foreground">Optional field for tournaments that require club information</p>
+                <p className="text-xs text-muted-foreground">{t('fields.club.description')}</p>
               </div>
             </CardContent>
           </Card>

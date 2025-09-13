@@ -58,6 +58,14 @@
       "choreography": "Detalles de coreografía"
     }
   },
+  "fields": {
+    "club": {
+      "name": "Nombre del Club (Opcional)",
+      "placeholder": "Ingresa el nombre del club (opcional)",
+      "description": "Campo opcional para torneos que requieren información del club",
+      "descriptionBulk": "Este nombre de club se aplicará a todos los elementos seleccionados"
+    }
+  },
   "dashboard": {
     "title": "Panel de Registro",
     "loadingMessage": "Cargando panel de registro...",

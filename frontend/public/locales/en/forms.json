@@ -116,6 +116,21 @@
       "updated": "Judge updated successfully"
     }
   },
+  "support": {
+    "title": "Add Support Staff",
+    "description": "Register support staff for this tournament",
+    "fields": {
+      "role": {
+        "label": "Role",
+        "placeholder": "Select role",
+        "options": {
+          "DELEGATION_LEADER": "Delegation Leader",
+          "MEDIC": "Medic",
+          "COMPANION": "Companion"
+        }
+      }
+    }
+  },
   "choreography": {
     "title": "Register Choreography",
     "description": "Register a choreography for the tournament",

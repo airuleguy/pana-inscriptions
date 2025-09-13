@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 interface SupportFormRow {
   firstName: string;
   lastName: string;
-  role?: string;
+  role?: SupportRole;
   club?: string;
 }
 
@@ -30,6 +30,7 @@ export default function SupportRegistrationPage() {
   const tournamentId = params.tournamentId as string;
   const currentLocale = params.locale as string;
   const { t } = useTranslations('common');
+  const { t: tf } = useTranslations('forms');
   const { addSupportStaff } = useRegistration();
 
   const localePrefix = getLocalePrefix(pathname || '');
@@ -37,9 +38,8 @@ export default function SupportRegistrationPage() {
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [registrationResult, setRegistrationResult] = useState<{ success: boolean; message: string } | null>(null);
   const [rows, setRows] = useState<SupportFormRow[]>([
-    { firstName: '', lastName: '', club: '' },
+    { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '' },
   ]);
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function SupportRegistrationPage() {
     setRows(prev => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   };
 
-  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', club: '' }]);
+  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', role: SupportRole.COMPANION, club: '' }]);
   const removeRow = (index: number) => setRows(prev => prev.filter((_, i) => i !== index));
 
   const validate = (): boolean => {
@@ -104,7 +104,7 @@ export default function SupportRegistrationPage() {
         firstName: r.firstName.trim(),
         lastName: r.lastName.trim(),
         fullName: `${r.firstName} ${r.lastName}`.trim(),
-        role: roleLabel,
+        role: r.role || SupportRole.COMPANION,
         club: r.club?.trim() || undefined,
       }));
 
@@ -125,35 +125,20 @@ export default function SupportRegistrationPage() {
         // Add to registration summary
         registrationData.forEach(supportReg => addSupportStaff(supportReg));
 
-        setRegistrationResult({
-          success: true,
-          message: `${t('support.registrationSuccessDescription').replace('{count}', response.results.length.toString())}`,
-        });
-
         toast.success(t('support.registrationSuccess'), {
           description: `${t('support.registrationSuccessDescription').replace('{count}', response.results.length.toString())}`,
           duration: 5000,
         });
 
         // Reset form
-        setRows([{ firstName: '', lastName: '', club: '' }]);
+        setRows([{ firstName: '', lastName: '', role: SupportRole.COMPANION, club: '' }]);
       } else {
         // Handle API errors
-        setRegistrationResult({
-          success: false,
-          message: response.errors?.join(', ') || t('support.registrationError'),
-        });
-        
         toast.error(t('support.registrationFailedTitle'), {
           description: response.errors?.join(', ') || t('support.registrationErrorDescription'),
         });
       }
     } catch (error: any) {
-      setRegistrationResult({
-        success: false,
-        message: error.message || t('support.registrationError'),
-      });
-      
       toast.error(t('support.registrationError'), {
         description: error.message,
       });
@@ -205,16 +190,31 @@ export default function SupportRegistrationPage() {
                   <Input value={row.lastName} onChange={(e) => handleChange(index, 'lastName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Club name (Optional)</Label>
+                  <Label>{t('fields.club.name')}</Label>
                   <Input 
                     value={row.club || ''} 
                     onChange={(e) => handleChange(index, 'club', e.target.value)} 
-                    placeholder="Enter club name"
+                    placeholder={t('fields.club.placeholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Role</Label>
-                  <Input value={currentLocale === 'es' ? 'SOPORTE' : 'SUPPORT'} disabled />
+                  <Label>{tf('support.fields.role.label')}</Label>
+                  <Select value={row.role || SupportRole.COMPANION} onValueChange={(value) => handleChange(index, 'role', value as SupportRole)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={tf('support.fields.role.placeholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={SupportRole.DELEGATION_LEADER}>
+                        {tf('support.fields.role.options.DELEGATION_LEADER')}
+                      </SelectItem>
+                      <SelectItem value={SupportRole.MEDIC}>
+                        {tf('support.fields.role.options.MEDIC')}
+                      </SelectItem>
+                      <SelectItem value={SupportRole.COMPANION}>
+                        {tf('support.fields.role.options.COMPANION')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="md:col-span-4 flex justify-end">
                   {rows.length > 1 && (
@@ -223,29 +223,6 @@ export default function SupportRegistrationPage() {
                 </div>
               </div>
             ))}
-
-            {/* Registration Result */}
-            {registrationResult && (
-              <Card className={registrationResult.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-3">
-                    {registrationResult.success ? (
-                      <ShieldPlus className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    )}
-                    <div>
-                      <p className={`font-medium ${registrationResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                        {registrationResult.success ? t('support.registrationSuccessful') : t('support.registrationFailed')}
-                      </p>
-                      <p className={`text-sm mt-1 ${registrationResult.success ? 'text-green-700' : 'text-red-700'}`}>
-                        {registrationResult.message}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-6">
