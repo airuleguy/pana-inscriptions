@@ -252,11 +252,28 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const removeCoach = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      coaches: prev.coaches.filter(c => c.id !== id),
-    }));
+  const removeCoach = async (id: string) => {
+    try {
+      // Only remove from backend if it's a PENDING registration
+      const coach = state.coaches.find(c => c.id === id);
+      if (coach && coach.status === 'PENDING' && state.tournament) {
+        await APIService.deleteCoach(id, state.tournament.id);
+      }
+      
+      // Remove from local state
+      setState(prev => ({
+        ...prev,
+        coaches: prev.coaches.filter(c => c.id !== id),
+      }));
+    } catch (error) {
+      console.error('Failed to remove coach:', error);
+      // Still remove from local state even if API call fails
+      setState(prev => ({
+        ...prev,
+        coaches: prev.coaches.filter(c => c.id !== id),
+      }));
+      throw error;
+    }
   };
 
   const addJudge = (judge: RegisteredJudge) => {
@@ -266,11 +283,28 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const removeJudge = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      judges: prev.judges.filter(j => j.id !== id),
-    }));
+  const removeJudge = async (id: string) => {
+    try {
+      // Only remove from backend if it's a PENDING registration
+      const judge = state.judges.find(j => j.id === id);
+      if (judge && judge.status === 'PENDING' && state.tournament) {
+        await APIService.deleteJudge(id, state.tournament.id);
+      }
+      
+      // Remove from local state
+      setState(prev => ({
+        ...prev,
+        judges: prev.judges.filter(j => j.id !== id),
+      }));
+    } catch (error) {
+      console.error('Failed to remove judge:', error);
+      // Still remove from local state even if API call fails
+      setState(prev => ({
+        ...prev,
+        judges: prev.judges.filter(j => j.id !== id),
+      }));
+      throw error;
+    }
   };
 
   const addSupportStaff = (supportStaff: RegisteredSupportStaff) => {
@@ -280,11 +314,28 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const removeSupportStaff = (id: string) => {
-    setState(prev => ({
-      ...prev,
-      supportStaff: prev.supportStaff.filter(s => s.id !== id),
-    }));
+  const removeSupportStaff = async (id: string) => {
+    try {
+      // Only remove from backend if it's a PENDING registration
+      const supportStaff = state.supportStaff.find(s => s.id === id);
+      if (supportStaff && supportStaff.status === 'PENDING' && state.tournament) {
+        await APIService.deleteSupportStaff(id, state.tournament.id);
+      }
+      
+      // Remove from local state
+      setState(prev => ({
+        ...prev,
+        supportStaff: prev.supportStaff.filter(s => s.id !== id),
+      }));
+    } catch (error) {
+      console.error('Failed to remove support staff:', error);
+      // Still remove from local state even if API call fails
+      setState(prev => ({
+        ...prev,
+        supportStaff: prev.supportStaff.filter(s => s.id !== id),
+      }));
+      throw error;
+    }
   };
 
   const clearAll = () => {
