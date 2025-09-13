@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -238,6 +238,37 @@ function SupportCard({ supportStaff, status, t, getCountryInfo }: SupportCardPro
   );
 }
 
+// Club Section Component
+interface ClubSectionProps {
+  club: string;
+  children: React.ReactNode;
+  count: number;
+  type: 'choreography' | 'coach' | 'judge' | 'support';
+}
+
+function ClubSection({ club, children, count, type }: ClubSectionProps) {
+  const getBgColor = () => {
+    switch (type) {
+      case 'choreography': return 'bg-blue-50';
+      case 'coach': return 'bg-purple-50';
+      case 'judge': return 'bg-orange-50';
+      case 'support': return 'bg-emerald-50';
+      default: return 'bg-gray-50';
+    }
+  };
+
+  return (
+    <div className={`${getBgColor()} rounded-lg p-4 mb-4`}>
+      {club !== 'No Club' && (
+        <h3 className="text-lg font-semibold mb-3">{club} ({count})</h3>
+      )}
+      <div className={`space-y-3 ${club === 'No Club' ? 'mt-0' : ''}`}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // Reusable Registration Section Component
 interface RegistrationSectionProps {
   title: string;
@@ -261,6 +292,33 @@ function RegistrationSection({ title, icon: Icon, children, count, status, type 
 
   if (count === 0) return null;
 
+  // Group children by club
+  const childrenArray = React.Children.toArray(children);
+  const itemsByClub = new Map<string, React.ReactNode[]>();
+  
+  childrenArray.forEach((child) => {
+    if (React.isValidElement(child)) {
+      const props = child.props as any; // Type assertion for props
+      const club = props.choreography?.club || 
+                  props.coach?.club || 
+                  props.judge?.club || 
+                  props.supportStaff?.club || 
+                  'No Club';
+      
+      if (!itemsByClub.has(club)) {
+        itemsByClub.set(club, []);
+      }
+      itemsByClub.get(club)?.push(child);
+    }
+  });
+
+  // Sort clubs alphabetically, but keep "No Club" at the end
+  const sortedClubs = Array.from(itemsByClub.keys()).sort((a, b) => {
+    if (a === 'No Club') return 1;
+    if (b === 'No Club') return -1;
+    return a.localeCompare(b);
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -270,8 +328,17 @@ function RegistrationSection({ title, icon: Icon, children, count, status, type 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {children}
+        <div className="space-y-2">
+          {sortedClubs.map((club) => (
+            <ClubSection 
+              key={club} 
+              club={club} 
+              count={itemsByClub.get(club)?.length || 0}
+              type={type || 'choreography'}
+            >
+              {itemsByClub.get(club)}
+            </ClubSection>
+          ))}
         </div>
       </CardContent>
     </Card>
