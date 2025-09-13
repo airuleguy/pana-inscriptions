@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { ApiProperty } from '@nestjs/swagger';
 import { Tournament } from './tournament.entity';
 import { RegistrationStatus } from '../constants/registration-status';
+import { SupportRole } from '../constants/support-roles';
 
 @Entity('support_staff')
 export class SupportStaff {
@@ -21,9 +22,14 @@ export class SupportStaff {
   @Column({ name: 'full_name' })
   fullName: string;
 
-  @ApiProperty({ description: 'Role within delegation (e.g., DELEGATE, MEDICAL, PHYSIO, MANAGER, OTHER)' })
-  @Column({ name: 'role' })
-  role: string;
+  @ApiProperty({ description: 'Role within delegation', enum: SupportRole })
+  @Column({ 
+    name: 'role',
+    type: 'enum',
+    enum: SupportRole,
+    enumName: 'support_role_enum'
+  })
+  role: SupportRole;
 
   @ApiProperty({ description: 'Country code (ISO 3166-1 alpha-3)', example: 'URU' })
   @Column()

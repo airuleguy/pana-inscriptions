@@ -551,11 +551,10 @@ export function RegistrationProvider({ children }: { children: ReactNode }) {
     }
 
     console.log('Manually refreshing registrations from database...');
-    await Promise.all([
-      syncPendingRegistrations(),
-      loadExistingRegistrations()
-    ]);
-  }, [state.tournament, state.country, syncPendingRegistrations, loadExistingRegistrations]);
+    // Only sync pending registrations since syncPendingRegistrations already handles 
+    // merging with existing submitted registrations correctly
+    await syncPendingRegistrations();
+  }, [state.tournament, state.country, syncPendingRegistrations]);
 
   // Method to update tournament and country (used by pages to sync context)
   const updateTournamentAndCountry = useCallback((tournament: Tournament, country: string) => {

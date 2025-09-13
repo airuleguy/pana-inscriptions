@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Tournament } from '@/types';
+import { SupportRole } from '@/types';
 import { useTranslations } from '@/contexts/i18n-context';
 import { useRegistration, RegisteredSupportStaff } from '@/contexts/registration-context';
 import { APIService } from '@/lib/api';
@@ -18,7 +19,7 @@ import { toast } from 'sonner';
 interface SupportFormRow {
   firstName: string;
   lastName: string;
-  role?: string;
+  role: SupportRole;
 }
 
 export default function SupportRegistrationPage() {
@@ -37,7 +38,7 @@ export default function SupportRegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [registrationResult, setRegistrationResult] = useState<{ success: boolean; message: string } | null>(null);
   const [rows, setRows] = useState<SupportFormRow[]>([
-    { firstName: '', lastName: '' },
+    { firstName: '', lastName: '', role: SupportRole.DELEGATION_LEADER },
   ]);
 
   useEffect(() => {
@@ -64,11 +65,11 @@ export default function SupportRegistrationPage() {
     if (tournamentId) loadData(); else router.push(`${localePrefix}/tournament-selection`);
   }, [tournamentId, router]);
 
-  const handleChange = (index: number, field: keyof SupportFormRow, value: string) => {
+  const handleChange = (index: number, field: keyof SupportFormRow, value: string | SupportRole) => {
     setRows(prev => prev.map((r, i) => (i === index ? { ...r, [field]: value } : r)));
   };
 
-  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '' }]);
+  const addRow = () => setRows(prev => [...prev, { firstName: '', lastName: '', role: SupportRole.DELEGATION_LEADER }]);
   const removeRow = (index: number) => setRows(prev => prev.filter((_, i) => i !== index));
 
   const validate = (): boolean => {
@@ -98,12 +99,11 @@ export default function SupportRegistrationPage() {
     setSubmitting(true);
     try {
       // Register support staff with backend API immediately
-      const roleLabel = currentLocale === 'es' ? 'SOPORTE' : 'SUPPORT';
       const payload = rows.map(r => ({
         firstName: r.firstName.trim(),
         lastName: r.lastName.trim(),
         fullName: `${r.firstName} ${r.lastName}`.trim(),
-        role: roleLabel,
+        role: r.role,
       }));
 
       const response = await APIService.createSupport(selectedTournament.id, payload);
@@ -134,7 +134,7 @@ export default function SupportRegistrationPage() {
         });
 
         // Reset form
-        setRows([{ firstName: '', lastName: '' }]);
+        setRows([{ firstName: '', lastName: '', role: SupportRole.DELEGATION_LEADER }]);
       } else {
         // Handle API errors
         setRegistrationResult({
@@ -195,20 +195,38 @@ export default function SupportRegistrationPage() {
             {rows.map((row, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end border-b pb-4">
                 <div className="space-y-2">
-                  <Label>First name</Label>
+                  <Label>{t('general.firstName')}</Label>
                   <Input value={row.firstName} onChange={(e) => handleChange(index, 'firstName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Last name</Label>
+                  <Label>{t('general.lastName')}</Label>
                   <Input value={row.lastName} onChange={(e) => handleChange(index, 'lastName', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Role</Label>
-                  <Input value={currentLocale === 'es' ? 'SOPORTE' : 'SUPPORT'} disabled />
+                  <Label>{t('support.roleLabel')}</Label>
+                  <Select 
+                    value={row.role} 
+                    onValueChange={(value: SupportRole) => handleChange(index, 'role', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('support.rolePlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={SupportRole.DELEGATION_LEADER}>
+                        {t('support.roles.DELEGATION_LEADER')}
+                      </SelectItem>
+                      <SelectItem value={SupportRole.MEDIC}>
+                        {t('support.roles.MEDIC')}
+                      </SelectItem>
+                      <SelectItem value={SupportRole.COMPANION}>
+                        {t('support.roles.COMPANION')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="md:col-span-3 flex justify-end">
                   {rows.length > 1 && (
-                    <Button variant="outline" onClick={() => removeRow(index)}>Remove</Button>
+                    <Button variant="outline" onClick={() => removeRow(index)}>{t('general.remove')}</Button>
                   )}
                 </div>
               </div>
@@ -239,7 +257,7 @@ export default function SupportRegistrationPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-4 pt-6">
-              <Button variant="outline" onClick={addRow}>Add another</Button>
+              <Button variant="outline" onClick={addRow}>{t('support.addAnother')}</Button>
               <Button
                 onClick={handleSaveSelected}
                 disabled={!isFormValid || submitting}
@@ -267,7 +285,7 @@ export default function SupportRegistrationPage() {
                 size="lg" 
                 onClick={() => router.push(`${localePrefix}/registration/tournament/${tournamentId}/dashboard`)}
               >
-                Back to Dashboard
+                {t('support.backToDashboard')}
               </Button>
             </div>
           </div>

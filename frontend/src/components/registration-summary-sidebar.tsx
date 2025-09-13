@@ -371,7 +371,7 @@ export function RegistrationSummarySidebar({
                               <div className="flex items-center justify-between">
                                 <div>
                                   <h4 className="font-medium text-gray-900">{supportStaff.name}</h4>
-                                  <p className="text-sm text-gray-600">{supportStaff.role} • {supportStaff.country}</p>
+                                  <p className="text-sm text-gray-600">{t(`support.roles.${supportStaff.role}`)} • {supportStaff.country}</p>
                                   <p className="text-xs text-gray-500">{formatDate(supportStaff.registeredAt)}</p>
                                 </div>
                                 <Button

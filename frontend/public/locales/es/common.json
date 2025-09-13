@@ -5,6 +5,7 @@
     "cancel": "Cancelar",
     "edit": "Editar",
     "delete": "Eliminar",
+    "remove": "Quitar",
     "add": "Agregar",
     "create": "Crear",
     "update": "Actualizar",
@@ -21,6 +22,8 @@
     "actions": "Acciones",
     "status": "Estado",
     "name": "Nombre",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
     "email": "Correo electrónico",
     "phone": "Teléfono",
     "country": "País",
@@ -359,7 +362,16 @@
     "addingToSummary": "Agregando al resumen...",
     "addToSummary": "Agregar al Resumen",
     "viewSummary": "Ver Resumen de Registro",
-    "missingData": "Falta la selección del torneo o país."
+    "backToDashboard": "Volver al Panel",
+    "addAnother": "Agregar otro",
+    "missingData": "Falta la selección del torneo o país.",
+    "roles": {
+      "DELEGATION_LEADER": "Jefe de delegación",
+      "MEDIC": "Médico",
+      "COMPANION": "Acompañante"
+    },
+    "roleLabel": "Rol",
+    "rolePlaceholder": "Selecciona un rol"
   },
   "tournamentSelection": {
     "title": "Selección de Torneo",
