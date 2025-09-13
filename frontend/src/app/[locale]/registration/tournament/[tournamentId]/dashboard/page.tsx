@@ -114,6 +114,9 @@ function ChoreographyCard({ choreography, status, t }: ChoreographyCardProps) {
               <Badge variant="secondary" className="text-xs">
                 {choreography.category}
               </Badge>
+              <Badge variant="secondary" className="text-xs">
+                {choreography.type}
+              </Badge>
               <Badge variant="outline" className="text-xs">
                 {status === 'pending' ? t('dashboard.pending').toUpperCase() : t('dashboard.submitted').toUpperCase()}
               </Badge>
