@@ -13,7 +13,7 @@ export class StorageFactory {
   ) {}
 
   getStorage(): IStorageService {
-    const useLocalStorage = this.configService.get<boolean>('USE_LOCAL_STORAGE', process.env.NODE_ENV === 'development');
+    const useLocalStorage = this.configService.get<boolean>('storage.useLocal');
     return useLocalStorage ? this.localStorageService : this.s3Service;
   }
 }

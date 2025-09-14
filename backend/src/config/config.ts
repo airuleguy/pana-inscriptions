@@ -61,9 +61,11 @@ export const configuration = () => ({
     region: process.env.AWS_REGION || 'us-east-1',
     s3: {
       bucket: process.env.AWS_S3_BUCKET,
-      baseUrl: process.env.AWS_S3_BASE_URL,
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
+  },
+  storage: {
+    useLocal: process.env.USE_LOCAL_STORAGE === 'true',
   },
 }); 

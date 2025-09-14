@@ -19,7 +19,6 @@ export class S3Service implements IStorageService {
       },
     });
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET');
-    this.baseUrl = this.configService.get<string>('AWS_S3_BASE_URL');
   }
 
   /**

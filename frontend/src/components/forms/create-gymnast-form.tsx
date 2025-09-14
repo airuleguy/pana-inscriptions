@@ -233,7 +233,7 @@ export function CreateGymnastForm({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[50vw] min-w-[600px]">
+      <DialogContent className="sm:max-w-[65vw] min-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-blue-600" />
@@ -260,28 +260,29 @@ export function CreateGymnastForm({
 
           {/* Form Fields */}
           <div className="space-y-4">
-            {/* FIG ID */}
-            <div className="space-y-2">
-              <Label htmlFor="figId" className="text-sm font-medium">
-                {t('gymnast.labels.figIdRequired')}
-              </Label>
-              <Input
-                id="figId"
-                placeholder={t('gymnast.placeholders.figIdExample')}
-                value={formData.figId}
-                onChange={(e) => handleInputChange('figId', e.target.value)}
-                className={formErrors.figId ? 'border-red-500' : ''}
-              />
-              {formErrors.figId && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {formErrors.figId}
-                </p>
-              )}
-            </div>
+            {/* Name Fields Row */}
+            <div className="grid grid-cols-3 gap-4">
+              {/* FIG ID */}
+              <div className="space-y-2">
+                <Label htmlFor="figId" className="text-sm font-medium">
+                  {t('gymnast.labels.figIdRequired')}
+                </Label>
+                <Input
+                  id="figId"
+                  placeholder={t('gymnast.placeholders.figIdExample')}
+                  value={formData.figId}
+                  onChange={(e) => handleInputChange('figId', e.target.value)}
+                  className={formErrors.figId ? 'border-red-500' : ''}
+                />
+                {formErrors.figId && (
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {formErrors.figId}
+                  </p>
+                )}
+              </div>
 
-            {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
+              {/* First Name */}
               <div className="space-y-2">
                 <Label htmlFor="firstName" className="text-sm font-medium">
                   {t('gymnast.labels.firstNameRequired')}
@@ -301,6 +302,7 @@ export function CreateGymnastForm({
                 )}
               </div>
 
+              {/* Last Name */}
               <div className="space-y-2">
                 <Label htmlFor="lastName" className="text-sm font-medium">
                   {t('gymnast.labels.lastNameRequired')}
@@ -321,80 +323,93 @@ export function CreateGymnastForm({
               </div>
             </div>
 
-            {/* Gender */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{t('gymnast.labels.genderRequired')}</Label>
-              <Select value={formData.gender} onValueChange={(value: 'MALE' | 'FEMALE') => handleInputChange('gender', value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="FEMALE">{t('gymnast.genderOptions.female')}</SelectItem>
-                  <SelectItem value="MALE">{t('gymnast.genderOptions.male')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Details Row */}
+            <div className="grid grid-cols-3 gap-4">
+              {/* Gender */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t('gymnast.labels.genderRequired')}</Label>
+                <Select value={formData.gender} onValueChange={(value: 'MALE' | 'FEMALE') => handleInputChange('gender', value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FEMALE">{t('gymnast.genderOptions.female')}</SelectItem>
+                    <SelectItem value="MALE">{t('gymnast.genderOptions.male')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Date of Birth */}
-            <div className="space-y-2">
-              <Label htmlFor="dateOfBirth" className="text-sm font-medium">
-                {t('gymnast.labels.dateOfBirthRequired')}
-              </Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                className={formErrors.dateOfBirth ? 'border-red-500' : ''}
-              />
-              {formErrors.dateOfBirth && (
-                <p className="text-sm text-red-600 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {formErrors.dateOfBirth}
-                </p>
-              )}
-            </div>
-
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{t('gymnast.labels.image')}</Label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageSelect}
-                  ref={fileInputRef}
+              {/* Date of Birth */}
+              <div className="space-y-2">
+                <Label htmlFor="dateOfBirth" className="text-sm font-medium">
+                  {t('gymnast.labels.dateOfBirthRequired')}
+                </Label>
+                <Input
+                  id="dateOfBirth"
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                  className={formErrors.dateOfBirth ? 'border-red-500' : ''}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  {t('gymnast.buttons.uploadImage')}
-                </Button>
-                {imagePreview && (
-                  <div className="relative">
-                    <img
-                      src={imagePreview}
-                      alt={t('gymnast.preview.imagePreview')}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute -top-2 -right-2 w-6 h-6"
-                      onClick={handleImageRemove}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
+                {formErrors.dateOfBirth && (
+                  <p className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {formErrors.dateOfBirth}
+                  </p>
                 )}
               </div>
-              <p className="text-xs text-gray-500">{t('gymnast.labels.imageHelp')}</p>
+
+              {/* Empty Column for Alignment */}
+              <div></div>
+            </div>
+
+            {/* Image Upload Row */}
+            <div className="grid grid-cols-3 gap-4">
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t('gymnast.labels.image')}</Label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                    ref={fileInputRef}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {t('gymnast.buttons.uploadImage')}
+                  </Button>
+                  {imagePreview && (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt={t('gymnast.preview.imagePreview')}
+                        className="w-16 h-16 object-cover rounded-md"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 w-6 h-6"
+                        onClick={handleImageRemove}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">{t('gymnast.labels.imageHelp')}</p>
+              </div>
+
+              {/* Empty Columns for Alignment */}
+              <div></div>
+              <div></div>
             </div>
 
             {/* Preview */}
