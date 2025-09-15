@@ -148,7 +148,9 @@
       "tryAgain": "Intentar de Nuevo",
       "selectedCoaches": "Entrenadores Seleccionados",
       "searchPlaceholder": "Buscar entrenadores por nombre o nivel...",
-      "view": "Ver"
+      "view": "Ver",
+      "refresh": "Actualizar",
+      "createCoach": "Crear Entrenador"
     }
   },
   "judges": {

@@ -40,6 +40,19 @@ export interface Coach {
   levelDescription: string; // Human-readable level description
   createdAt?: Date; // Registration date
   updatedAt?: Date; // Last modification date
+  isLocal?: boolean; // Whether this coach was created locally
+}
+
+export interface CreateCoachRequest {
+  figId: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  gender: 'MALE' | 'FEMALE';
+  country: string;
+  club?: string;
+  level: string;
+  levelDescription: string;
 }
 
 export interface Judge {

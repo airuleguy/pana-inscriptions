@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
+import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest, CreateCoachRequest } from '@/types';
 import { ChoreographyCategory, calculateCategory } from '@/constants/categories';
 
 /**
@@ -371,6 +371,22 @@ export class APIService {
       method: 'POST',
       body: JSON.stringify(registrationData),
     });
+  }
+
+  /**
+   * Create a new local coach
+   */
+  static async createLocalCoach(coachData: CreateCoachRequest): Promise<Coach> {
+    const response = await this.fetchAPI<Coach>('/api/v1/coaches', {
+      method: 'POST',
+      body: JSON.stringify(coachData),
+    });
+    
+    // Clear coaches cache since we added a new one
+    this.clearCache(`coaches-${coachData.country}`);
+    this.clearCache('coaches-all');
+    
+    return response;
   }
 
   // ==================== JUDGES ====================

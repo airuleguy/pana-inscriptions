@@ -7,13 +7,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, RefreshCw, AlertCircle, GraduationCap } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, GraduationCap, UserPlus } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import { useTranslations } from '@/contexts/i18n-context';
 import type { Coach } from '@/types';
 import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { CreateCoachForm } from './create-coach-form';
 
 interface CoachDataTableProps {
   countryCode: string;
@@ -37,6 +38,7 @@ export function CoachDataTable({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Image preloading hook
   const { preloadPeopleImages } = useFigImagePreloader();
@@ -293,6 +295,29 @@ export function CoachDataTable({
       {/* Data Table */}
       <Card>
         <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={refreshing || disabled}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                {t('coaches.table.refresh')}
+              </Button>
+            </div>
+            <Button
+              onClick={() => setCreateModalOpen(true)}
+              variant="default"
+              size="sm"
+              disabled={disabled}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              {t('coaches.table.createCoach')}
+            </Button>
+          </div>
+
           <DataTable
             columns={columns}
             data={filteredCoaches}
@@ -301,6 +326,16 @@ export function CoachDataTable({
           />
         </CardContent>
       </Card>
+
+      {/* Create Coach Modal */}
+      <CreateCoachForm
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        countryCode={country}
+        onCoachCreated={(newCoach) => {
+          setAvailableCoaches(prev => [...prev, newCoach]);
+        }}
+      />
     </div>
   );
 } 

@@ -78,4 +78,8 @@ export class Coach {
   @ApiProperty({ description: 'Last modification date' })
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ApiProperty({ description: 'Whether this coach was created locally', example: true })
+  @Column({ name: 'is_local', default: false })
+  isLocal: boolean;
 } 
