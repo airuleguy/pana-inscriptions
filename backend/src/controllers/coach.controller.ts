@@ -1,75 +1,107 @@
-import { Controller, Get, Query, Param, HttpStatus, Delete, Logger } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
-import { FigApiService } from '../services/fig-api.service';
-import { CoachDto } from '../dto/coach.dto';
+import { Controller, Post, Body, Get, Query, UseGuards, BadRequestException, Delete, Param, UseInterceptors, UploadedFile, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiParam, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CoachService } from '../services/coach.service';
+import { Coach } from '../entities/coach.entity';
+import { CreateLocalCoachDto } from '../dto/create-local-coach.dto';
+import { CountryAuthGuard } from '../guards/country-auth.guard';
 
 @ApiTags('coaches')
 @Controller('coaches')
+@UseGuards(CountryAuthGuard)
+@ApiBearerAuth()
 export class CoachController {
-  private readonly logger = new Logger(CoachController.name);
+  constructor(private readonly coachService: CoachService) {}
 
-  constructor(
-    private readonly figApiService: FigApiService,
-  ) {}
-
-  @Get()
-  @ApiOperation({ 
-    summary: 'Get all certified coaches',
-    description: 'Retrieve all aerobic gymnastics coaches from FIG database with optional country filter'
-  })
-  @ApiQuery({ 
-    name: 'country', 
-    required: false, 
-    description: 'Filter by country code (ISO 3166-1 alpha-3)',
-    example: 'USA'
-  })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
-    description: 'List of certified coaches',
-    type: [CoachDto]
-  })
-  @ApiResponse({ 
-    status: HttpStatus.BAD_GATEWAY, 
-    description: 'FIG API unavailable'
-  })
-  async findAll(@Query('country') country?: string): Promise<CoachDto[]> {
-    if (country) {
-      return this.figApiService.getCoachesByCountry(country);
+  @Post()
+  @ApiOperation({ summary: 'Create a new local coach' })
+  @ApiResponse({ status: 201, description: 'Coach created successfully', type: Coach })
+  @ApiResponse({ status: 400, description: 'Invalid input data or coach already exists' })
+  async createLocal(@Body() createCoachDto: CreateLocalCoachDto): Promise<Coach> {
+    try {
+      return await this.coachService.createLocal(createCoachDto);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message);
     }
-    return this.figApiService.getCoaches();
   }
 
-  @Get(':id')
+  @Get()
+  @ApiOperation({ summary: 'Get all coaches with optional country filter' })
+  @ApiResponse({ status: 200, description: 'List of coaches', type: [Coach] })
+  async findAll(@Query('country') country?: string): Promise<Coach[]> {
+    return await this.coachService.findAll(country);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search coaches by name and country' })
+  @ApiResponse({ status: 200, description: 'List of matching coaches', type: [Coach] })
+  async search(
+    @Query('query') query: string,
+    @Query('country') country?: string,
+  ): Promise<Coach[]> {
+    return await this.coachService.search(query, country);
+  }
+
+  @Delete('cache')
+  @ApiOperation({ summary: 'Clear coach cache' })
+  @ApiResponse({ status: 204, description: 'Cache cleared successfully' })
+  async clearCache(): Promise<void> {
+    return await this.coachService.clearCache();
+  }
+
+  @Post(':id/image')
   @ApiOperation({ 
-    summary: 'Get coach by FIG ID',
-    description: 'Retrieve a specific coach by their FIG ID'
+    summary: 'Upload coach image',
+    description: 'Upload an image for a local coach (FIG API coaches cannot have images uploaded)'
   })
-  @ApiParam({ name: 'id', description: 'FIG ID of the coach', example: 'COACH123456' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Database ID of the coach', example: 'uuid-string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file (JPEG, PNG, or GIF)',
+        },
+      },
+    },
+  })
   @ApiResponse({ 
     status: HttpStatus.OK, 
-    description: 'Coach details',
-    type: CoachDto
+    description: 'Image successfully uploaded',
+    type: Coach
   })
   @ApiResponse({ 
     status: HttpStatus.NOT_FOUND, 
     description: 'Coach not found'
   })
-  async findOne(@Param('id') id: string): Promise<CoachDto | null> {
-    return this.figApiService.getCoachById(id);
-  }
-
-  @Delete('cache')
-  @ApiOperation({ 
-    summary: 'Clear coach cache',
-    description: 'Clear the cached FIG coach data to force fresh API call'
-  })
   @ApiResponse({ 
-    status: HttpStatus.NO_CONTENT, 
-    description: 'Cache cleared successfully'
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Invalid image format or cannot upload for FIG API coaches'
   })
-  async clearCache(): Promise<void> {
-    return this.figApiService.clearCoachCache();
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|gif)$/)) {
+        return callback(new BadRequestException('Only JPEG, PNG, and GIF files are allowed'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  async uploadImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<Coach> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.coachService.uploadImage(id, file.buffer);
   }
-
-
-} 
+}

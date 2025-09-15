@@ -1,4 +1,4 @@
-import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest } from '@/types';
+import { Gymnast, Coach, Judge, SupportStaff, Choreography, ChoreographyType, Tournament, LoginCredentials, AuthResponse, User, CreateGymnastRequest, CreateCoachRequest } from '@/types';
 import { ChoreographyCategory, calculateCategory } from '@/constants/categories';
 
 /**
@@ -371,6 +371,45 @@ export class APIService {
       method: 'POST',
       body: JSON.stringify(registrationData),
     });
+  }
+
+  /**
+   * Create a new local coach
+   */
+  static async createLocalCoach(coachData: CreateCoachRequest): Promise<Coach> {
+    const response = await this.fetchAPI<Coach>('/api/v1/coaches', {
+      method: 'POST',
+      body: JSON.stringify(coachData),
+    });
+    
+    // Clear coaches cache since we added a new one
+    this.clearCache(`coaches-${coachData.country}`);
+    this.clearCache('coaches-all');
+    
+    return response;
+  }
+
+  /**
+   * Upload image for coach
+   */
+  static async uploadCoachImage(
+    coachId: string,
+    formData: FormData
+  ): Promise<Coach> {
+    // Remove default content-type header as FormData sets its own
+    const headers: Record<string, string> = {};
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
+    }
+
+    return await this.fetchAPI<Coach>(
+      `/api/v1/coaches/${coachId}/image`,
+      {
+        method: 'POST',
+        body: formData,
+        headers,
+      }
+    );
   }
 
   // ==================== JUDGES ====================
@@ -1021,7 +1060,7 @@ export class APIService {
       c.firstName.toLowerCase().includes(searchTerm) ||
       c.lastName.toLowerCase().includes(searchTerm) ||
       c.fullName.toLowerCase().includes(searchTerm) ||
-      c.levelDescription.toLowerCase().includes(searchTerm)
+      c.levelDescription?.toLowerCase().includes(searchTerm)
     );
   }
 
@@ -1029,7 +1068,7 @@ export class APIService {
    * Filter coaches by level
    */
   static filterCoachesByLevel(coaches: Coach[], level: string): Coach[] {
-    return coaches.filter(c => c.level.includes(level));
+    return coaches.filter(c => c.level?.includes(level));
   }
 
   /**
@@ -1046,7 +1085,9 @@ export class APIService {
   static getUniqueCoachLevels(coaches: Coach[]): string[] {
     const levels = new Set<string>();
     coaches.forEach(c => {
-      c.level.split(', ').forEach(level => levels.add(level.trim()));
+      if (c.level) {
+        c.level.split(', ').forEach(level => levels.add(level.trim()));
+      }
     });
     return Array.from(levels).sort();
   }
@@ -1111,6 +1152,28 @@ export class APIService {
     
     const queryString = params.toString();
     const baseUrl = `/api/v1/images/fig/${figId}`;
+    
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  }
+
+  /**
+   * Get coach image URL (handles both local and FIG coaches)
+   * This serves images through our backend cache for better performance
+   */
+  static getCoachImageUrl(coachId: string, options?: {
+    width?: number;
+    height?: number;
+    quality?: number;
+  }): string {
+    if (!coachId) return '';
+    
+    const params = new URLSearchParams();
+    if (options?.width) params.append('width', options.width.toString());
+    if (options?.height) params.append('height', options.height.toString());
+    if (options?.quality) params.append('quality', options.quality.toString());
+    
+    const queryString = params.toString();
+    const baseUrl = `/api/v1/images/coach/${coachId}`;
     
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }

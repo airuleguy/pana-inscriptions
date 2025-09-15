@@ -86,21 +86,80 @@
     }
   },
   "coach": {
-    "title": "Add Coach",
-    "description": "Register a coach for this tournament",
+    "title": "Create New Coach",
+    "description": "Register a coach who is not yet in the FIG database",
     "fields": {
       "figId": "FIG ID",
       "firstName": "First Name",
       "lastName": "Last Name",
+      "gender": "Gender",
       "country": "Country",
-      "email": "Email",
-      "phone": "Phone",
-      "license": "License Number",
-      "specialization": "Specialization"
+      "club": "Club",
+      "level": "Level",
+      "levelDescription": "Level Description"
+    },
+    "placeholders": {
+      "figIdExample": "e.g. 12345",
+      "firstNamePlaceholder": "First name",
+      "lastNamePlaceholder": "Last name",
+      "clubPlaceholder": "Club name (optional)"
+    },
+    "validation": {
+      "figIdRequired": "FIG ID is required",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "levelRequired": "Level is required",
+      "levelDescriptionRequired": "Level description is required",
+      "figIdMinLength": "FIG ID must be at least 3 characters",
+      "firstNameMinLength": "First name must be at least 2 characters",
+      "lastNameMinLength": "Last name must be at least 2 characters",
+      "figIdExists": "A coach with this FIG ID already exists",
+      "invalidImageType": "Invalid image format. Please upload a JPEG, PNG, or GIF file.",
+      "imageTooLarge": "Image size must be less than 5MB"
+    },
+    "labels": {
+      "figIdRequired": "FIG ID *",
+      "firstNameRequired": "First Name *",
+      "lastNameRequired": "Last Name *",
+      "genderRequired": "Gender *",
+      "levelRequired": "Level *",
+      "club": "Club (Optional)",
+      "image": "Profile Image",
+      "imageHelp": "Upload a profile image (JPEG, PNG, or GIF, max 5MB)"
+    },
+    "genderOptions": {
+      "female": "Female",
+      "male": "Male"
+    },
+    "levelOptions": {
+      "l1": "Level 1",
+      "l2": "Level 2", 
+      "l3": "Level 3",
+      "lhb": "High Performance",
+      "lbr": "Brevet"
+    },
+    "licenseNotice": {
+      "title": "License Status Notice",
+      "description": "Local coaches are marked as \"license to check\" by default. Please verify their FIG registration status before the tournament."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create Coach",
+      "creating": "Creating...",
+      "uploadImage": "Upload Image"
     },
     "success": {
-      "created": "Coach added successfully",
-      "updated": "Coach updated successfully"
+      "created": "Coach created successfully",
+      "createdDescription": "{name} has been added to your country's coach list with \"license to check\" status."
+    },
+    "errors": {
+      "createFailed": "Failed to create coach",
+      "createFailedDescription": "Please check your input and try again.",
+      "imageUploadFailed": "Failed to upload image",
+      "imageUploadFailedDescription": "The coach was created but the image upload failed. You can try uploading the image again later."
+    },
+    "preview": {
+      "imagePreview": "Profile image preview"
     }
   },
   "judge": {

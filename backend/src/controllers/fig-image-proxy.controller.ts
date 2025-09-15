@@ -14,13 +14,17 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 import { FigImageProxyService } from '../services/fig-image-proxy.service';
+import { ImageService } from '../services/image.service';
 
 @ApiTags('images')
 @Controller('images')
 export class FigImageProxyController {
   private readonly logger = new Logger(FigImageProxyController.name);
 
-  constructor(private readonly figImageProxyService: FigImageProxyService) {}
+  constructor(
+    private readonly figImageProxyService: FigImageProxyService,
+    private readonly imageService: ImageService,
+  ) {}
 
   @Get('fig/:figId')
   @ApiOperation({ 
@@ -233,6 +237,89 @@ export class FigImageProxyController {
   })
   async clearSpecificImageCache(@Param('figId') figId: string): Promise<void> {
     await this.figImageProxyService.clearImageCache(figId);
+  }
+
+  @Get('coach/:coachId')
+  @ApiOperation({ 
+    summary: 'Get coach image',
+    description: 'Retrieve a cached and optimized image for a coach (local or FIG)'
+  })
+  @ApiParam({ 
+    name: 'coachId', 
+    description: 'Coach ID (FIG ID or database UUID for local coaches)', 
+    example: '91998' 
+  })
+  @ApiQuery({ 
+    name: 'width', 
+    required: false, 
+    description: 'Desired image width in pixels',
+    example: 150 
+  })
+  @ApiQuery({ 
+    name: 'height', 
+    required: false, 
+    description: 'Desired image height in pixels',
+    example: 200 
+  })
+  @ApiQuery({ 
+    name: 'quality', 
+    required: false, 
+    description: 'Image quality (1-100)',
+    example: 85 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Image returned successfully',
+    headers: {
+      'Content-Type': { description: 'Image MIME type' },
+      'Content-Length': { description: 'Image size in bytes' },
+      'Cache-Control': { description: 'Client caching directive' },
+      'ETag': { description: 'Entity tag for caching' },
+    }
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Image not found for this coach ID' 
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Invalid coach ID format' 
+  })
+  async getCoachImage(
+    @Param('coachId') coachId: string,
+    @Res() res: Response,
+    @Query('width') width?: number,
+    @Query('height') height?: number,
+    @Query('quality') quality?: number,
+  ): Promise<void> {
+    try {
+      const imageData = await this.imageService.getCoachImage(
+        coachId, 
+        width, 
+        height, 
+        quality
+      );
+
+      // Set appropriate headers for image serving and caching
+      res.set({
+        'Content-Type': imageData.contentType,
+        'Content-Length': imageData.contentLength.toString(),
+        'Last-Modified': imageData.lastModified,
+        'Cache-Control': 'public, max-age=86400, immutable', // 24 hours client cache
+        'ETag': imageData.etag || `"coach-${coachId}-${imageData.contentLength}"`,
+        'X-Content-Source': 'Coach-Image-Service',
+      });
+
+      // Send the image data
+      res.status(HttpStatus.OK).send(imageData.data);
+      
+      this.logger.debug(`Served image for coach ID: ${coachId} (${imageData.contentLength} bytes)`);
+    } catch (error) {
+      this.logger.error(`Error serving image for coach ID: ${coachId}`, error.message);
+      
+      // Let NestJS handle the HttpException properly
+      throw error;
+    }
   }
 
   @Get('cache/stats')

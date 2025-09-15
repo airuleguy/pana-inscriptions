@@ -7,13 +7,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, RefreshCw, AlertCircle, GraduationCap } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, GraduationCap, UserPlus } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import { useTranslations } from '@/contexts/i18n-context';
 import type { Coach } from '@/types';
-import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { FigAvatar, CoachAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { CreateCoachForm } from './create-coach-form';
 
 interface CoachDataTableProps {
   countryCode: string;
@@ -37,6 +38,7 @@ export function CoachDataTable({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Image preloading hook
   const { preloadPeopleImages } = useFigImagePreloader();
@@ -72,7 +74,7 @@ export function CoachDataTable({
 
     // Filter by level if required
     if (requiredLevel) {
-      filtered = filtered.filter(c => c.level.includes(requiredLevel));
+      filtered = filtered.filter(c => c.level?.includes(requiredLevel));
     }
 
     // Sort by last name
@@ -151,8 +153,8 @@ export function CoachDataTable({
           const coach = row.original;
           return (
             <div className="flex items-center gap-3">
-              <FigAvatar
-                figId={coach.id}
+              <CoachAvatar
+                coachId={coach.id}
                 name={coach.fullName}
                 size="sm"
               />
@@ -188,10 +190,10 @@ export function CoachDataTable({
           <DataTableColumnHeader column={column} title={t('coaches.table.level')} />
         ),
         cell: ({ row }) => {
-          const level = row.getValue("level") as string;
+          const level = row.getValue("level") as string | null;
           return (
             <Badge variant="outline">
-              {level}
+              {level || 'Not specified'}
             </Badge>
           );
         },
@@ -202,10 +204,10 @@ export function CoachDataTable({
           <DataTableColumnHeader column={column} title={t('coaches.table.description')} />
         ),
         cell: ({ row }) => {
-          const description = row.getValue("levelDescription") as string;
+          const description = row.getValue("levelDescription") as string | null;
           return (
             <span className="text-sm text-muted-foreground">
-              {description}
+              {description || 'Not specified'}
             </span>
           );
         },
@@ -270,8 +272,8 @@ export function CoachDataTable({
               <div className="flex flex-wrap gap-2">
                 {selectedCoaches.map((coach) => (
                   <div key={coach.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                    <FigAvatar
-                      figId={coach.id}
+                    <CoachAvatar
+                      coachId={coach.id}
                       name={coach.fullName}
                       size="sm"
                       className="w-6 h-6"
@@ -279,9 +281,11 @@ export function CoachDataTable({
                     <span className="text-sm font-medium">
                       {coach.lastName}, {coach.firstName}
                     </span>
-                    <Badge variant="outline">
-                      {coach.level}
-                    </Badge>
+                    {coach.level && (
+                      <Badge variant="outline">
+                        {coach.level}
+                      </Badge>
+                    )}
                   </div>
                 ))}
               </div>
@@ -293,6 +297,29 @@ export function CoachDataTable({
       {/* Data Table */}
       <Card>
         <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                disabled={refreshing || disabled}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                {t('coaches.table.refresh')}
+              </Button>
+            </div>
+            <Button
+              onClick={() => setCreateModalOpen(true)}
+              variant="default"
+              size="sm"
+              disabled={disabled}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              {t('coaches.table.createCoach')}
+            </Button>
+          </div>
+
           <DataTable
             columns={columns}
             data={filteredCoaches}
@@ -301,6 +328,16 @@ export function CoachDataTable({
           />
         </CardContent>
       </Card>
+
+      {/* Create Coach Modal */}
+      <CreateCoachForm
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        countryCode={country}
+        onCoachCreated={(newCoach) => {
+          setAvailableCoaches(prev => [...prev, newCoach]);
+        }}
+      />
     </div>
   );
 } 

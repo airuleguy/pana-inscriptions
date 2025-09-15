@@ -37,13 +37,13 @@ export class Coach {
   @Column({ nullable: true })
   club?: string;
 
-  @ApiProperty({ description: 'Coach level', example: 'L1, L2' })
-  @Column()
-  level: string;
+  @ApiProperty({ description: 'Coach level', example: 'L1, L2', nullable: true })
+  @Column({ nullable: true })
+  level?: string;
 
-  @ApiProperty({ description: 'Level description', example: 'Level 1, Level 2' })
-  @Column({ name: 'level_description' })
-  levelDescription: string;
+  @ApiProperty({ description: 'Level description', example: 'Level 1, Level 2', nullable: true })
+  @Column({ name: 'level_description', nullable: true })
+  levelDescription?: string;
 
   @ApiProperty({ description: 'Tournament the coach is registered for' })
   @ManyToOne(() => Tournament, tournament => tournament.id, { eager: true })
@@ -78,4 +78,8 @@ export class Coach {
   @ApiProperty({ description: 'Last modification date' })
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ApiProperty({ description: 'Whether this coach was created locally', example: true })
+  @Column({ name: 'is_local', default: false })
+  isLocal: boolean;
 } 

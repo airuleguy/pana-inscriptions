@@ -31,6 +31,7 @@ import { ChoreographyService } from './services/choreography.service';
 import { ImageService } from './services/image.service';
 import { TournamentService } from './services/tournament.service';
 import { CoachRegistrationService } from './services/coach-registration.service';
+import { CoachService } from './services/coach.service';
 import { JudgeRegistrationService } from './services/judge-registration.service';
 import { BatchRegistrationService } from './services/batch-registration.service';
 import { FigApiService } from './services/fig-api.service';
@@ -126,6 +127,7 @@ import { StorageFactory } from './services/storage.factory';
     ChoreographyService,
     TournamentService,
     CoachRegistrationService,
+    CoachService,
     JudgeRegistrationService,
     BatchRegistrationService,
     SupportRegistrationService,

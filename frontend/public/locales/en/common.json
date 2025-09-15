@@ -148,7 +148,9 @@
       "tryAgain": "Try Again",
       "selectedCoaches": "Selected Coaches",
       "searchPlaceholder": "Search coaches by name or level...",
-      "view": "View"
+      "view": "View",
+      "refresh": "Refresh",
+      "createCoach": "Create Coach"
     }
   },
   "judges": {

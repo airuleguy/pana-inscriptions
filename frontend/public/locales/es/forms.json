@@ -86,21 +86,80 @@
     }
   },
   "coach": {
-    "title": "Agregar Entrenador",
-    "description": "Registrar un entrenador para este torneo",
+    "title": "Crear Nuevo Entrenador",
+    "description": "Registrar un entrenador que aún no está en la base de datos FIG",
     "fields": {
       "figId": "ID FIG",
       "firstName": "Nombre",
       "lastName": "Apellido",
+      "gender": "Género",
       "country": "País",
-      "email": "Correo Electrónico",
-      "phone": "Teléfono",
-      "license": "Número de Licencia",
-      "specialization": "Especialización"
+      "club": "Club",
+      "level": "Nivel",
+      "levelDescription": "Descripción del Nivel"
+    },
+    "placeholders": {
+      "figIdExample": "ej. 12345",
+      "firstNamePlaceholder": "Nombre",
+      "lastNamePlaceholder": "Apellido",
+      "clubPlaceholder": "Nombre del club (opcional)"
+    },
+    "validation": {
+      "figIdRequired": "El ID FIG es requerido",
+      "firstNameRequired": "El nombre es requerido",
+      "lastNameRequired": "El apellido es requerido",
+      "levelRequired": "El nivel es requerido",
+      "levelDescriptionRequired": "La descripción del nivel es requerida",
+      "figIdMinLength": "El ID FIG debe tener al menos 3 caracteres",
+      "firstNameMinLength": "El nombre debe tener al menos 2 caracteres",
+      "lastNameMinLength": "El apellido debe tener al menos 2 caracteres",
+      "figIdExists": "Ya existe un entrenador con este ID FIG",
+      "invalidImageType": "Formato de imagen inválido. Por favor sube un archivo JPEG, PNG o GIF.",
+      "imageTooLarge": "El tamaño de la imagen debe ser menor a 5MB"
+    },
+    "labels": {
+      "figIdRequired": "ID FIG *",
+      "firstNameRequired": "Nombre *",
+      "lastNameRequired": "Apellido *",
+      "genderRequired": "Género *",
+      "levelRequired": "Nivel *",
+      "club": "Club (Opcional)",
+      "image": "Imagen de Perfil",
+      "imageHelp": "Sube una imagen de perfil (JPEG, PNG o GIF, máx 5MB)"
+    },
+    "genderOptions": {
+      "female": "Femenino",
+      "male": "Masculino"
+    },
+    "levelOptions": {
+      "l1": "Nivel 1",
+      "l2": "Nivel 2",
+      "l3": "Nivel 3",
+      "lhb": "Alto Rendimiento",
+      "lbr": "Brevet"
+    },
+    "licenseNotice": {
+      "title": "Aviso de Estado de Licencia",
+      "description": "Los entrenadores locales se marcan como \"licencia por verificar\" por defecto. Por favor verifica su estado de registro FIG antes del torneo."
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "create": "Crear Entrenador",
+      "creating": "Creando...",
+      "uploadImage": "Subir Imagen"
     },
     "success": {
-      "created": "Entrenador agregado exitosamente",
-      "updated": "Entrenador actualizado exitosamente"
+      "created": "Entrenador creado exitosamente",
+      "createdDescription": "{name} ha sido agregado a la lista de entrenadores de tu país con estado \"licencia por verificar\"."
+    },
+    "errors": {
+      "createFailed": "Falló la creación del entrenador",
+      "createFailedDescription": "Por favor verifica tu información e intenta de nuevo.",
+      "imageUploadFailed": "Falló la subida de imagen",
+      "imageUploadFailedDescription": "El entrenador fue creado pero falló la subida de imagen. Puedes intentar subir la imagen más tarde."
+    },
+    "preview": {
+      "imagePreview": "Vista previa de imagen de perfil"
     }
   },
   "judge": {
