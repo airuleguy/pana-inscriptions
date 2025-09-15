@@ -99,7 +99,7 @@
       "levelDescription": "Level Description"
     },
     "placeholders": {
-      "figIdExample": "e.g. COACH123456",
+      "figIdExample": "e.g. 12345",
       "firstNamePlaceholder": "First name",
       "lastNamePlaceholder": "Last name",
       "clubPlaceholder": "Club name (optional)"
@@ -113,7 +113,9 @@
       "figIdMinLength": "FIG ID must be at least 3 characters",
       "firstNameMinLength": "First name must be at least 2 characters",
       "lastNameMinLength": "Last name must be at least 2 characters",
-      "figIdExists": "A coach with this FIG ID already exists"
+      "figIdExists": "A coach with this FIG ID already exists",
+      "invalidImageType": "Invalid image format. Please upload a JPEG, PNG, or GIF file.",
+      "imageTooLarge": "Image size must be less than 5MB"
     },
     "labels": {
       "figIdRequired": "FIG ID *",
@@ -121,7 +123,9 @@
       "lastNameRequired": "Last Name *",
       "genderRequired": "Gender *",
       "levelRequired": "Level *",
-      "club": "Club (Optional)"
+      "club": "Club (Optional)",
+      "image": "Profile Image",
+      "imageHelp": "Upload a profile image (JPEG, PNG, or GIF, max 5MB)"
     },
     "genderOptions": {
       "female": "Female",
@@ -141,7 +145,8 @@
     "buttons": {
       "cancel": "Cancel",
       "create": "Create Coach",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "uploadImage": "Upload Image"
     },
     "success": {
       "created": "Coach created successfully",
@@ -149,7 +154,12 @@
     },
     "errors": {
       "createFailed": "Failed to create coach",
-      "createFailedDescription": "Please check your input and try again."
+      "createFailedDescription": "Please check your input and try again.",
+      "imageUploadFailed": "Failed to upload image",
+      "imageUploadFailedDescription": "The coach was created but the image upload failed. You can try uploading the image again later."
+    },
+    "preview": {
+      "imagePreview": "Profile image preview"
     }
   },
   "judge": {

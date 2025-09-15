@@ -13,7 +13,7 @@ import { APIService } from '@/lib/api';
 import { getInitials } from '@/lib/utils';
 import { useTranslations } from '@/contexts/i18n-context';
 import type { Coach } from '@/types';
-import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { FigAvatar, CoachAvatar, useFigImagePreloader } from '@/components/fig-image';
 import { CreateCoachForm } from './create-coach-form';
 
 interface CoachDataTableProps {
@@ -74,7 +74,7 @@ export function CoachDataTable({
 
     // Filter by level if required
     if (requiredLevel) {
-      filtered = filtered.filter(c => c.level.includes(requiredLevel));
+      filtered = filtered.filter(c => c.level?.includes(requiredLevel));
     }
 
     // Sort by last name
@@ -153,8 +153,8 @@ export function CoachDataTable({
           const coach = row.original;
           return (
             <div className="flex items-center gap-3">
-              <FigAvatar
-                figId={coach.id}
+              <CoachAvatar
+                coachId={coach.id}
                 name={coach.fullName}
                 size="sm"
               />
@@ -190,10 +190,10 @@ export function CoachDataTable({
           <DataTableColumnHeader column={column} title={t('coaches.table.level')} />
         ),
         cell: ({ row }) => {
-          const level = row.getValue("level") as string;
+          const level = row.getValue("level") as string | null;
           return (
             <Badge variant="outline">
-              {level}
+              {level || 'Not specified'}
             </Badge>
           );
         },
@@ -204,10 +204,10 @@ export function CoachDataTable({
           <DataTableColumnHeader column={column} title={t('coaches.table.description')} />
         ),
         cell: ({ row }) => {
-          const description = row.getValue("levelDescription") as string;
+          const description = row.getValue("levelDescription") as string | null;
           return (
             <span className="text-sm text-muted-foreground">
-              {description}
+              {description || 'Not specified'}
             </span>
           );
         },
@@ -272,8 +272,8 @@ export function CoachDataTable({
               <div className="flex flex-wrap gap-2">
                 {selectedCoaches.map((coach) => (
                   <div key={coach.id} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                    <FigAvatar
-                      figId={coach.id}
+                    <CoachAvatar
+                      coachId={coach.id}
                       name={coach.fullName}
                       size="sm"
                       className="w-6 h-6"
@@ -281,9 +281,11 @@ export function CoachDataTable({
                     <span className="text-sm font-medium">
                       {coach.lastName}, {coach.firstName}
                     </span>
-                    <Badge variant="outline">
-                      {coach.level}
-                    </Badge>
+                    {coach.level && (
+                      <Badge variant="outline">
+                        {coach.level}
+                      </Badge>
+                    )}
                   </div>
                 ))}
               </div>

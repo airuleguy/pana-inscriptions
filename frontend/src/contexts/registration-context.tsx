@@ -19,7 +19,7 @@ export interface RegisteredChoreography {
 export interface RegisteredCoach {
   id: string;
   name: string;
-  level: string;
+  level?: string;
   country: string;
   registeredAt: Date;
   status: RegistrationStatus;

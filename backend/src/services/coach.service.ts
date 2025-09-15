@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Coach } from '../entities/coach.entity';
 import { CreateLocalCoachDto } from '../dto/create-local-coach.dto';
 import { RegistrationStatus } from '../constants/registration-status';
 import { FigApiService } from './fig-api.service';
+import { StorageFactory } from './storage.factory';
 
 @Injectable()
 export class CoachService {
@@ -14,6 +15,7 @@ export class CoachService {
     @InjectRepository(Coach)
     private readonly coachRepository: Repository<Coach>,
     private readonly figApiService: FigApiService,
+    private readonly storageFactory: StorageFactory,
   ) {}
 
   /**
@@ -131,5 +133,78 @@ export class CoachService {
    */
   async clearCache(): Promise<void> {
     await this.figApiService.clearCache();
+  }
+
+  /**
+   * Uploads an image for a coach
+   * @param id The ID of the coach
+   * @param imageBuffer The image file buffer
+   * @returns The updated coach entity
+   */
+  async uploadImage(id: string, imageBuffer: Buffer): Promise<Coach> {
+    const coach = await this.coachRepository.findOne({ where: { id } });
+    if (!coach) {
+      throw new NotFoundException(`Coach with ID ${id} not found`);
+    }
+
+    // Only allow uploading images for local coaches
+    if (!coach.isLocal) {
+      throw new BadRequestException('Cannot upload images for FIG API coaches');
+    }
+
+    // Delete existing image if present
+    if (coach.imageUrl) {
+      try {
+        await this.storageFactory.getStorage().deleteFile(coach.imageUrl);
+      } catch (error) {
+        // Log error but continue with new upload
+        this.logger.error(`Failed to delete existing image for coach ${id}:`, error);
+      }
+    }
+
+    // Validate image buffer
+    if (!this.isValidImageBuffer(imageBuffer)) {
+      throw new BadRequestException('Invalid image format. Only JPEG, PNG, and GIF are supported.');
+    }
+
+    // Upload new image
+    const imageUrl = await this.storageFactory.getStorage().uploadFile(
+      imageBuffer,
+      'coaches',
+      coach.id,
+    );
+
+    // Update coach record
+    coach.imageUrl = imageUrl;
+    const savedCoach = await this.coachRepository.save(coach);
+    return savedCoach;
+  }
+
+  /**
+   * Validates if the buffer contains a valid image
+   * @param buffer The image buffer to validate
+   * @returns True if valid image, false otherwise
+   */
+  private isValidImageBuffer(buffer: Buffer): boolean {
+    if (!buffer || buffer.length === 0) {
+      return false;
+    }
+
+    // Check for JPEG magic bytes
+    if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+      return true;
+    }
+
+    // Check for PNG magic bytes
+    if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+      return true;
+    }
+
+    // Check for GIF magic bytes
+    if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) {
+      return true;
+    }
+
+    return false;
   }
 }

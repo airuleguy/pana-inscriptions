@@ -36,8 +36,8 @@ export interface Coach {
   gender: 'MALE' | 'FEMALE';
   country: string;
   club?: string; // Optional club name for non-country-level tournaments
-  level: string; // L1, L2, L3, LHB, LBR
-  levelDescription: string; // Human-readable level description
+  level?: string; // L1, L2, L3, LHB, LBR
+  levelDescription?: string; // Human-readable level description
   createdAt?: Date; // Registration date
   updatedAt?: Date; // Last modification date
   isLocal?: boolean; // Whether this coach was created locally
@@ -51,8 +51,8 @@ export interface CreateCoachRequest {
   gender: 'MALE' | 'FEMALE';
   country: string;
   club?: string;
-  level: string;
-  levelDescription: string;
+  level?: string;
+  levelDescription?: string;
 }
 
 export interface Judge {

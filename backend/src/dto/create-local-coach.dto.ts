@@ -36,11 +36,13 @@ export class CreateLocalCoachDto {
   @IsString()
   club?: string;
 
-  @ApiProperty({ description: 'Coach level', example: 'L1' })
+  @ApiProperty({ description: 'Coach level', example: 'L1', required: false })
+  @IsOptional()
   @IsString()
-  level: string;
+  level?: string;
 
-  @ApiProperty({ description: 'Level description', example: 'Level 1' })
+  @ApiProperty({ description: 'Level description', example: 'Level 1', required: false })
+  @IsOptional()
   @IsString()
-  levelDescription: string;
+  levelDescription?: string;
 }

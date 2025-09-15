@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle, Loader2, UserPlus, Info } from 'lucide-react';
+import { AlertCircle, Loader2, UserPlus, Info, Upload, X } from 'lucide-react';
 import { APIService } from '@/lib/api';
 import { CreateCoachRequest, Coach } from '@/types';
 import { toast } from 'sonner';
@@ -38,11 +38,12 @@ export function CreateCoachForm({
     fullName: '',
     gender: 'FEMALE',
     country: countryCode,
-    level: 'L1',
-    levelDescription: 'Level 1',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when dialog opens/closes
   const handleOpenChange = (newOpen: boolean) => {
@@ -55,10 +56,10 @@ export function CreateCoachForm({
         fullName: '',
         gender: 'FEMALE',
         country: countryCode,
-        level: 'L1',
-        levelDescription: 'Level 1',
       });
       setFormErrors({});
+      setSelectedImage(null);
+      setImagePreview(null);
     }
   };
 
@@ -112,18 +113,43 @@ export function CreateCoachForm({
       errors.lastName = t('coach.validation.lastNameMinLength');
     }
 
-    // Level validation
-    if (!formData.level.trim()) {
-      errors.level = t('coach.validation.levelRequired');
-    }
-
-    // Level description validation
-    if (!formData.levelDescription.trim()) {
-      errors.levelDescription = t('coach.validation.levelDescriptionRequired');
-    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  // Handle image selection
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error(t('coach.validation.invalidImageType'));
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('coach.validation.imageTooLarge'));
+        return;
+      }
+
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle image removal
+  const handleImageRemove = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Handle form submission
@@ -139,6 +165,21 @@ export function CreateCoachForm({
         ...formData,
         fullName: `${formData.firstName} ${formData.lastName}`,
       });
+
+      // Upload image if selected
+      if (selectedImage) {
+        try {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+          await APIService.uploadCoachImage(newCoach.id, formData);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          toast.error(t('coach.errors.imageUploadFailed'), {
+            description: t('coach.errors.imageUploadFailedDescription'),
+            duration: 5000,
+          });
+        }
+      }
       
       // Notify parent component
       onCoachCreated(newCoach);
@@ -277,38 +318,46 @@ export function CreateCoachForm({
                 </Select>
               </div>
 
-              {/* Level */}
+              {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('coach.labels.levelRequired')}</Label>
-                <Select value={formData.level} onValueChange={(value) => {
-                  handleInputChange('level', value);
-                  // Update level description based on selected level
-                  const descriptions: Record<string, string> = {
-                    'L1': 'Level 1',
-                    'L2': 'Level 2',
-                    'L3': 'Level 3',
-                    'LHB': 'High Performance',
-                    'LBR': 'Brevet',
-                  };
-                  handleInputChange('levelDescription', descriptions[value] || value);
-                }}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="L1">{t('coach.levelOptions.l1')}</SelectItem>
-                    <SelectItem value="L2">{t('coach.levelOptions.l2')}</SelectItem>
-                    <SelectItem value="L3">{t('coach.levelOptions.l3')}</SelectItem>
-                    <SelectItem value="LHB">{t('coach.levelOptions.lhb')}</SelectItem>
-                    <SelectItem value="LBR">{t('coach.levelOptions.lbr')}</SelectItem>
-                  </SelectContent>
-                </Select>
-                {formErrors.level && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {formErrors.level}
-                  </p>
-                )}
+                <Label className="text-sm font-medium">{t('coach.labels.image')}</Label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                    ref={fileInputRef}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {t('coach.buttons.uploadImage')}
+                  </Button>
+                  {imagePreview && (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt={t('coach.preview.imagePreview')}
+                        className="w-16 h-16 object-cover rounded-md"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 w-6 h-6"
+                        onClick={handleImageRemove}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500">{t('coach.labels.imageHelp')}</p>
               </div>
 
               {/* Club (Optional) */}

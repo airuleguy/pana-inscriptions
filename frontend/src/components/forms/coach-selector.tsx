@@ -118,7 +118,7 @@ export function CoachSelector({
 
     // Filter by level if required
     if (requiredLevel) {
-      filtered = filtered.filter(c => c.level.includes(requiredLevel));
+      filtered = filtered.filter(c => c.level?.includes(requiredLevel));
     }
 
     // Sort by last name

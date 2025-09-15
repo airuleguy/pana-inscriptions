@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { FigImageProxyService } from './fig-image-proxy.service';
 import { StorageFactory } from './storage.factory';
 import { Gymnast } from '../entities/gymnast.entity';
+import { Coach } from '../entities/coach.entity';
 
 export interface ImageData {
   data: Buffer;
@@ -28,6 +29,8 @@ export class ImageService {
     private readonly storageFactory: StorageFactory,
     @InjectRepository(Gymnast)
     private readonly gymnastRepository: Repository<Gymnast>,
+    @InjectRepository(Coach)
+    private readonly coachRepository: Repository<Coach>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.IMAGE_CACHE_TTL = parseInt(process.env.IMAGE_CACHE_TTL, 10) || 86400; // 24 hours
@@ -106,6 +109,88 @@ export class ImageService {
       return imageData;
     } catch (error) {
       this.logger.error(`Failed to fetch image for gymnast: ${cleanId}`, error.message);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException('Failed to fetch image', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  /**
+   * Get coach image based on ID
+   * @param id The ID of the coach (FIG ID or entity ID)
+   */
+  async getCoachImage(id: string, width?: number, height?: number, quality?: number): Promise<ImageData> {
+    if (!id || id.trim() === '') {
+      throw new HttpException('Coach ID is required', HttpStatus.BAD_REQUEST);
+    }
+
+    const cleanId = id.trim();
+    const cacheKey = `${this.IMAGE_CACHE_KEY_PREFIX}-coach-${cleanId}`;
+
+    try {
+      // Try to get from cache first
+      const cachedImage = await this.cacheManager.get<ImageData>(cacheKey);
+      if (cachedImage) {
+        this.logger.debug(`Returning cached image for coach: ${cleanId}`);
+        return cachedImage;
+      }
+
+      // First, try to find a local coach
+      let coach = null;
+
+      // Try to find by UUID first (for local coaches)
+      if (cleanId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+        coach = await this.coachRepository.findOne({ 
+          where: { id: cleanId }
+        });
+      }
+
+      // If not found and not a UUID, try by FIG ID
+      if (!coach) {
+        coach = await this.coachRepository.findOne({
+          where: { figId: cleanId }
+        });
+      }
+
+      let imageData: ImageData;
+
+      if (coach?.isLocal && coach.imageUrl) {
+        // Get image from S3/local storage for local coaches
+        const storage = this.storageFactory.getStorage();
+        const buffer = await storage.getFile(coach.imageUrl);
+        
+        if (!buffer) {
+          throw new HttpException('Image not found', HttpStatus.NOT_FOUND);
+        }
+
+        imageData = {
+          data: buffer,
+          contentType: this.getContentType(buffer),
+          contentLength: buffer.length,
+          lastModified: new Date().toISOString(),
+        };
+      } else {
+        // Get image from FIG API for FIG coaches or local coaches without uploaded images
+        const figImage = await this.figImageProxyService.getImage(coach?.figId || cleanId);
+        imageData = {
+          data: figImage.data,
+          contentType: figImage.contentType,
+          contentLength: figImage.contentLength,
+          lastModified: figImage.lastModified,
+          etag: figImage.etag,
+        };
+      }
+
+      // Cache the image data
+      await this.cacheManager.set(cacheKey, imageData, this.IMAGE_CACHE_TTL * 1000);
+      this.logger.log(`Cached image for coach: ${cleanId} (${imageData.contentLength} bytes)`);
+
+      return imageData;
+    } catch (error) {
+      this.logger.error(`Failed to fetch image for coach: ${cleanId}`, error.message);
       
       if (error instanceof HttpException) {
         throw error;

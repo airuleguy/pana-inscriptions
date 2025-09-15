@@ -1,5 +1,6 @@
-import { Controller, Post, Body, Get, Query, UseGuards, BadRequestException, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Body, Get, Query, UseGuards, BadRequestException, Delete, Param, UseInterceptors, UploadedFile, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes, ApiParam, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CoachService } from '../services/coach.service';
 import { Coach } from '../entities/coach.entity';
 import { CreateLocalCoachDto } from '../dto/create-local-coach.dto';
@@ -49,5 +50,58 @@ export class CoachController {
   @ApiResponse({ status: 204, description: 'Cache cleared successfully' })
   async clearCache(): Promise<void> {
     return await this.coachService.clearCache();
+  }
+
+  @Post(':id/image')
+  @ApiOperation({ 
+    summary: 'Upload coach image',
+    description: 'Upload an image for a local coach (FIG API coaches cannot have images uploaded)'
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Database ID of the coach', example: 'uuid-string' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+          description: 'Image file (JPEG, PNG, or GIF)',
+        },
+      },
+    },
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Image successfully uploaded',
+    type: Coach
+  })
+  @ApiResponse({ 
+    status: HttpStatus.NOT_FOUND, 
+    description: 'Coach not found'
+  })
+  @ApiResponse({ 
+    status: HttpStatus.BAD_REQUEST, 
+    description: 'Invalid image format or cannot upload for FIG API coaches'
+  })
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    },
+    fileFilter: (req, file, callback) => {
+      if (!file.mimetype.match(/^image\/(jpeg|png|gif)$/)) {
+        return callback(new BadRequestException('Only JPEG, PNG, and GIF files are allowed'), false);
+      }
+      callback(null, true);
+    },
+  }))
+  async uploadImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<Coach> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.coachService.uploadImage(id, file.buffer);
   }
 }
