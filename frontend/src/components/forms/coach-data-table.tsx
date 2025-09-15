@@ -325,6 +325,7 @@ export function CoachDataTable({
             data={filteredCoaches}
             searchKey="fullName"
             searchPlaceholder={t('coaches.table.searchPlaceholder')}
+            getRowId={(coach) => coach.id}
           />
         </CardContent>
       </Card>

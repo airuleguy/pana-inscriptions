@@ -340,7 +340,11 @@ export function JudgeDataTable({
             )}
           </Button>
         </div>
-        <DataTable columns={columns} data={filteredJudges} />
+        <DataTable 
+          columns={columns} 
+          data={filteredJudges}
+          getRowId={(judge) => judge.id}
+        />
         
         {selectedJudges.length > 0 && (
           <div className="border-t p-4 bg-muted/30">

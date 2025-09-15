@@ -409,6 +409,7 @@ export function GymnastDataTable({
             data={filteredGymnasts}
             searchKey="fullName"
             searchPlaceholder={t('gymnasts.table.searchByName')}
+            getRowId={(gymnast) => gymnast.figId}
           />
         </CardContent>
       </Card>

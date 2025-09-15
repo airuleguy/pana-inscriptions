@@ -33,11 +33,25 @@ export class GymnastService {
     // Get local gymnasts
     const localGymnasts = await this.getLocalGymnasts(country);
 
-    // Combine and deduplicate (FIG API takes precedence)
-    const figIds = new Set(figGymnasts.map(g => g.figId));
-    const uniqueLocalGymnasts = localGymnasts.filter(g => g.figId && !figIds.has(g.figId));
+    // Create a Map to deduplicate gymnasts by FIG ID (FIG API takes precedence)
+    const gymnastMap = new Map<string, GymnastDto>();
 
-    return [...figGymnasts, ...uniqueLocalGymnasts];
+    // First, add FIG API gymnasts (they take precedence)
+    figGymnasts.forEach(gymnast => {
+      if (gymnast.figId) {
+        gymnastMap.set(gymnast.figId, gymnast);
+      }
+    });
+
+    // Then, add local gymnasts only if their FIG ID is not already in the map
+    localGymnasts.forEach(gymnast => {
+      if (gymnast.figId && !gymnastMap.has(gymnast.figId)) {
+        gymnastMap.set(gymnast.figId, gymnast);
+      }
+    });
+
+    // Return deduplicated gymnasts as array
+    return Array.from(gymnastMap.values());
   }
 
   /**
@@ -158,7 +172,19 @@ export class GymnastService {
     }
 
     const gymnasts = await queryBuilder.getMany();
-    return gymnasts.map(g => this.transformEntityToDto(g));
+
+    // Deduplicate by FIG ID at the application level (keep the most recent one)
+    const gymnastMap = new Map<string, Gymnast>();
+    gymnasts.forEach(gymnast => {
+      if (gymnast.figId) {
+        const existing = gymnastMap.get(gymnast.figId);
+        if (!existing || gymnast.createdAt > existing.createdAt) {
+          gymnastMap.set(gymnast.figId, gymnast);
+        }
+      }
+    });
+
+    return Array.from(gymnastMap.values()).map(g => this.transformEntityToDto(g));
   }
 
   /**

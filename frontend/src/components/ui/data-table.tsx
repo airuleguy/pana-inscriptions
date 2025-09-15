@@ -274,6 +274,7 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string
   searchPlaceholder?: string
   onRowSelectionChange?: (selectedRows: TData[]) => void
+  getRowId?: (row: TData) => string
 }
 
 export function DataTable<TData, TValue>({
@@ -282,6 +283,7 @@ export function DataTable<TData, TValue>({
   searchKey,
   searchPlaceholder,
   onRowSelectionChange,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const { t } = useTranslations('common');
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -292,6 +294,7 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    getRowId,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),

@@ -55,39 +55,66 @@ export class CoachService {
     // Get local coaches
     const localCoaches = await this.getLocalCoaches(country);
 
-    // Combine and deduplicate (FIG API takes precedence)
-    const figIds = new Set(figCoaches.map(c => c.id)); // CoachDto uses 'id' not 'figId'
-    const uniqueLocalCoaches = localCoaches.filter(c => c.figId && !figIds.has(c.figId));
+    // Create a Map to deduplicate coaches by FIG ID (FIG API takes precedence)
+    const coachMap = new Map<string, any>();
 
-    // Transform local coaches to match FIG format
-    const transformedLocalCoaches = uniqueLocalCoaches.map(coach => ({
-      id: coach.figId, // Map figId to id for consistency with CoachDto
-      firstName: coach.firstName,
-      lastName: coach.lastName,
-      fullName: coach.fullName,
-      gender: coach.gender as 'MALE' | 'FEMALE',
-      country: coach.country,
-      discipline: 'AER', // Default discipline for aerobic gymnastics
-      level: coach.level,
-      levelDescription: coach.levelDescription,
-      imageUrl: coach.imageUrl,
-      isLocal: true,
-    }));
+    // First, add FIG API coaches (they take precedence)
+    figCoaches.forEach(coach => {
+      if (coach.id) {
+        coachMap.set(coach.id, coach);
+      }
+    });
 
-    return [...figCoaches, ...transformedLocalCoaches];
+    // Then, add local coaches only if their FIG ID is not already in the map
+    localCoaches.forEach(coach => {
+      if (coach.figId && !coachMap.has(coach.figId)) {
+        // Transform local coach to match FIG format
+        const transformedCoach = {
+          id: coach.figId, // Map figId to id for consistency with CoachDto
+          firstName: coach.firstName,
+          lastName: coach.lastName,
+          fullName: coach.fullName,
+          gender: coach.gender as 'MALE' | 'FEMALE',
+          country: coach.country,
+          discipline: 'AER', // Default discipline for aerobic gymnastics
+          level: coach.level,
+          levelDescription: coach.levelDescription,
+          imageUrl: coach.imageUrl,
+          isLocal: true,
+        };
+        coachMap.set(coach.figId, transformedCoach);
+      }
+    });
+
+    // Return deduplicated coaches as array
+    return Array.from(coachMap.values());
   }
 
   /**
    * Get local coaches from database
    */
   private async getLocalCoaches(country?: string): Promise<Coach[]> {
-    const queryBuilder = this.coachRepository.createQueryBuilder('coach');
+    const queryBuilder = this.coachRepository.createQueryBuilder('coach')
+      .where('coach.isLocal = :isLocal', { isLocal: true });
 
     if (country) {
-      queryBuilder.where('coach.country = :country', { country });
+      queryBuilder.andWhere('coach.country = :country', { country });
     }
 
-    return await queryBuilder.getMany();
+    const coaches = await queryBuilder.getMany();
+
+    // Deduplicate by FIG ID at the application level (keep the most recent one)
+    const coachMap = new Map<string, Coach>();
+    coaches.forEach(coach => {
+      if (coach.figId) {
+        const existing = coachMap.get(coach.figId);
+        if (!existing || coach.createdAt > existing.createdAt) {
+          coachMap.set(coach.figId, coach);
+        }
+      }
+    });
+
+    return Array.from(coachMap.values());
   }
 
   /**
