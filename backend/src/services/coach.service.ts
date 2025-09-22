@@ -163,6 +163,13 @@ export class CoachService {
   }
 
   /**
+   * Clear FIG coach cache for specific country
+   */
+  async clearCacheForCountry(country: string): Promise<void> {
+    await this.figApiService.clearCoachCacheForCountry(country);
+  }
+
+  /**
    * Uploads an image for a coach
    * @param id The ID of the coach
    * @param imageBuffer The image file buffer
