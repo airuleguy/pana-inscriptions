@@ -7,15 +7,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, RefreshCw, AlertCircle, Users, Search, UserPlus } from 'lucide-react';
+import { Loader2, RefreshCw, AlertCircle, Users, UserPlus } from 'lucide-react';
 import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table';
 import { APIService } from '@/lib/api';
 import { getInitials, getCategoryColor, formatDateDDMMYYYY } from '@/lib/utils';
 import { ChoreographyCategory } from '@/constants/categories';
 import { useTranslations } from '@/contexts/i18n-context';
 import type { Gymnast } from '@/types';
-import { Input } from '@/components/ui/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CreateGymnastForm } from './create-gymnast-form';
 import { EntityAvatar } from '@/components/entity-image';
 
@@ -41,8 +39,6 @@ export function GymnastDataTable({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [showCreateForm, setShowCreateForm] = useState(false);
 
 
@@ -315,91 +311,65 @@ export function GymnastDataTable({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder={t('gymnasts.table.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64"
-                disabled={disabled}
-              />
-            </div>
-            
-            <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={disabled}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder={t('gymnasts.table.allCategories')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t('gymnasts.table.allCategories')}</SelectItem>
-                <SelectItem value="NATDEV">{t('gymnasts.table.natdev')}</SelectItem>
-                <SelectItem value="YOUTH">{t('gymnasts.table.youth')}</SelectItem>
-                <SelectItem value="JUNIOR">{t('gymnasts.table.junior')}</SelectItem>
-                <SelectItem value="SENIOR">{t('gymnasts.table.senior')}</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing || disabled}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('gymnasts.table.refresh')}
-            </Button>
-            
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setShowCreateForm(true)}
-              disabled={disabled}
-              className="flex items-center gap-2"
-            >
-              <UserPlus className="w-4 h-4" />
-              {t('gymnasts.table.createNewGymnast')}
-            </Button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing || disabled}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            {t('gymnasts.table.refresh')}
+          </Button>
+          
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setShowCreateForm(true)}
+            disabled={disabled}
+            className="flex items-center gap-2"
+          >
+            <UserPlus className="w-4 h-4" />
+            {t('gymnasts.table.createNewGymnast')}
+          </Button>
+        </div>
+        
+        <div className="text-sm text-gray-600">
+          {gymnasts.length} {t('gymnasts.table.selected')}
+        </div>
+      </div>
+
+      {gymnasts.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-blue-600" />
+            <span className="font-medium text-blue-900">
+              {t('gymnasts.table.selectedGymnasts')} ({gymnasts.length})
+            </span>
           </div>
           
-          <div className="text-sm text-gray-600">
-            {gymnasts.length} {t('gymnasts.table.selected')}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {gymnasts.map((gymnast) => (
+              <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                <EntityAvatar
+                  id={gymnast.id || gymnast.figId}
+                  name={gymnast.fullName || t('gymnasts.table.unknown')}
+                  size="sm"
+                  className="w-6 h-6"
+                />
+                <span className="text-sm font-medium">
+                  {gymnast.lastName || t('gymnasts.table.unknown')}, {gymnast.firstName || t('gymnasts.table.unknown')}
+                </span>
+                <Badge variant="outline" className={getCategoryColor(gymnast.category as ChoreographyCategory)}>
+                  {gymnast.category}
+                </Badge>
+              </div>
+            ))}
           </div>
         </div>
-
-        {gymnasts.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-blue-600" />
-              <span className="font-medium text-blue-900">
-                {t('gymnasts.table.selectedGymnasts')} ({gymnasts.length})
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {gymnasts.map((gymnast) => (
-                <div key={gymnast.figId} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                  <EntityAvatar
-                    id={gymnast.id || gymnast.figId}
-                    name={gymnast.fullName || t('gymnasts.table.unknown')}
-                    size="sm"
-                    className="w-6 h-6"
-                  />
-                  <span className="text-sm font-medium">
-                    {gymnast.lastName || t('gymnasts.table.unknown')}, {gymnast.firstName || t('gymnasts.table.unknown')}
-                  </span>
-                  <Badge variant="outline" className={getCategoryColor(gymnast.category as ChoreographyCategory)}>
-                    {gymnast.category}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Data Table */}
       <Card>
