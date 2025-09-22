@@ -29,7 +29,7 @@ interface FigApiCoach {
   country: string;
   gender: string;
   discipline: string;
-  level: string;
+  level?: string;
 }
 
 interface FigApiJudge {
@@ -52,6 +52,10 @@ export class FigApiService {
   private readonly CACHE_KEY = 'fig-gymnasts';
   private readonly COACH_CACHE_KEY = 'fig-coaches';
   private readonly JUDGE_CACHE_KEY = 'fig-judges';
+
+  private getCountryCoachCacheKey(country: string): string {
+    return `fig_coaches_${country.toUpperCase()}`;
+  }
   private readonly CACHE_TTL: number;
   private readonly API_TIMEOUT: number;
 
@@ -138,17 +142,14 @@ export class FigApiService {
   // ==================== COACHES ====================
 
   async getCoaches(): Promise<CoachDto[]> {
-    try {
-      // Try to get from cache first
-      const cachedData = await this.cacheManager.get<CoachDto[]>(this.COACH_CACHE_KEY);
-      if (cachedData) {
-        this.logger.debug('Returning cached FIG coach data');
-        return cachedData;
-      }
+    // For backward compatibility, return URU coaches
+    return this.getCoachesByCountry('URU');
+  }
 
-      // If not in cache, fetch from FIG API
-      this.logger.log('Fetching coach data from FIG API');
-      const apiUrl = `${this.figCoachApiUrl}?function=searchAcademic&discipline=AER&country=&id=&level=&lastname=&firstname=`;
+  private async fetchCoachesForCountry(country: string): Promise<CoachDto[]> {
+    try {
+      this.logger.log(`Fetching coach data from FIG API for country: ${country}`);
+      const apiUrl = `${this.figCoachApiUrl}?function=searchSport&country=${country.toUpperCase()}&id=&level=&lastname=&firstname=`;
       const response: AxiosResponse<FigApiCoach[]> = await axios.get(apiUrl, {
         timeout: this.API_TIMEOUT,
       });
@@ -159,14 +160,11 @@ export class FigApiService {
 
       // Transform the data to match frontend expectations at ingestion point
       const coaches: CoachDto[] = response.data.map(coach => this.transformFigApiCoachToDto(coach));
-
-      // Cache the result (TTL in milliseconds for cache-manager v5)
-      await this.cacheManager.set(this.COACH_CACHE_KEY, coaches, this.CACHE_TTL * 1000);
-      this.logger.log(`Cached ${coaches.length} coaches from FIG API`);
-
+      this.logger.log(`Successfully fetched ${coaches.length} coaches for ${country}`);
+      
       return coaches;
     } catch (error) {
-      this.logger.error('Failed to fetch coaches from FIG API', error);
+      this.logger.error(`Failed to fetch coaches from FIG API for country ${country}`, error);
       
       if (error.response?.status === 429) {
         throw new HttpException('FIG Coach API rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
@@ -176,27 +174,54 @@ export class FigApiService {
         throw new HttpException('FIG Coach API timeout', HttpStatus.GATEWAY_TIMEOUT);
       }
 
-      throw new HttpException('Failed to fetch coach data', HttpStatus.BAD_GATEWAY);
+      throw new HttpException(`Failed to fetch coach data for ${country}`, HttpStatus.BAD_GATEWAY);
     }
   }
 
   async getCoachesByCountry(country: string): Promise<CoachDto[]> {
-    // OPTIMIZED: Always use cached data and filter in-memory for fast performance
-    this.logger.debug(`Filtering cached coach data for country: ${country}`);
-    const allCoaches = await this.getCoaches();
-    return allCoaches.filter(coach => 
-      coach.country.toLowerCase() === country.toLowerCase()
-    );
+    const countryUpper = country.toUpperCase();
+    const cacheKey = this.getCountryCoachCacheKey(countryUpper);
+    
+    try {
+      // Try to get from country-specific cache first
+      const cachedData = await this.cacheManager.get<CoachDto[]>(cacheKey);
+      if (cachedData) {
+        this.logger.debug(`Returning cached coach data for country: ${countryUpper}`);
+        return cachedData;
+      }
+
+      // Cache miss - fetch from FIG API for this specific country
+      this.logger.log(`Cache miss for ${countryUpper} coaches - fetching from FIG API`);
+      const coaches = await this.fetchCoachesForCountry(countryUpper);
+
+      // Cache the result with country-specific key
+      await this.cacheManager.set(cacheKey, coaches, this.CACHE_TTL * 1000);
+      this.logger.log(`Cached ${coaches.length} coaches for country: ${countryUpper}`);
+
+      return coaches;
+    } catch (error) {
+      this.logger.error(`Failed to get coaches for country ${countryUpper}`, error);
+      throw error;
+    }
   }
 
   async getCoachById(id: string): Promise<CoachDto | null> {
-    const allCoaches = await this.getCoaches();
+    // For coach lookup, we'll need to check multiple country caches or use a different strategy
+    // For now, fallback to URU coaches for backward compatibility
+    const allCoaches = await this.getCoachesByCountry('URU');
     return allCoaches.find(coach => coach.id === id) || null;
   }
 
   async clearCoachCache(): Promise<void> {
+    // Clear the legacy cache key
     await this.cacheManager.del(this.COACH_CACHE_KEY);
     this.logger.log('FIG coach cache cleared');
+  }
+
+  async clearCoachCacheForCountry(country: string): Promise<void> {
+    const cacheKey = this.getCountryCoachCacheKey(country.toUpperCase());
+    await this.cacheManager.del(cacheKey);
+    this.logger.log(`FIG coach cache cleared for country: ${country.toUpperCase()}`);
   }
 
   // ==================== JUDGES ====================
@@ -322,8 +347,8 @@ export class FigApiService {
     // Generate full name
     const fullName = `${coach.preferredfirstname} ${coach.preferredlastname}`;
     
-    // Generate level description
-    const levelDescription = this.getCoachLevelDescription(coach.level);
+    // Generate level description (optional for searchSport)
+    const levelDescription = coach.level ? this.getCoachLevelDescription(coach.level) : undefined;
     
     // Generate image URL from FIG ID
     const imageUrl = FigImageUtil.generateImageUrl(coach.id);

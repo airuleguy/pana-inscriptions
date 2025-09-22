@@ -363,7 +363,6 @@ export class APIService {
       country: coach.country,
       club: coach.club,
       level: coach.level,
-      levelDescription: coach.levelDescription,
       tournamentId: tournamentId,
     }));
 
@@ -1060,7 +1059,7 @@ export class APIService {
       c.firstName.toLowerCase().includes(searchTerm) ||
       c.lastName.toLowerCase().includes(searchTerm) ||
       c.fullName.toLowerCase().includes(searchTerm) ||
-      c.levelDescription?.toLowerCase().includes(searchTerm)
+      c.level?.toLowerCase().includes(searchTerm)
     );
   }
 

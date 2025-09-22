@@ -52,6 +52,14 @@ export class CoachController {
     return await this.coachService.clearCache();
   }
 
+  @Delete('cache/:country')
+  @ApiOperation({ summary: 'Clear coach cache for specific country' })
+  @ApiParam({ name: 'country', description: 'Country code (e.g., URU, ARG)', example: 'URU' })
+  @ApiResponse({ status: 204, description: 'Country-specific cache cleared successfully' })
+  async clearCacheForCountry(@Param('country') country: string): Promise<void> {
+    return await this.coachService.clearCacheForCountry(country);
+  }
+
   @Post(':id/image')
   @ApiOperation({ 
     summary: 'Upload coach image',

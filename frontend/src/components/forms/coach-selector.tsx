@@ -2,17 +2,14 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Circle, Search, Loader2, RefreshCw, AlertCircle, GraduationCap, Users } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { CheckCircle, Circle, Search, Loader2, RefreshCw, AlertCircle, GraduationCap } from 'lucide-react';
 import { APIService } from '@/lib/api';
-import { getInitials } from '@/lib/utils';
 import type { Coach } from '@/types';
 import { FigAvatar, useFigImagePreloader } from '@/components/fig-image';
+import { useTranslations } from '@/contexts/i18n-context';
 
 // Simple debounce implementation
 function debounce(
@@ -43,6 +40,7 @@ export function CoachSelector({
   requiredLevel,
   disabled = false
 }: CoachSelectorProps) {
+  const { t } = useTranslations('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [availableCoaches, setAvailableCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,7 +234,9 @@ export function CoachSelector({
                       />
                       <div>
                         <p className="font-medium text-sm">{coach.fullName}</p>
-                        <p className="text-xs text-muted-foreground">{coach.levelDescription}</p>
+                        {coach.level && (
+                          <p className="text-xs text-muted-foreground">{coach.level}</p>
+                        )}
                       </div>
                     </div>
                     <Button
@@ -310,10 +310,12 @@ export function CoachSelector({
                         </Badge>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <GraduationCap className="w-3 h-3" />
-                        <span className="truncate">{coach.levelDescription}</span>
-                      </div>
+                      {coach.level && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <GraduationCap className="w-3 h-3" />
+                          <span className="truncate">{coach.level}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

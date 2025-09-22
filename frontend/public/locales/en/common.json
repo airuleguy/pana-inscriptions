@@ -139,7 +139,6 @@
       "coach": "Coach",
       "gender": "Gender",
       "level": "Level",
-      "description": "Description",
       "male": "Male",
       "female": "Female",
       "loadingCoaches": "Loading coaches from FIG database...",
@@ -150,7 +149,8 @@
       "searchPlaceholder": "Search coaches by name or level...",
       "view": "View",
       "refresh": "Refresh",
-      "createCoach": "Create Coach"
+      "createCoach": "Create Coach",
+      "levelNotSpecified": "Level not specified"
     }
   },
   "judges": {

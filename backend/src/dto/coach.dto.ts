@@ -22,11 +22,11 @@ export class CoachDto {
   @ApiProperty({ description: 'Discipline', example: 'AER' })
   discipline: string;
 
-  @ApiProperty({ description: 'Coach level', example: 'L1, L2' })
-  level: string;
+  @ApiProperty({ description: 'Coach level', example: 'L1, L2', required: false })
+  level?: string;
 
-  @ApiProperty({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach' })
-  levelDescription: string;
+  @ApiProperty({ description: 'Level description', example: 'Level 1 Coach, Level 2 Coach', required: false })
+  levelDescription?: string;
 
   @ApiProperty({ description: 'FIG image URL', nullable: true, example: 'https://www.gymnastics.sport/asset.php?id=bpic_COACH123456' })
   imageUrl?: string;

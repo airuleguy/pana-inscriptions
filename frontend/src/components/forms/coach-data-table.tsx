@@ -193,22 +193,8 @@ export function CoachDataTable({
           const level = row.getValue("level") as string | null;
           return (
             <Badge variant="outline">
-              {level || 'Not specified'}
+              {level || t('coaches.table.levelNotSpecified')}
             </Badge>
-          );
-        },
-      },
-      {
-        accessorKey: "levelDescription",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t('coaches.table.description')} />
-        ),
-        cell: ({ row }) => {
-          const description = row.getValue("levelDescription") as string | null;
-          return (
-            <span className="text-sm text-muted-foreground">
-              {description || 'Not specified'}
-            </span>
           );
         },
       },

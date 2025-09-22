@@ -139,7 +139,6 @@
       "coach": "Entrenador",
       "gender": "Género",
       "level": "Nivel",
-      "description": "Descripción",
       "male": "Masculino",
       "female": "Femenino",
       "loadingCoaches": "Cargando entrenadores de la base de datos FIG...",
@@ -150,7 +149,8 @@
       "searchPlaceholder": "Buscar entrenadores por nombre o nivel...",
       "view": "Ver",
       "refresh": "Actualizar",
-      "createCoach": "Crear Entrenador"
+      "createCoach": "Crear Entrenador",
+      "levelNotSpecified": "Nivel no especificado"
     }
   },
   "judges": {
